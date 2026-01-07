@@ -1,1 +1,2 @@
 @import 'tailwindcss';
+@import '@flow/core/tailwind.no-reset.css';
