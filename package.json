@@ -12,8 +12,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@flow/core": "^0.1.15",
+    "@fontsource/inter": "^5.2.8",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^7.12.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
