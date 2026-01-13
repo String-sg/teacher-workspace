@@ -15,6 +15,7 @@
     "@flow/core": "^0.1.16",
     "@flow/icons": "^0.1.0",
     "clsx": "^2.1.1",
+    "@fontsource/inter": "^5.2.8",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router": "^7.12.0",
