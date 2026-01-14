@@ -1,3 +1,4 @@
+import { Button } from '@flow/core';
 import React from 'react';
 
 import { cn } from '~/helpers/cn';
@@ -18,8 +19,8 @@ const SidebarHeader = React.forwardRef<HTMLDivElement, SidebarHeaderProps>(
         {...props}
         className={cn(
           'text-md flex items-center font-semibold',
-          isCollapsed && 'justify-center p-2',
-          !isCollapsed && 'justify-between py-3 pl-1',
+          isCollapsed && 'p-xs justify-center',
+          !isCollapsed && 'py-sm pl-2xs justify-between',
           className,
         )}
       >
@@ -32,13 +33,9 @@ const SidebarHeader = React.forwardRef<HTMLDivElement, SidebarHeaderProps>(
           Teacher Workspace
         </span>
         {Icon && (
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            className="hover:bg-slate-4 flex-shrink-0 cursor-pointer rounded-lg p-2 transition-colors duration-300 ease-in-out"
-          >
+          <Button size="icon" variant="ghost" onClick={toggleCollapsed}>
             <Icon className="text-slate-11 h-4 w-4" />
-          </button>
+          </Button>
         )}
       </div>
     );

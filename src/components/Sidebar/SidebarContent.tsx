@@ -7,7 +7,7 @@ export type SidebarContentProps = React.ComponentPropsWithoutRef<'div'>;
 const SidebarContent = React.forwardRef<HTMLDivElement, SidebarContentProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <div ref={ref} className={cn('flex flex-col gap-y-2', className)} {...props}>
+      <div ref={ref} className={cn('gap-y-xs flex flex-col', className)} {...props}>
         {children}
       </div>
     );

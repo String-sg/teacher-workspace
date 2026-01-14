@@ -29,8 +29,8 @@ const SidebarItem = <T extends React.ElementType>({
 
   const baseStyles = cn(
     'flex rounded-xl transition-all duration-300 ease-in-out w-full',
-    isCollapsed && 'sm:flex-col sm:items-center sm:justify-center sm:gap-y-2 sm:py-3',
-    !isCollapsed && 'items-center gap-x-2 px-4 py-2',
+    isCollapsed && 'sm:flex-col sm:items-center sm:justify-center sm:gap-y-xs sm:py-sm',
+    !isCollapsed && 'items-center gap-x-xs px-md py-xs',
   );
 
   const isNavLink = (as as unknown) === NavLink;

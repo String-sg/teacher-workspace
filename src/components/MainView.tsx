@@ -8,14 +8,14 @@ export const MainView: React.FC = () => {
   const { isCollapsed } = useSidebarContext();
 
   return (
-    <div className="p-4">
+    <div className="p-md">
       {isCollapsed && (
-        <SidebarTrigger className="flex items-center gap-x-2 sm:hidden">
-          <div className="flex items-center justify-center rounded-lg p-2">
+        <div className="gap-x-xs flex items-center sm:hidden">
+          <SidebarTrigger>
             <PanelLeft className="text-slate-11 h-4 w-4" />
-          </div>
+          </SidebarTrigger>
           <span className="text-md font-semibold">Home</span>
-        </SidebarTrigger>
+        </div>
       )}
     </div>
   );

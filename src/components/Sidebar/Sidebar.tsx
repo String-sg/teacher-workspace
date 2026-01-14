@@ -15,7 +15,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         <nav
           ref={ref}
           className={cn(
-            'bg-slate-2 border-slate-5 fixed inset-y-0 left-0 z-1000 flex w-60 flex-col gap-y-4 border-r p-2 transition-[width,translate] duration-300 ease-in-out',
+            'bg-slate-2 border-slate-5 gap-y-md p-xs fixed inset-y-0 left-0 z-1000 flex w-60 flex-col border-r transition-[width,translate] duration-300 ease-in-out',
             isCollapsed && '-translate-x-full sm:w-20 sm:translate-x-0',
             className,
           )}
