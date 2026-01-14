@@ -1,2 +1,26 @@
 @import 'tailwindcss';
 @import '@flow/core/tailwind.no-reset.css';
+
+:root {
+  --color-blue-1: #fcfdff;
+  --color-blue-2: #f5f9ff;
+  --color-blue-3: #eaf3ff;
+  --color-blue-4: #daebff;
+  --color-blue-5: #c7e1ff;
+  --color-blue-6: #b2d3ff;
+  --color-blue-7: #98c1ff;
+  --color-blue-8: #73a7ff;
+  --color-blue-9: #0064ff;
+  --color-blue-10: #0058e6;
+  --color-blue-11: #015ceb;
+  --color-blue-12: #0b2d6b;
+  --color-slate-1: #fcfcfd;
+  --color-slate-2: #f9f9fb;
+  --color-slate-4: #e8e8ec;
+  --color-slate-5: #e0e1e6;
+  --color-slate-11: #60646c;
+  --color-slate-12: #1c2024;
+
+  --btn-color-fill-brand-enabled: var(--color-blue-9);
+  --btn-color-fill-brand-hover: var(--color-blue-10);
+}

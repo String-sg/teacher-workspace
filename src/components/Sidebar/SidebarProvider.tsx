@@ -17,7 +17,7 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
         <div
           ref={ref}
           className={cn(
-            'transition-[padding] ease-linear sm:pl-60',
+            'transition-[padding] duration-300 ease-in-out sm:pl-60',
             isCollapsed && 'sm:pl-20',
             className,
           )}

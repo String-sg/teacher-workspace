@@ -8,7 +8,7 @@ export interface SidebarContextValues {
   /**
    * Toggle the sidebar collapsed state.
    */
-  toggleSidebar: () => void;
+  toggleCollapsed: () => void;
 }
 
 export const SidebarContext = createContext<SidebarContextValues | undefined>(undefined);

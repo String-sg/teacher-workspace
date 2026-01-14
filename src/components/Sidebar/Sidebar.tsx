@@ -6,33 +6,35 @@ import { useSidebarContext } from './context';
 
 export type SidebarProps = React.ComponentPropsWithoutRef<'nav'>;
 
-const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(({ className, ...props }, ref) => {
-  const { isCollapsed, toggleCollapsed } = useSidebarContext();
+const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
+  ({ className, children, ...props }, ref) => {
+    const { isCollapsed, toggleCollapsed } = useSidebarContext();
 
-  return (
-    <>
-      <nav
-        ref={ref}
-        className={cn(
-          'fixed inset-y-0 left-0 z-1000 flex w-60 flex-col bg-red-500 transition-[width,translate] ease-linear',
-          isCollapsed && '-translate-x-full sm:w-20 sm:translate-x-0',
-          className,
-        )}
-        {...props}
-      >
-        Sidebar
-      </nav>
+    return (
+      <>
+        <nav
+          ref={ref}
+          className={cn(
+            'bg-slate-2 border-slate-5 fixed inset-y-0 left-0 z-1000 flex w-60 flex-col gap-y-4 border-r p-2 transition-[width,translate] duration-300 ease-in-out',
+            isCollapsed && '-translate-x-full sm:w-20 sm:translate-x-0',
+            className,
+          )}
+          {...props}
+        >
+          {children}
+        </nav>
 
-      <div
-        className={cn(
-          'fixed inset-0 bg-black/50 opacity-0 transition-opacity ease-linear sm:hidden',
-          isCollapsed ? 'pointer-events-none' : 'opacity-100',
-        )}
-        onClick={toggleCollapsed}
-      ></div>
-    </>
-  );
-});
+        <div
+          className={cn(
+            'fixed inset-0 bg-black/50 opacity-0 transition-opacity duration-300 ease-in-out sm:hidden',
+            isCollapsed ? 'pointer-events-none' : 'opacity-100',
+          )}
+          onClick={toggleCollapsed}
+        ></div>
+      </>
+    );
+  },
+);
 
 Sidebar.displayName = 'Sidebar';
 
