@@ -2,7 +2,7 @@ import { Typography } from '@flow/core';
 import React from 'react';
 import { Link } from 'react-router';
 
-import { cn } from '@/helpers/cn';
+import { cn } from '~/helpers/cn';
 
 interface AppCardProps {
   name: string;

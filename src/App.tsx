@@ -2,7 +2,7 @@ import './App.css';
 
 import { Home, PanelLeft, UsersRound } from '@flow/icons';
 import React from 'react';
-import { BrowserRouter, NavLink } from 'react-router';
+import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 
 import { MainView } from './components/MainView';
 import {
@@ -12,6 +12,7 @@ import {
   SidebarItem,
   SidebarProvider,
 } from './components/Sidebar';
+import HomePage from './pages/Home';
 
 const items = [
   {
@@ -44,7 +45,15 @@ const App: React.FC = () => {
             ))}
           </SidebarContent>
         </Sidebar>
-        <MainView />
+        <MainView>
+          <Routes>
+            <Route path="/" element={<HomePage name="Cher" />} />
+            <Route
+              path="/students"
+              element={<div className="text-gray-7 italic">SDT goes here</div>}
+            />
+          </Routes>
+        </MainView>
       </SidebarProvider>
     </BrowserRouter>
   );

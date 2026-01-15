@@ -2,8 +2,8 @@ import { Typography } from '@flow/core';
 import { Folder, Heart } from 'lucide-react';
 import React from 'react';
 
-import AppCard from '@/components/AppCard';
-import { Book } from '@/icons';
+import AppCard from '~/components/AppCard';
+import { Book } from '~/icons';
 
 interface AppCardData {
   id: number;
@@ -48,12 +48,12 @@ const Home = ({ name }: { name?: string }) => {
     <div className="grid grid-cols-6 lg:grid-cols-12">
       <div className="col-span-6 lg:col-start-3 lg:col-end-11">
         {name && (
-          <Typography variant="title-lg" className="mt-3 mb-14 text-center lg:mt-20">
+          <Typography variant="title-lg" className="mt-3 text-center lg:mt-20">
             Good afternoon, {name}
           </Typography>
         )}
 
-        <div className="gap-2xl lg:gap-3xl flex flex-col">
+        <div className="gap-2xl lg:gap-3xl mt-14 flex flex-col">
           {/* Featured */}
           {featuredApps.length > 0 && (
             <AppSection title="Featured" apps={featuredApps} variant="featured" />
