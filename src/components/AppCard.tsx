@@ -15,8 +15,6 @@ interface AppCardProps {
   external?: boolean;
 }
 
-// TODO: missing hover and clicked styling (to request from UXD)
-
 const AppCard = ({
   name,
   description,
@@ -29,11 +27,11 @@ const AppCard = ({
 }: AppCardProps) => {
   const variantStyles =
     variant === 'featured'
-      ? 'border-slate-7 bg-slate-2 items-center active:bg-slate-5'
-      : 'border-slate-6 bg-white-default flex-col active:bg-slate-6';
+      ? 'bg-slate-2 items-center active:bg-slate-5'
+      : 'bg-white-default flex-col active:bg-slate-6';
 
   const baseClassName = cn(
-    'gap-lg p-md flex rounded-3xl border cursor-pointer hover:bg-slate-4 focus:bg-slate-4',
+    'gap-lg p-md flex rounded-3xl border cursor-pointer hover:bg-slate-4 focus:bg-slate-4 border-slate-6',
     variantStyles,
     className,
   );

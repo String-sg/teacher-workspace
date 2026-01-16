@@ -1,5 +1,5 @@
 import { Typography } from '@flow/core';
-import { Folder, Heart } from 'lucide-react';
+import { Folder, Heart } from '@flow/icons';
 import React from 'react';
 
 import AppCard from '~/components/AppCard';
