@@ -3,6 +3,7 @@ import { Home, UsersRound } from '@flow/icons';
 import React, { useMemo } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
+import { PageHeader } from '~/components/PageHeader';
 import {
   Sidebar,
   SidebarContent,
@@ -50,6 +51,7 @@ const RootLayout: React.FC = () => {
           </Sidebar>
 
           <div className="relative flex-1">
+            <PageHeader />
             <Outlet />
           </div>
         </SidebarProvider>
