@@ -3,6 +3,7 @@ import './App.css';
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 
+import ModalLayout from './containers/ModalLayout';
 import RootLayout from './containers/RootLayout';
 
 const router = createBrowserRouter([
@@ -18,6 +19,17 @@ const router = createBrowserRouter([
       {
         path: 'students',
         lazy: () => import('./containers/StudentsView'),
+      },
+    ],
+  },
+  {
+    path: '/',
+    Component: ModalLayout,
+    HydrateFallback: () => null,
+    children: [
+      {
+        path: 'login',
+        lazy: () => import('./containers/LoginView'),
       },
     ],
   },
