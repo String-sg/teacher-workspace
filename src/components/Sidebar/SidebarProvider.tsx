@@ -1,35 +1,27 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import { cn } from '~/helpers/cn';
+import { useIsMobile } from '~/hooks/useIsMobile';
 
 import { SidebarContext } from './context';
 
-export type SidebarProviderProps = React.ComponentPropsWithoutRef<'div'>;
+export type SidebarProviderProps = React.PropsWithChildren;
 
-const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
-  ({ children, className, ...props }, ref) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(true);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-    const toggleCollapsed = useCallback(() => setIsCollapsed((prev) => !prev), []);
+  const toggleSidebar = useCallback(
+    () => (isMobile ? setIsMobileOpen((prev) => !prev) : setIsOpen((prev) => !prev)),
+    [isMobile],
+  );
 
-    return (
-      <SidebarContext.Provider value={{ isCollapsed, toggleCollapsed }}>
-        <div
-          ref={ref}
-          className={cn(
-            'transition-[padding] duration-300 ease-in-out sm:pl-60',
-            isCollapsed && 'sm:pl-20',
-            className,
-          )}
-          {...props}
-        >
-          {children}
-        </div>
-      </SidebarContext.Provider>
-    );
-  },
-);
+  const contextValue = useMemo(
+    () => ({ isOpen, isMobileOpen, isMobile, toggleSidebar }),
+    [isOpen, isMobileOpen, isMobile, toggleSidebar],
+  );
 
-SidebarProvider.displayName = 'SidebarProvider';
+  return <SidebarContext.Provider value={contextValue}>{children}</SidebarContext.Provider>;
+};
 
 export default SidebarProvider;

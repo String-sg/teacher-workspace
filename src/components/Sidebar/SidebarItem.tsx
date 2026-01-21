@@ -1,68 +1,128 @@
-import React from 'react';
-import { NavLink, type NavLinkProps } from 'react-router';
-
-import { cn } from '~/helpers/cn';
+import { Button, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/core';
+import { type Icon as FlowIcon } from '@flow/icons';
+import { AnimatePresence, motion } from 'motion/react';
+import React, { useCallback } from 'react';
+import { Link } from 'react-router';
 
 import { useSidebarContext } from './context';
 
-type SidebarItemProps<T extends React.ElementType> = {
+interface BaseSidebarItemProps {
+  /**
+   * The icon to display in the sidebar item.
+   */
+  icon: FlowIcon;
+  /**
+   * The label to display in the sidebar item.
+   */
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  as: T;
-} & Omit<React.ComponentPropsWithoutRef<T>, 'as'>;
+  /**
+   * The tooltip to display when the item is hovered on mobile.
+   */
+  tooltip: string;
+}
 
-const SidebarItem = <T extends React.ElementType>({
-  label,
+interface AnchorSidebarItemProps extends BaseSidebarItemProps {
+  /**
+   * If provided, it will render the item as an anchor.
+   */
+  href: string;
+  to?: never;
+  onClick?: never;
+}
+
+interface LinkSidebarItemProps extends BaseSidebarItemProps {
+  href?: never;
+  /**
+   * If provided, it will render the item as a `Link`.
+   */
+  to: string;
+  onClick?: never;
+}
+
+interface ButtonSidebarItemProps extends BaseSidebarItemProps {
+  href?: never;
+  to?: never;
+  /**
+   * If provided, it will render the item as a button.
+   */
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+export type SidebarItemProps =
+  | AnchorSidebarItemProps
+  | LinkSidebarItemProps
+  | ButtonSidebarItemProps;
+
+const SidebarItem: React.FC<SidebarItemProps> = ({
   icon: Icon,
-  as,
-  className,
-  ...props
-}: SidebarItemProps<T>) => {
-  const { isCollapsed } = useSidebarContext();
+  label,
+  tooltip,
+  href,
+  to,
+  onClick,
+}) => {
+  const { isOpen, isMobileOpen } = useSidebarContext();
+
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = useCallback(
+    (event) => onClick?.(event),
+    [onClick],
+  );
+
+  const handlePointerMove: React.PointerEventHandler<HTMLButtonElement> = useCallback(
+    (event) => {
+      if (!isOpen) {
+        return;
+      }
+
+      // Prevent the tooltip from being shown when the sidebar is open.
+      event.preventDefault();
+    },
+    [isOpen],
+  );
 
   const content = (
     <>
-      <Icon className="text-slate-11 h-4 w-4" />
-      <span className={cn(isCollapsed && 'text-center text-xs')}>{label}</span>
+      <Icon className="flex h-4 w-4 shrink-0 text-slate-11" />
+
+      <AnimatePresence initial={false}>
+        {(isOpen || isMobileOpen) && (
+          <Typography asChild variant="label-md" className="text-slate-12">
+            <motion.p
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{
+                duration: 0.15,
+                ease: [0.22, 0.61, 0.36, 1],
+              }}
+            >
+              {label}
+            </motion.p>
+          </Typography>
+        )}
+      </AnimatePresence>
     </>
   );
 
-  const baseStyles = cn(
-    'flex rounded-xl transition-all duration-300 ease-in-out w-full',
-    isCollapsed && 'sm:flex-col sm:items-center sm:justify-center sm:gap-y-xs sm:py-sm',
-    !isCollapsed && 'items-center gap-x-xs px-md py-xs',
-  );
+  return (
+    <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+      <TooltipTrigger asChild onPointerMove={handlePointerMove}>
+        <Button
+          asChild={!!href || !!to}
+          variant="ghost"
+          size="sm"
+          className="flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm"
+          onClick={handleClick}
+        >
+          {href ? <a href={href}>{content}</a> : to ? <Link to={to}>{content}</Link> : content}
+        </Button>
+      </TooltipTrigger>
 
-  const isNavLink = (as as unknown) === NavLink;
-  if (isNavLink) {
-    const navLinkProps = props as unknown as NavLinkProps;
-    return (
-      <NavLink
-        {...navLinkProps}
-        className={({ isActive }: { isActive: boolean }) =>
-          cn(
-            baseStyles,
-            'hover:bg-slate-4 text-slate-12',
-            isActive && 'bg-slate-5 text-slate-12 font-semibold',
-            className,
-          )
-        }
-      >
-        {content}
-      </NavLink>
-    );
-  }
-
-  return React.createElement(
-    as as React.ElementType,
-    {
-      ...props,
-      className: cn(baseStyles, 'hover:bg-slate-4 text-slate-12', className),
-    },
-    content,
+      <TooltipContent side="right">
+        <Typography variant="body-sm">{tooltip}</Typography>
+      </TooltipContent>
+    </Tooltip>
   );
 };
-
-SidebarItem.displayName = 'SidebarItem';
 
 export default SidebarItem;

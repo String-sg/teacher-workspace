@@ -1,6 +1,12 @@
 export { default as Sidebar } from './Sidebar';
+export { type SidebarProps } from './Sidebar';
 export { default as SidebarContent } from './SidebarContent';
+export { type SidebarContentProps } from './SidebarContent';
 export { default as SidebarHeader } from './SidebarHeader';
+export { type SidebarHeaderProps } from './SidebarHeader';
 export { default as SidebarItem } from './SidebarItem';
+export { type SidebarItemProps } from './SidebarItem';
 export { default as SidebarProvider } from './SidebarProvider';
+export { type SidebarProviderProps } from './SidebarProvider';
 export { default as SidebarTrigger } from './SidebarTrigger';
+export { type SidebarTriggerProps } from './SidebarTrigger';

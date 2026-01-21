@@ -1,19 +1,14 @@
+import { cn } from '@flow/core';
 import React from 'react';
-
-import { cn } from '~/helpers/cn';
 
 export type SidebarContentProps = React.ComponentPropsWithoutRef<'div'>;
 
-const SidebarContent = React.forwardRef<HTMLDivElement, SidebarContentProps>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn('gap-y-xs flex flex-col', className)} {...props}>
-        {children}
-      </div>
-    );
-  },
-);
-
-SidebarContent.displayName = 'SidebarContent';
+const SidebarContent: React.FC<SidebarContentProps> = ({ children, className, ...props }) => {
+  return (
+    <div className={cn('flex flex-col gap-y-xs px-sm', className)} {...props}>
+      {children}
+    </div>
+  );
+};
 
 export default SidebarContent;
