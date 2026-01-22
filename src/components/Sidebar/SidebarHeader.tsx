@@ -1,47 +1,53 @@
-import { Button } from '@flow/core';
+import { cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/core';
+import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
 
-import { cn } from '~/helpers/cn';
-
 import { useSidebarContext } from './context';
+import SidebarTrigger from './SidebarTrigger';
 
-export type SidebarHeaderProps = {
-  icon?: React.ComponentType<{ className?: string }>;
-} & React.ComponentPropsWithoutRef<'div'>;
+export type SidebarHeaderProps = React.ComponentPropsWithoutRef<'div'>;
 
-const SidebarHeader = React.forwardRef<HTMLDivElement, SidebarHeaderProps>(
-  ({ icon: Icon, className, ...props }, ref) => {
-    const { isCollapsed, toggleCollapsed } = useSidebarContext();
+const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) => {
+  const { isOpen, isMobileOpen } = useSidebarContext();
 
-    return (
-      <div
-        ref={ref}
-        {...props}
-        className={cn(
-          'text-md flex items-center font-semibold',
-          isCollapsed && 'p-xs justify-center',
-          !isCollapsed && 'py-sm pl-2xs justify-between',
-          className,
+  const isExpanded = isOpen || isMobileOpen;
+
+  return (
+    <div {...props} className={cn('relative flex items-center justify-end p-sm', className)}>
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <Typography
+            asChild
+            variant="label-md-strong"
+            className="absolute top-5 left-3 p-2xs whitespace-nowrap"
+          >
+            <motion.p
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{
+                duration: 0.15,
+                ease: [0.22, 0.61, 0.36, 1],
+              }}
+            >
+              Teacher Workspace
+            </motion.p>
+          </Typography>
         )}
-      >
-        <span
-          className={cn(
-            'overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out',
-            isCollapsed ? 'max-w-0 opacity-0' : 'max-w-full opacity-100',
-          )}
-        >
-          Teacher Workspace
-        </span>
-        {Icon && (
-          <Button size="icon" variant="ghost" onClick={toggleCollapsed}>
-            <Icon className="text-slate-11 h-4 w-4" />
-          </Button>
-        )}
-      </div>
-    );
-  },
-);
+      </AnimatePresence>
 
-SidebarHeader.displayName = 'SidebarHeader';
+      <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+        <TooltipTrigger asChild>
+          <SidebarTrigger />
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <Typography variant="body-sm">
+            {isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
+          </Typography>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+};
 
 export default SidebarHeader;

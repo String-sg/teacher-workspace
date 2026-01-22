@@ -2,13 +2,21 @@ import { createContext, useContext } from 'react';
 
 export interface SidebarContextValues {
   /**
-   * Whether the sidebar is collapsed.
+   * Whether the sidebar is open.
    */
-  isCollapsed: boolean;
+  isOpen: boolean;
   /**
-   * Toggle the sidebar collapsed state.
+   * Whether the sidebar is open on mobile.
    */
-  toggleCollapsed: () => void;
+  isMobileOpen: boolean;
+  /**
+   * Whether the viewport is mobile.
+   */
+  isMobile: boolean;
+  /**
+   * Toggle the sidebar open state.
+   */
+  toggleSidebar: () => void;
 }
 
 export const SidebarContext = createContext<SidebarContextValues | undefined>(undefined);

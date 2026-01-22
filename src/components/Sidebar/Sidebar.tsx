@@ -1,22 +1,20 @@
+import { cn } from '@flow/core';
 import React from 'react';
-
-import { cn } from '~/helpers/cn';
 
 import { useSidebarContext } from './context';
 
 export type SidebarProps = React.ComponentPropsWithoutRef<'nav'>;
 
-const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
-  ({ className, children, ...props }, ref) => {
-    const { isCollapsed, toggleCollapsed } = useSidebarContext();
+const Sidebar: React.FC<SidebarProps> = ({ className, children, ...props }) => {
+  const { isOpen, isMobileOpen, isMobile, toggleSidebar } = useSidebarContext();
 
+  if (isMobile) {
     return (
       <>
         <nav
-          ref={ref}
           className={cn(
-            'bg-slate-2 border-slate-5 gap-y-md p-xs fixed inset-y-0 left-0 z-1000 flex w-60 flex-col border-r transition-[width,translate] duration-300 ease-in-out',
-            isCollapsed && '-translate-x-full sm:w-20 sm:translate-x-0',
+            'fixed inset-y-0 left-0 z-1000 w-60 -translate-x-full bg-slate-2 inset-shadow-[0_0_0_1px] inset-shadow-slate-5 transition-transform sm:hidden',
+            isMobileOpen && 'translate-x-0',
             className,
           )}
           {...props}
@@ -26,16 +24,27 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 
         <div
           className={cn(
-            'fixed inset-0 bg-black/50 opacity-0 transition-opacity duration-300 ease-in-out sm:hidden',
-            isCollapsed ? 'pointer-events-none' : 'opacity-100',
+            'ease-tw-default fixed inset-0 z-999 bg-slate-alpha-11/62 opacity-0 transition-opacity sm:hidden',
+            isMobileOpen ? 'opacity-100' : 'pointer-events-none',
           )}
-          onClick={toggleCollapsed}
-        ></div>
+          onClick={toggleSidebar}
+        />
       </>
     );
-  },
-);
+  }
 
-Sidebar.displayName = 'Sidebar';
+  return (
+    <nav
+      className={cn(
+        'ease-tw-default relative hidden w-16 bg-slate-2 inset-shadow-[0_0_0_1px] inset-shadow-slate-5 transition-[width] sm:block',
+        isOpen && 'w-60',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </nav>
+  );
+};
 
 export default Sidebar;
