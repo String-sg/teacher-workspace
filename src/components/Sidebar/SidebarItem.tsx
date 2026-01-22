@@ -1,4 +1,4 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/core';
+import { Button, cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/core';
 import { type Icon as FlowIcon } from '@flow/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import React, { useCallback } from 'react';
@@ -19,6 +19,10 @@ interface BaseSidebarItemProps {
    * The tooltip to display when the item is hovered on mobile.
    */
   tooltip: string;
+  /**
+   * Whether the item is selected.
+   */
+  selected?: boolean;
 }
 
 interface AnchorSidebarItemProps extends BaseSidebarItemProps {
@@ -57,6 +61,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   icon: Icon,
   label,
   tooltip,
+  selected,
   href,
   to,
   onClick,
@@ -64,17 +69,19 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const { isOpen, isMobileOpen } = useSidebarContext();
 
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = useCallback(
-    (event) => onClick?.(event),
+    (event) => {
+      onClick?.(event);
+    },
     [onClick],
   );
 
+  // A workaround to prevent the tooltip from being shown when the sidebar is open.
   const handlePointerMove: React.PointerEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
       if (!isOpen) {
         return;
       }
 
-      // Prevent the tooltip from being shown when the sidebar is open.
       event.preventDefault();
     },
     [isOpen],
@@ -111,8 +118,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           asChild={!!href || !!to}
           variant="ghost"
           size="sm"
-          className="flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm"
+          className={cn(
+            'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+            'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
+          )}
           onClick={handleClick}
+          data-selected={selected}
         >
           {href ? <a href={href}>{content}</a> : to ? <Link to={to}>{content}</Link> : content}
         </Button>

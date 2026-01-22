@@ -1,7 +1,7 @@
 import { TooltipProvider } from '@flow/core';
 import { Home, UsersRound } from '@flow/icons';
-import React from 'react';
-import { Outlet } from 'react-router';
+import React, { useMemo } from 'react';
+import { Outlet, useLocation } from 'react-router';
 
 import {
   Sidebar,
@@ -12,6 +12,18 @@ import {
 } from '~/components/Sidebar';
 
 const RootLayout: React.FC = () => {
+  const location = useLocation();
+
+  const segment = location.pathname.split('/')[1];
+  const selected = useMemo(() => {
+    switch (segment) {
+      case 'students':
+        return segment;
+      default:
+        return '/';
+    }
+  }, [segment]);
+
   return (
     <TooltipProvider delayDuration={600}>
       <div className="flex min-h-svh">
@@ -20,8 +32,20 @@ const RootLayout: React.FC = () => {
             <SidebarHeader />
 
             <SidebarContent>
-              <SidebarItem icon={Home} label="Home" to="/" tooltip="Home" />
-              <SidebarItem icon={UsersRound} label="Students" to="/students" tooltip="Students" />
+              <SidebarItem
+                icon={Home}
+                label="Home"
+                tooltip="Home"
+                to="/"
+                selected={selected === '/'}
+              />
+              <SidebarItem
+                icon={UsersRound}
+                label="Students"
+                tooltip="Students"
+                to="/students"
+                selected={selected === 'students'}
+              />
             </SidebarContent>
           </Sidebar>
 
