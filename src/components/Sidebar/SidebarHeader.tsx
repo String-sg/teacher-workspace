@@ -13,7 +13,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
   const isExpanded = isOpen || isMobileOpen;
 
   return (
-    <div {...props} className={cn('relative flex items-center justify-end p-sm', className)}>
+    <div className={cn('relative flex items-center justify-end p-sm', className)} {...props}>
       <AnimatePresence initial={false}>
         {isExpanded && (
           <Typography

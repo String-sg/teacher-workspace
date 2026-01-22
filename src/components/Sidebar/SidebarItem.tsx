@@ -123,7 +123,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
           )}
           onClick={handleClick}
-          data-selected={selected}
+          data-selected={!!selected}
         >
           {href ? <a href={href}>{content}</a> : to ? <Link to={to}>{content}</Link> : content}
         </Button>
