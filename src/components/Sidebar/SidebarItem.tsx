@@ -9,7 +9,7 @@ import {
 } from '@flow/core';
 import { type Icon as FlowIcon } from '@flow/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Link, type LinkProps } from 'react-router';
 
 import { useSidebarContext } from './context';
@@ -38,36 +38,28 @@ interface SidebarItemAnchorProps
     SidebarItemBaseProps,
     Omit<React.ComponentPropsWithoutRef<'a'>, 'title' | 'href' | 'children'> {
   /**
-   * The kind of element to render.
-   */
-  kind: 'anchor';
-  /**
-   * An external link to navigate to.
+   * If provided, the item will be rendered as an anchor element.
    */
   href: string;
+  to?: never;
 }
 
 interface SidebarItemLinkProps extends SidebarItemBaseProps, Omit<LinkProps, 'to' | 'children'> {
   /**
-   * The kind of element to render.
-   */
-  kind: 'link';
-  /**
-   * An internal link to navigate to.
+   * If provided, the item will be rendered as a link element.
    */
   to: string;
+  href?: never;
 }
 
 interface SidebarItemButtonProps
   extends SidebarItemBaseProps, Omit<ButtonProps, 'variant' | 'size' | 'children'> {
   /**
-   * The kind of element to render.
-   */
-  kind: 'button';
-  /**
-   * A callback to be called when the item is clicked.
+   * If provided without `href` or `to`, the item will be rendered as a button element.
    */
   onClick: React.MouseEventHandler<HTMLButtonElement>;
+  href?: never;
+  to?: never;
 }
 
 export type SidebarItemProps =
@@ -84,35 +76,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 }) => {
   const { isOpen, isMobileOpen } = useSidebarContext();
 
-  const { kind, onPointerMove } = props;
-
   // A workaround to prevent the tooltip from being shown when the sidebar is open.
-  const handleAnchorPointerMove: React.PointerEventHandler<HTMLAnchorElement> = useCallback(
-    (event) => {
-      if (isOpen) {
-        event.preventDefault();
-      }
+  const handlePointerMove = <T extends HTMLElement>(
+    event: React.PointerEvent<T>,
+    handler?: React.PointerEventHandler<T>,
+  ) => {
+    if (isOpen) {
+      event.preventDefault();
+      return;
+    }
 
-      if (kind !== 'button') {
-        onPointerMove?.(event);
-      }
-    },
-    [isOpen, kind, onPointerMove],
-  );
-
-  // A workaround to prevent the tooltip from being shown when the sidebar is open.
-  const handleButtonPointerMove: React.PointerEventHandler<HTMLButtonElement> = useCallback(
-    (event) => {
-      if (isOpen) {
-        event.preventDefault();
-      }
-
-      if (kind === 'button') {
-        onPointerMove?.(event);
-      }
-    },
-    [isOpen, kind, onPointerMove],
-  );
+    handler?.(event);
+  };
 
   const itemClassName = cn(
     'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
@@ -150,16 +125,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     </TooltipContent>
   );
 
-  if (props.kind === 'anchor') {
-    const { kind: _kind, ...anchorProps } = props;
+  if ('href' in props && props.href !== undefined) {
+    const { href, onPointerMove, ...anchorProps } = props;
     return (
       <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <a
-            {...anchorProps}
+            href={href}
             className={itemClassName}
             data-selected={!!selected}
-            onPointerMove={handleAnchorPointerMove}
+            onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
+            {...anchorProps}
           >
             {itemContent}
           </a>
@@ -170,16 +146,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     );
   }
 
-  if (props.kind === 'link') {
-    const { kind: _kind, ...linkProps } = props;
+  if ('to' in props && props.to !== undefined) {
+    const { to, onPointerMove, ...linkProps } = props;
     return (
       <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <Link
-            {...linkProps}
+            to={to}
             className={itemClassName}
             data-selected={!!selected}
-            onPointerMove={handleAnchorPointerMove}
+            onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
+            {...linkProps}
           >
             {itemContent}
           </Link>
@@ -190,17 +167,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     );
   }
 
-  const { kind: _kind, ...buttonProps } = props;
+  const { onPointerMove, ...buttonProps } = props;
   return (
     <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
       <TooltipTrigger asChild>
         <Button
-          {...buttonProps}
           variant="ghost"
           size="sm"
           className={itemClassName}
-          onPointerMove={handleButtonPointerMove}
+          onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
           data-selected={!!selected}
+          {...buttonProps}
         >
           {itemContent}
         </Button>

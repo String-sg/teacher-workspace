@@ -33,7 +33,6 @@ const RootLayout: React.FC = () => {
 
             <SidebarContent>
               <SidebarItem
-                kind="link"
                 icon={Home}
                 label="Home"
                 tooltip="Home"
@@ -41,7 +40,6 @@ const RootLayout: React.FC = () => {
                 selected={selected === '/'}
               />
               <SidebarItem
-                kind="link"
                 icon={UsersRound}
                 label="Students"
                 tooltip="Students"
