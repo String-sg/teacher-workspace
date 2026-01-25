@@ -33,4 +33,16 @@ export default defineConfig([
       'simple-import-sort/exports': 'error',
     },
   },
+
+  {
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
 ]);

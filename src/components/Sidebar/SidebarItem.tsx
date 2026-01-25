@@ -1,12 +1,20 @@
-import { Button, cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/core';
+import {
+  Button,
+  type ButtonProps,
+  cn,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  Typography,
+} from '@flow/core';
 import { type Icon as FlowIcon } from '@flow/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import React, { useCallback } from 'react';
-import { Link } from 'react-router';
+import { Link, type LinkProps } from 'react-router';
 
 import { useSidebarContext } from './context';
 
-interface BaseSidebarItemProps {
+interface SidebarItemBaseProps {
   /**
    * The icon to display in the sidebar item.
    */
@@ -25,69 +33,94 @@ interface BaseSidebarItemProps {
   selected?: boolean;
 }
 
-interface AnchorSidebarItemProps extends BaseSidebarItemProps {
+interface SidebarItemAnchorProps
+  extends
+    SidebarItemBaseProps,
+    Omit<React.ComponentPropsWithoutRef<'a'>, 'title' | 'href' | 'children'> {
   /**
-   * If provided, it will render the item as an anchor.
+   * The kind of element to render.
+   */
+  kind: 'anchor';
+  /**
+   * An external link to navigate to.
    */
   href: string;
-  to?: never;
-  onClick?: never;
 }
 
-interface LinkSidebarItemProps extends BaseSidebarItemProps {
-  href?: never;
+interface SidebarItemLinkProps extends SidebarItemBaseProps, Omit<LinkProps, 'to' | 'children'> {
   /**
-   * If provided, it will render the item as a `Link`.
+   * The kind of element to render.
+   */
+  kind: 'link';
+  /**
+   * An internal link to navigate to.
    */
   to: string;
-  onClick?: never;
 }
 
-interface ButtonSidebarItemProps extends BaseSidebarItemProps {
-  href?: never;
-  to?: never;
+interface SidebarItemButtonProps
+  extends SidebarItemBaseProps, Omit<ButtonProps, 'variant' | 'size' | 'children'> {
   /**
-   * If provided, it will render the item as a button.
+   * The kind of element to render.
+   */
+  kind: 'button';
+  /**
+   * A callback to be called when the item is clicked.
    */
   onClick: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export type SidebarItemProps =
-  | AnchorSidebarItemProps
-  | LinkSidebarItemProps
-  | ButtonSidebarItemProps;
+  | SidebarItemAnchorProps
+  | SidebarItemLinkProps
+  | SidebarItemButtonProps;
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
   icon: Icon,
   label,
   tooltip,
   selected,
-  href,
-  to,
-  onClick,
+  ...props
 }) => {
   const { isOpen, isMobileOpen } = useSidebarContext();
 
-  const handleClick: React.MouseEventHandler<HTMLButtonElement> = useCallback(
+  const { kind, onPointerMove } = props;
+
+  // A workaround to prevent the tooltip from being shown when the sidebar is open.
+  const handleAnchorPointerMove: React.PointerEventHandler<HTMLAnchorElement> = useCallback(
     (event) => {
-      onClick?.(event);
+      if (isOpen) {
+        event.preventDefault();
+      }
+
+      if (kind !== 'button') {
+        onPointerMove?.(event);
+      }
     },
-    [onClick],
+    [isOpen, kind, onPointerMove],
   );
 
   // A workaround to prevent the tooltip from being shown when the sidebar is open.
-  const handlePointerMove: React.PointerEventHandler<HTMLButtonElement> = useCallback(
+  const handleButtonPointerMove: React.PointerEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
-      if (!isOpen) {
-        return;
+      if (isOpen) {
+        event.preventDefault();
       }
 
-      event.preventDefault();
+      if (kind === 'button') {
+        onPointerMove?.(event);
+      }
     },
-    [isOpen],
+    [isOpen, kind, onPointerMove],
   );
 
-  const content = (
+  const itemClassName = cn(
+    'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+    'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
+    props.className,
+  );
+
+  const itemContent = (
     <>
       <Icon className="flex h-4 w-4 shrink-0 text-slate-11" />
 
@@ -111,27 +144,69 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     </>
   );
 
+  const tooltipContent = (
+    <TooltipContent side="right">
+      <Typography variant="body-sm">{tooltip}</Typography>
+    </TooltipContent>
+  );
+
+  if (props.kind === 'anchor') {
+    const { kind: _kind, ...anchorProps } = props;
+    return (
+      <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+        <TooltipTrigger asChild>
+          <a
+            {...anchorProps}
+            className={itemClassName}
+            data-selected={!!selected}
+            onPointerMove={handleAnchorPointerMove}
+          >
+            {itemContent}
+          </a>
+        </TooltipTrigger>
+
+        {tooltipContent}
+      </Tooltip>
+    );
+  }
+
+  if (props.kind === 'link') {
+    const { kind: _kind, ...linkProps } = props;
+    return (
+      <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+        <TooltipTrigger asChild>
+          <Link
+            {...linkProps}
+            className={itemClassName}
+            data-selected={!!selected}
+            onPointerMove={handleAnchorPointerMove}
+          >
+            {itemContent}
+          </Link>
+        </TooltipTrigger>
+
+        {tooltipContent}
+      </Tooltip>
+    );
+  }
+
+  const { kind: _kind, ...buttonProps } = props;
   return (
     <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
-      <TooltipTrigger asChild onPointerMove={handlePointerMove}>
+      <TooltipTrigger asChild>
         <Button
-          asChild={!!href || !!to}
+          {...buttonProps}
           variant="ghost"
           size="sm"
-          className={cn(
-            'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
-            'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
-          )}
-          onClick={handleClick}
+          className={itemClassName}
+          onPointerMove={handleButtonPointerMove}
           data-selected={!!selected}
         >
-          {href ? <a href={href}>{content}</a> : to ? <Link to={to}>{content}</Link> : content}
+          {itemContent}
         </Button>
       </TooltipTrigger>
 
-      <TooltipContent side="right">
-        <Typography variant="body-sm">{tooltip}</Typography>
-      </TooltipContent>
+      {tooltipContent}
     </Tooltip>
   );
 };
