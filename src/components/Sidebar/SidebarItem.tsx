@@ -90,7 +90,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   };
 
   const itemClassName = cn(
-    'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+    'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
     'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
     props.className,
   );
