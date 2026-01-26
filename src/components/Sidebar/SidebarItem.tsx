@@ -90,7 +90,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   };
 
   const itemClassName = cn(
-    'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+    'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
     'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
     props.className,
   );
@@ -126,13 +126,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 
   if ('href' in props && props.href !== undefined) {
-    const { href, onPointerMove, ...anchorProps } = props;
+    const { onPointerMove, ...anchorProps } = props;
     return (
       <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <a
-            href={href}
             className={itemClassName}
+            target="_blank"
+            rel="noopener noreferrer"
             data-selected={!!selected}
             onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
             {...anchorProps}
@@ -147,12 +148,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   }
 
   if ('to' in props && props.to !== undefined) {
-    const { to, onPointerMove, ...linkProps } = props;
+    const { onPointerMove, ...linkProps } = props;
     return (
       <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <Link
-            to={to}
             className={itemClassName}
             data-selected={!!selected}
             onPointerMove={(event) => handlePointerMove(event, onPointerMove)}

@@ -1,6 +1,6 @@
-import { TooltipProvider } from '@flow/core';
+import { cn, TooltipProvider } from '@flow/core';
 import { Home, UsersRound } from '@flow/icons';
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
 import {
@@ -9,9 +9,14 @@ import {
   SidebarHeader,
   SidebarItem,
   SidebarProvider,
+  SidebarTrigger,
 } from '~/components/Sidebar';
+import { useIsWithinViewport } from '~/hooks/useIsWithinViewport';
 
 const RootLayout: React.FC = () => {
+  const topbarRef = useRef<HTMLDivElement>(null);
+  const isWithinViewport = useIsWithinViewport(topbarRef);
+
   const location = useLocation();
 
   const segment = location.pathname.split('/')[1];
@@ -26,7 +31,7 @@ const RootLayout: React.FC = () => {
 
   return (
     <TooltipProvider delayDuration={600}>
-      <div className="flex min-h-svh">
+      <div className="flex h-svh">
         <SidebarProvider>
           <Sidebar>
             <SidebarHeader />
@@ -49,7 +54,20 @@ const RootLayout: React.FC = () => {
             </SidebarContent>
           </Sidebar>
 
-          <div className="relative flex-1">
+          <div className="relative flex-1 overflow-y-auto">
+            <div className="sticky top-0 z-999 bg-page/90 px-md py-sm backdrop-blur-sm md:px-lg">
+              <div
+                className={cn(
+                  'ease-tw-default absolute inset-x-0 top-full h-px bg-transparent transition-colors duration-300',
+                  !isWithinViewport && 'bg-slate-12/7.5',
+                )}
+              ></div>
+
+              <SidebarTrigger />
+            </div>
+
+            <div ref={topbarRef} className="absolute inset-x-0 top-0 h-px"></div>
+
             <Outlet />
           </div>
         </SidebarProvider>

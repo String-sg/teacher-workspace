@@ -4,6 +4,7 @@ const MOBILE_BREAKPOINT = 640;
 
 /**
  * A hook to check if the viewport is mobile.
+ *
  * @returns `true` if the viewport is mobile, `false` otherwise.
  */
 export function useIsMobile() {
@@ -17,5 +18,5 @@ export function useIsMobile() {
     return () => mql.removeEventListener('change', onChange);
   }, []);
 
-  return !!isMobile;
+  return isMobile;
 }
