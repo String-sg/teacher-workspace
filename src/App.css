@@ -2,6 +2,9 @@
 @import '@flow/core/tailwind.no-reset.css';
 
 :root {
+  --color-foreground-default: var(--color-slate-12);
+  --background-color-page: var(--color-slate-1);
+
   --color-blue-1: #fcfdff;
   --color-blue-2: #f5f9ff;
   --color-blue-3: #eaf3ff;
