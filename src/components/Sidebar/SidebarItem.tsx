@@ -126,12 +126,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 
   if ('href' in props && props.href !== undefined) {
-    const { href, onPointerMove, ...anchorProps } = props;
+    const { onPointerMove, ...anchorProps } = props;
     return (
       <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <a
-            href={href}
             className={itemClassName}
             target="_blank"
             rel="noopener noreferrer"
@@ -149,12 +148,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   }
 
   if ('to' in props && props.to !== undefined) {
-    const { to, onPointerMove, ...linkProps } = props;
+    const { onPointerMove, ...linkProps } = props;
     return (
       <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <Link
-            to={to}
             className={itemClassName}
             data-selected={!!selected}
             onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
