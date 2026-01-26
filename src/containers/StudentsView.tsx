@@ -8,4 +8,4 @@ const StudentsView: React.FC = () => {
   );
 };
 
-export default StudentsView;
+export { StudentsView as Component };

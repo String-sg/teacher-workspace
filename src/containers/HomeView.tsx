@@ -93,4 +93,4 @@ const HomeView: React.FC = () => {
   );
 };
 
-export default HomeView;
+export { HomeView as Component };

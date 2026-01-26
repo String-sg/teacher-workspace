@@ -3,22 +3,21 @@ import './App.css';
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 
-import HomeView from './containers/HomeView';
 import RootLayout from './containers/RootLayout';
-import StudentsView from './containers/StudentsView';
 
 const router = createBrowserRouter([
   {
     path: '/',
     Component: RootLayout,
+    HydrateFallback: () => null,
     children: [
       {
         index: true,
-        Component: HomeView,
+        lazy: () => import('./containers/HomeView'),
       },
       {
         path: 'students',
-        Component: StudentsView,
+        lazy: () => import('./containers/StudentsView'),
       },
     ],
   },
