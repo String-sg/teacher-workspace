@@ -133,6 +133,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           <a
             href={href}
             className={itemClassName}
+            target="_blank"
+            rel="noopener noreferrer"
             data-selected={!!selected}
             onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
             {...anchorProps}
