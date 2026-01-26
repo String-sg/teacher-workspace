@@ -9,7 +9,7 @@ const HomeView: React.FC = () => {
   const dayPeriod = getDayPeriod();
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-14 px-md pt-3xl pb-3xl sm:pt-20">
+    <div className="mx-auto flex max-w-3xl flex-col gap-14 px-md py-3xl sm:pt-20">
       <Typography variant="title-lg" className="p-sm text-center">
         Good {dayPeriod}
       </Typography>
