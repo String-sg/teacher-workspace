@@ -27,8 +27,8 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./web/*"]
     }
   },
-  "include": ["src"]
+  "include": ["web"]
 }
