@@ -6,6 +6,6 @@ export default {
   trailingComma: 'all',
 
   plugins: ['prettier-plugin-tailwindcss'],
-  tailwindStylesheet: './src/App.css',
+  tailwindStylesheet: './web/App.css',
   tailwindFunctions: ['cn'],
 };
