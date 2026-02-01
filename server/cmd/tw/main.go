@@ -12,33 +12,46 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/String-sg/teacher-workspace/server/internal/config"
+	"github.com/String-sg/teacher-workspace/server/pkg/dotenv"
 	"golang.org/x/sync/errgroup"
 )
 
 func main() {
-	h := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelInfo,
-		AddSource: false,
+	level := new(slog.LevelVar)
+	level.Set(slog.LevelInfo)
+
+	h := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: level,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				return slog.String(slog.TimeKey, a.Value.Time().Format(time.RFC3339))
 			}
+
 			return a
 		},
 	})
 
-	logger := slog.New(h)
-	slog.SetDefault(logger)
+	slog.SetDefault(slog.New(h))
+
+	cfg := config.Default()
+	if err := dotenv.Load(cfg); err != nil {
+		slog.Error("failed to load environment config", "err", err)
+		os.Exit(1)
+	}
+
+	level.Set(cfg.LogLevel)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	if err := run(ctx); err != nil {
-		cancel()
-		slog.Error("Server exited with error", slog.Any("err", err))
+	defer cancel()
+
+	if err := run(ctx, cfg); err != nil {
+		slog.Error("server exited with error", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context) error {
+func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -47,12 +60,12 @@ func run(ctx context.Context) error {
 	})
 
 	server := &http.Server{
-		Addr:              "[::1]:8080",
+		Addr:              fmt.Sprintf("[::1]:%d", cfg.Server.Port),
 		Handler:           mux,
-		ReadTimeout:       60 * time.Second,
-		ReadHeaderTimeout: 10 * time.Second,
-		WriteTimeout:      60 * time.Second,
-		IdleTimeout:       120 * time.Second,
+		ReadTimeout:       cfg.Server.ReadTimeout,
+		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
+		WriteTimeout:      cfg.Server.WriteTimeout,
+		IdleTimeout:       cfg.Server.IdleTimeout,
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
@@ -66,7 +79,7 @@ func run(ctx context.Context) error {
 		close(started)
 
 		slog.Info(
-			fmt.Sprintf("Server is listening on %v", server.Addr),
+			"server listening",
 			slog.String("address", server.Addr),
 		)
 
@@ -86,7 +99,7 @@ func run(ctx context.Context) error {
 			return nil
 		}
 
-		slog.Info("Gracefully shutting down...")
+		slog.Info("server shutting down")
 
 		defer server.Close()
 
