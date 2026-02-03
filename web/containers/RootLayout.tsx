@@ -3,6 +3,7 @@ import { Home, UsersRound } from '@flow/icons';
 import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
+import { PageHeader } from '~/components/PageHeader';
 import {
   Sidebar,
   SidebarContent,
