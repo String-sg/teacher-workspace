@@ -25,6 +25,26 @@ func Equalf[T comparable](t *testing.T, want, got T, format string, args ...any)
 	}
 }
 
+// NotEqual is a helper function to assert the two given values are not equal.
+// It will fail the test if the values are equal.
+func NotEqual[T comparable](t *testing.T, want, got T) {
+	t.Helper()
+
+	if want == got {
+		t.Fatalf("\nwant: NOT %v\n got: %v", want, got)
+	}
+}
+
+// NotEqualf is a helper function to assert the two given values are not equal.
+// It will fail the test if the values are equal.
+func NotEqualf[T comparable](t *testing.T, want, got T, format string, args ...any) {
+	t.Helper()
+
+	if want == got {
+		t.Fatalf(format, args...)
+	}
+}
+
 // EqualBytes is a helper function to assert the two given byte slices are equal.
 func EqualBytes(t *testing.T, want, got []byte) {
 	t.Helper()
