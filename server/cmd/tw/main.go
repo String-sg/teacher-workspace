@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/String-sg/teacher-workspace/server/internal/config"
+	"github.com/String-sg/teacher-workspace/server/internal/middleware"
+	"github.com/String-sg/teacher-workspace/server/internal/routes"
 	"github.com/String-sg/teacher-workspace/server/pkg/dotenv"
 	"golang.org/x/sync/errgroup"
 )
@@ -54,14 +56,13 @@ func main() {
 func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Hello, World!"))
-	})
+	routes.Register(mux)
+
+	handler := middleware.Chain(mux, middleware.RequestID)
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf("[::1]:%d", cfg.Server.Port),
-		Handler:           mux,
+		Handler:           handler,
 		ReadTimeout:       cfg.Server.ReadTimeout,
 		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
 		WriteTimeout:      cfg.Server.WriteTimeout,
