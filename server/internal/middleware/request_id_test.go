@@ -50,6 +50,12 @@ func TestRequestID_RequestIDFromContext(t *testing.T) {
 	require.True(t, gotOK)
 }
 
+func TestRequestID_RequestIDFromContext_NotFound(t *testing.T) {
+	id, ok := RequestIDFromContext(context.Background())
+	require.Equal(t, "", id)
+	require.False(t, ok)
+}
+
 func TestRequestID_LoggerFromContext(t *testing.T) {
 	var gotLogger *slog.Logger
 
