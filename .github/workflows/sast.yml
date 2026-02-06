@@ -1,0 +1,37 @@
+name: SAST
+
+on:
+  pull_request:
+    branches: ['*']
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
+jobs:
+  codeql:
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - javascript-typescript
+          - go
+
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
