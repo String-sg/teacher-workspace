@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,md,html,css,json,yaml}\"",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
+    "golint": "golangci-lint run",
     "prepare": "husky"
   },
   "dependencies": {
