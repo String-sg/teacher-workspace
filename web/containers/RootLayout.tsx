@@ -1,9 +1,8 @@
 import { cn, TooltipProvider } from '@flow/core';
 import { Home, UsersRound } from '@flow/icons';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
-import IdleTimeoutDialog from '~/components/IdleTimeoutDialog';
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +18,6 @@ const RootLayout: React.FC = () => {
   const isWithinViewport = useIsWithinViewport(topbarRef);
 
   const location = useLocation();
-  const [isIdle, setIsIdle] = useState(false);
 
   const segment = location.pathname.split('/')[1];
   const selected = useMemo(() => {
@@ -30,14 +28,6 @@ const RootLayout: React.FC = () => {
         return '/';
     }
   }, [segment]);
-
-  // TODO: add the real idle implementation
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setIsIdle(true);
-    }, 10000);
-    return () => clearTimeout(timeout);
-  }, []);
 
   return (
     <TooltipProvider delayDuration={600}>
@@ -79,7 +69,6 @@ const RootLayout: React.FC = () => {
             <div ref={topbarRef} className="absolute inset-x-0 top-0 h-px"></div>
 
             <Outlet />
-            <IdleTimeoutDialog isOpen={isIdle} onClose={() => setIsIdle(false)} />
           </div>
         </SidebarProvider>
       </div>
