@@ -37,8 +37,8 @@ jobs:
       - name: Format
         run: pnpm format
 
-  lint:
-    name: Lint
+  eslint:
+    name: ESLint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -60,3 +60,20 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+  golangci-lint:
+    name: Go Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.6

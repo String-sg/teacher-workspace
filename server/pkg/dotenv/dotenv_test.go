@@ -122,7 +122,9 @@ func TestDecode_LogLevel(t *testing.T) {
 			err := decode([]byte(content), &cfg)
 
 			t.Cleanup(func() {
-				os.Unsetenv("TEST_LOG_LEVEL")
+				if err := os.Unsetenv("TEST_LOG_LEVEL"); err != nil {
+					t.Fatalf("failed to unset env: %v", err)
+				}
 			})
 
 			if test.wantErr {
@@ -179,7 +181,9 @@ func TestDecode_Duration(t *testing.T) {
 			err := decode([]byte(content), &cfg)
 
 			t.Cleanup(func() {
-				os.Unsetenv("TEST_READ_TIMEOUT")
+				if err := os.Unsetenv("TEST_READ_TIMEOUT"); err != nil {
+					t.Fatalf("failed to unset env: %v", err)
+				}
 			})
 
 			if test.wantErr {
