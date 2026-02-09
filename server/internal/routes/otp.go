@@ -11,10 +11,9 @@ import (
 var store = make(map[string]map[string]string)
 
 func RequestOTP(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("session_id")
-	store["session_id"] = map[string]string{"otp_flow_id": "123"}
-	fmt.Println(store["session_id"])
+	var sessionID string
 
+	c, err := r.Cookie("session_id")
 	if err != nil {
 		id := make([]byte, 32)
 		if _, err := rand.Read(id); err != nil {
@@ -22,28 +21,22 @@ func RequestOTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sessionID := base64.RawURLEncoding.EncodeToString(id)
-
-		cookie := http.Cookie{
-			Name:     "session_id",
-			Value:    sessionID,
-			Path:     "/",
-			Secure:   true,
-			HttpOnly: true,
-			SameSite: http.SameSiteLaxMode,
-		}
-		http.SetCookie(w, &cookie)
+		sessionID = base64.RawURLEncoding.EncodeToString(id)
 	} else {
-		cookie := http.Cookie{
-			Name:     "session_id",
-			Value:    c.Value,
-			Path:     "/",
-			Secure:   true,
-			HttpOnly: true,
-			SameSite: http.SameSiteLaxMode,
-		}
-		http.SetCookie(w, &cookie)
+		sessionID = c.Value
 	}
+
+	store[sessionID] = map[string]string{"otp_flow_id": "123"}
+
+	cookie := http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookie)
 
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -52,21 +45,26 @@ func RequestOTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("No error")
 	}
 
-	bodyString := string(bodyBytes)
-	fmt.Println("Body String:", bodyString)
-
 	w.WriteHeader(http.StatusOK)
 	w.Write(bodyBytes)
 }
 
 func VerifyOTP(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_id")
+	c, err := r.Cookie("session_id")
 	if err != nil {
-		fmt.Println("There is an error")
-	} else {
-		fmt.Println(cookie.Value)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
+	session, ok := store[c.Value]
+
+	if !ok || session == nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	otpFlowID := session["otp_flow_id"]
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(cookie.Value))
+	w.Write([]byte(otpFlowID))
 }
