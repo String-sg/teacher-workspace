@@ -94,6 +94,8 @@ func False(t *testing.T, got bool) {
 	}
 }
 
+// Falsef is a helper function to assert the given boolean is false.
+// It will fail the test if the boolean is true.
 func Falsef(t *testing.T, got bool, format string, args ...any) {
 	t.Helper()
 
@@ -112,6 +114,8 @@ func HasError(t *testing.T, err error) {
 	}
 }
 
+// HasErrorf is a helper function to assert the given error is not nil.
+// It will fail the test if the error is nil.
 func HasErrorf(t *testing.T, err error, format string, args ...any) {
 	t.Helper()
 
@@ -130,6 +134,8 @@ func NoError(t *testing.T, err error) {
 	}
 }
 
+// NoErrorf is a helper function to assert the given error is nil.
+// It will fail the test if the error is not nil.
 func NoErrorf(t *testing.T, err error, format string, args ...any) {
 	t.Helper()
 
