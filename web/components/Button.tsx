@@ -2,7 +2,7 @@ import { Button as FlowButton, type ButtonProps, cn } from '@flow/core';
 import React from 'react';
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant, className = '', children, ...props }, ref) => {
+  ({ variant, className, children, ...props }, ref) => {
     return (
       <FlowButton
         ref={ref}
