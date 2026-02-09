@@ -8,7 +8,7 @@ import RootLayout from './containers/RootLayout';
 const router = createBrowserRouter([
   {
     path: '/',
-    Component: () => <Outlet />,
+    Component: Outlet,
     HydrateFallback: () => null,
     children: [
       {

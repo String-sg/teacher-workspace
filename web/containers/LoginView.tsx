@@ -1,4 +1,4 @@
-import { cn, Input, Typography } from '@flow/core';
+import { Input, Typography } from '@flow/core';
 import { X } from '@flow/icons';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -85,117 +85,109 @@ const LoginView: React.FC = () => {
       </div>
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col-reverse items-center justify-center gap-lg p-md lg:flex-row">
-        <div className="max-w-136 rounded-3xl border border-slate-7 px-xl py-4xl shadow-xs">
+        <div className="w-full max-w-136 rounded-3xl border border-slate-7 px-xl py-4xl shadow-xs">
           {step === 'email' ? (
-            <form onSubmit={handleEmailSubmit}>
-              <div className="flex flex-col gap-md">
-                <div className="flex flex-col gap-sm">
-                  <Typography variant="title-md" className="text-slate-12">
-                    Sign in to Teacher Workspace
-                  </Typography>
-                  <Typography variant="body-md" className="text-slate-11">
-                    Enter your @schools.gov.sg email to receive a one-time password.
-                  </Typography>
+            <form onSubmit={handleEmailSubmit} className="flex flex-col gap-md">
+              <div className="flex flex-col gap-sm">
+                <Typography variant="title-md" className="text-slate-12">
+                  Sign in to Teacher Workspace
+                </Typography>
+                <Typography variant="body-md" className="text-slate-11">
+                  Enter your @schools.gov.sg email to receive a one-time password.
+                </Typography>
+              </div>
+
+              <div className="flex flex-col items-baseline gap-2.5 lg:flex-row">
+                <div className="flex w-full flex-col gap-xs">
+                  <Input
+                    placeholder="e.g. name@schools.gov.sg"
+                    type="email"
+                    className="rounded-xl has-aria-invalid:border-crimson-9"
+                    aria-invalid={!!emailForm.formState.errors.email}
+                    autoFocus
+                    {...emailForm.register('email', {
+                      required: 'Use your @schools.gov.sg email',
+                      pattern: {
+                        value: /^[^\s@]+@schools\.gov\.sg$/,
+                        message: 'Use your @schools.gov.sg email',
+                      },
+                    })}
+                  />
+
+                  {emailForm.formState.errors.email && (
+                    <Typography variant="body-md" className="text-crimson-11">
+                      {emailForm.formState.errors.email.message}
+                    </Typography>
+                  )}
                 </div>
 
-                <div className="flex flex-col items-baseline gap-2.5 lg:flex-row">
-                  <div className="flex w-full flex-col gap-xs">
-                    <Input
-                      placeholder="e.g. name@schools.gov.sg"
-                      type="email"
-                      className="rounded-xl has-aria-invalid:border-crimson-9"
-                      aria-invalid={!!emailForm.formState.errors.email}
-                      autoFocus
-                      {...emailForm.register('email', {
-                        required: 'Use your @schools.gov.sg email',
-                        pattern: {
-                          value: /^[^\s@]+@schools\.gov\.sg$/,
-                          message: 'Use your @schools.gov.sg email',
-                        },
-                      })}
-                    />
-                    {emailForm.formState.errors.email && (
-                      <Typography variant="body-md" className="text-crimson-11">
-                        {emailForm.formState.errors.email.message}
-                      </Typography>
-                    )}
-                  </div>
-                  <Button variant="default" type="submit" className="w-full lg:w-auto">
-                    Continue
-                  </Button>
-                </div>
+                <Button variant="default" type="submit" className="w-full lg:w-auto">
+                  Continue
+                </Button>
               </div>
             </form>
           ) : (
-            <form onSubmit={handleOtpSubmit}>
-              <div className="flex flex-col gap-md">
-                <div className="flex flex-col gap-sm">
-                  <Typography variant="title-md" className="text-slate-12">
-                    Enter your one-time password (OTP)
-                  </Typography>
-                  <Typography variant="body-md" className="text-slate-11">
-                    We sent a one-time password to{' '}
-                    <span className="font-semibold">{submittedEmail}</span>. Enter the characters
-                    that follow the prefix shown.
-                  </Typography>
-                </div>
+            <form onSubmit={handleOtpSubmit} className="flex flex-col gap-md">
+              <div className="flex flex-col gap-sm">
+                <Typography variant="title-md" className="text-slate-12">
+                  Enter your one-time password (OTP)
+                </Typography>
+                <Typography variant="body-md" className="text-slate-11">
+                  We sent a one-time password to&nbsp;
+                  <span className="font-semibold">{submittedEmail}</span>. Enter the characters that
+                  follow the prefix shown.
+                </Typography>
+              </div>
 
-                <div
-                  className={cn(
-                    'flex gap-2.5',
-                    otpForm.formState.errors.otp ? 'items-baseline' : 'items-center',
-                  )}
-                >
-                  <Typography variant="body-md" className="text-slate-11" aria-label="OTP prefix">
-                    {otpPrefix}
-                  </Typography>
-                  <div className="flex w-full flex-col gap-xs">
-                    <Input
-                      placeholder="123123"
-                      type="text"
-                      inputMode="numeric"
-                      aria-invalid={!!otpForm.formState.errors.otp}
-                      autoFocus
-                      {...otpForm.register('otp', { required: true })}
-                    />
-                    {otpForm.formState.errors.otp && (
-                      <Typography
-                        variant="body-md"
-                        className="text-crimson-11"
-                        id="otp-error"
-                        role="alert"
-                      >
-                        {otpForm.formState.errors.otp.message}
-                      </Typography>
-                    )}
-                  </div>
+              <div className="flex items-baseline gap-2.5">
+                <Typography variant="body-md" className="text-slate-11" aria-label="OTP prefix">
+                  {otpPrefix}
+                </Typography>
 
-                  <Button type="submit" variant="default">
-                    Sign in
-                  </Button>
-                </div>
+                <div className="flex w-full flex-col gap-xs">
+                  <Input
+                    placeholder="123123"
+                    type="text"
+                    inputMode="numeric"
+                    aria-invalid={!!otpForm.formState.errors.otp}
+                    autoFocus
+                    {...otpForm.register('otp', { required: true })}
+                  />
 
-                <div className="mt-lg flex flex-col gap-xs">
-                  <Typography variant="body-md" className="text-slate-11" id="otp-help">
-                    It may take a moment to arrive.
-                  </Typography>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={countdown > 0}
-                    onClick={handleResendOTP}
-                    className="bg-unset hover:bg-unset active:bg-unset inline-block p-0 text-blue-9 hover:text-blue-10 disabled:text-slate-10"
-                    aria-live="polite"
-                  >
-                    <Typography variant="body-md">
-                      Didn&apos;t receive? Resend OTP {countdown > 0 ? `(${countdown})` : ''}
+                  {otpForm.formState.errors.otp && (
+                    <Typography variant="body-md" className="text-crimson-11">
+                      {otpForm.formState.errors.otp.message}
                     </Typography>
-                  </Button>
+                  )}
                 </div>
+
+                <Button type="submit" variant="default">
+                  Sign in
+                </Button>
+              </div>
+
+              <div className="mt-lg flex flex-col gap-xs">
+                <Typography variant="body-md" className="text-slate-11" id="otp-help">
+                  It may take a moment to arrive.
+                </Typography>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={countdown > 0}
+                  onClick={handleResendOTP}
+                  className="bg-unset hover:bg-unset active:bg-unset inline-block p-0 text-blue-9 hover:text-blue-10 disabled:text-slate-10"
+                  aria-live="polite"
+                >
+                  <Typography variant="body-md">
+                    Didn&apos;t receive? Resend OTP {countdown > 0 ? `(${countdown})` : ''}
+                  </Typography>
+                </Button>
               </div>
             </form>
           )}
         </div>
+
         <div className="lg:px-xl">
           <img src={loginImage} alt="Login illustration" />
         </div>
