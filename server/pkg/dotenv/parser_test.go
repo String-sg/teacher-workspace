@@ -1,7 +1,6 @@
 package dotenv
 
 import (
-	"reflect"
 	"strings"
 	"testing"
 
@@ -9,83 +8,72 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	input := strings.Join([]string{
-		`FOO=bar`,
-		`SPACED =  hello world  `,
-		`QUOTED="hello world"`,
-		`SINGLE='hello world'`,
-		`INLINE=bar # comment`,
-		`EMPTY=`,
-		`DOT.KEY=dot`,
-		`DASH-KEY=hyphen`,
-		`UNDERSCORE_KEY=underscore`,
-		`IGNORE_ME`,
-		`# IGNORE ME TOO`,
-	}, "\n")
+	t.Run("parses key value pairs", func(t *testing.T) {
+		input := strings.Join([]string{
+			`FOO=bar`,
+			`SPACED =  hello world  `,
+			`QUOTED="hello world"`,
+			`SINGLE='hello world'`,
+			`INLINE=bar # comment`,
+			`EMPTY=`,
+			`DOT.KEY=dot`,
+			`DASH-KEY=hyphen`,
+			`UNDERSCORE_KEY=underscore`,
+			`IGNORE_ME`,
+			`# IGNORE ME TOO`,
+		}, "\n")
 
-	want := map[string]string{
-		"FOO":            "bar",
-		"SPACED":         "hello world",
-		"QUOTED":         "hello world",
-		"SINGLE":         "hello world",
-		"INLINE":         "bar",
-		"EMPTY":          "",
-		"DOT.KEY":        "dot",
-		"DASH-KEY":       "hyphen",
-		"UNDERSCORE_KEY": "underscore",
-	}
-	got := parse(input)
+		got := parse(input)
 
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("\nwant: %#v\ngot:  %#v", want, got)
-	}
-}
+		require.Equal(t, 9, len(got))
+		require.Equal(t, "bar", got["FOO"])
+		require.Equal(t, "hello world", got["SPACED"])
+		require.Equal(t, "hello world", got["QUOTED"])
+		require.Equal(t, "hello world", got["SINGLE"])
+		require.Equal(t, "bar", got["INLINE"])
+		require.Equal(t, "", got["EMPTY"])
+		require.Equal(t, "dot", got["DOT.KEY"])
+		require.Equal(t, "hyphen", got["DASH-KEY"])
+		require.Equal(t, "underscore", got["UNDERSCORE_KEY"])
+	})
 
-func TestParse_QuotedPreservesWhitespace(t *testing.T) {
-	input := strings.Join([]string{
-		`DQ="  spaced  "`,
-		`SQ='  spaced  '`,
-		`U=  spaced  `,
-	}, "\n")
+	t.Run("quoted values preserve whitespace", func(t *testing.T) {
+		input := strings.Join([]string{
+			`DQ="  spaced  "`,
+			`SQ='  spaced  '`,
+			`U=  spaced  `,
+		}, "\n")
 
-	want := map[string]string{
-		"DQ": "  spaced  ",
-		"SQ": "  spaced  ",
-		"U":  "spaced",
-	}
-	got := parse(input)
+		got := parse(input)
 
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("\nwant: %#v\ngot:  %#v", want, got)
-	}
-}
+		require.Equal(t, 3, len(got))
+		require.Equal(t, "  spaced  ", got["DQ"])
+		require.Equal(t, "  spaced  ", got["SQ"])
+		require.Equal(t, "spaced", got["U"])
+	})
 
-func TestParse_DuplicateKeysLastWins(t *testing.T) {
-	input := strings.Join([]string{
-		"KEY=one",
-		"KEY=two",
-	}, "\n")
+	t.Run("duplicate keys last wins", func(t *testing.T) {
+		input := strings.Join([]string{
+			"KEY=one",
+			"KEY=two",
+		}, "\n")
 
-	want := "two"
-	got := parse(input)
+		got := parse(input)
 
-	require.Equal(t, want, got["KEY"])
-}
+		require.Equal(t, "two", got["KEY"])
+	})
 
-func TestParse_WindowsNewlines(t *testing.T) {
-	input := strings.Join([]string{
-		"A=1",
-		"B=2",
-		"",
-	}, "\r\n")
+	t.Run("handles windows newlines", func(t *testing.T) {
+		input := strings.Join([]string{
+			"A=1",
+			"B=2",
+			"",
+		}, "\r\n")
 
-	want := map[string]string{
-		"A": "1",
-		"B": "2",
-	}
-	got := parse(input)
+		got := parse(input)
 
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("\nwant: %#v\ngot:  %#v", want, got)
-	}
+		require.Equal(t, 2, len(got))
+		require.Equal(t, "1", got["A"])
+		require.Equal(t, "2", got["B"])
+	})
 }
