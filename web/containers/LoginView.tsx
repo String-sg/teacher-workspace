@@ -1,9 +1,8 @@
 import { cn, Input, Typography } from '@flow/core';
 import { X } from '@flow/icons';
 import React, { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
-// TODO: change image
 import loginImage from '~/assets/a_female_teacher_sitting_in_the_desk_and_focusing.png';
 import Button from '~/components/Button';
 
@@ -101,26 +100,19 @@ const LoginView: React.FC = () => {
 
                 <div className="flex flex-col items-baseline gap-2.5 lg:flex-row">
                   <div className="flex w-full flex-col gap-xs">
-                    <Controller
-                      name="email"
-                      control={emailForm.control}
-                      rules={{
+                    <Input
+                      placeholder="e.g. name@schools.gov.sg"
+                      type="email"
+                      className="rounded-xl has-aria-invalid:border-crimson-9"
+                      aria-invalid={!!emailForm.formState.errors.email}
+                      autoFocus
+                      {...emailForm.register('email', {
                         required: 'Use your @schools.gov.sg email',
                         pattern: {
                           value: /^[^\s@]+@schools\.gov\.sg$/,
                           message: 'Use your @schools.gov.sg email',
                         },
-                      }}
-                      render={({ field, fieldState }) => (
-                        <Input
-                          placeholder="e.g. name@schools.gov.sg"
-                          type="email"
-                          className="rounded-xl has-aria-invalid:border-crimson-9"
-                          aria-invalid={!!fieldState.error}
-                          autoFocus
-                          {...field}
-                        />
-                      )}
+                      })}
                     />
                     {emailForm.formState.errors.email && (
                       <Typography variant="body-md" className="text-crimson-11">
@@ -158,20 +150,13 @@ const LoginView: React.FC = () => {
                     {otpPrefix}
                   </Typography>
                   <div className="flex w-full flex-col gap-xs">
-                    <Controller
-                      name="otp"
-                      control={otpForm.control}
-                      rules={{ required: true }}
-                      render={({ field, fieldState }) => (
-                        <Input
-                          placeholder="123123"
-                          type="text"
-                          inputMode="numeric"
-                          aria-invalid={!!fieldState.error}
-                          autoFocus
-                          {...field}
-                        />
-                      )}
+                    <Input
+                      placeholder="123123"
+                      type="text"
+                      inputMode="numeric"
+                      aria-invalid={!!otpForm.formState.errors.otp}
+                      autoFocus
+                      {...otpForm.register('otp', { required: true })}
                     />
                     {otpForm.formState.errors.otp && (
                       <Typography
