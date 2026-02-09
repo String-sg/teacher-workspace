@@ -201,7 +201,7 @@ const OtpForm = ({
           variant="ghost"
           disabled={countdown > 0}
           onClick={() => onResend(reset)}
-          className="hover:bg-unset inline-block p-0 text-blue-9 hover:text-blue-10 disabled:text-slate-10"
+          className="bg-unset hover:bg-unset active:bg-unset inline-block p-0 text-blue-9 hover:text-blue-10 disabled:text-slate-10"
           aria-live="polite"
         >
           <Typography variant="body-md">
