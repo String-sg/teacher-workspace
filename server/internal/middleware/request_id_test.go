@@ -11,72 +11,80 @@ import (
 )
 
 func TestRequestID(t *testing.T) {
-	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+	t.Run("sets request ID header on the response", func(t *testing.T) {
+		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+
+		h := RequestID(next)
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
+
+		h.ServeHTTP(rec, req)
+
+		res := rec.Result()
+		require.Equal(t, http.StatusOK, res.StatusCode)
+		require.Equal(t, 22, len(res.Header.Get(requestIDHeader)))
 	})
 
-	h := RequestID(next)
+	t.Run("stores request ID in context", func(t *testing.T) {
+		var gotID string
+		var gotOK bool
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
+		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotID, gotOK = RequestIDFromContext(r.Context())
+			w.WriteHeader(http.StatusOK)
+		})
 
-	h.ServeHTTP(rec, req)
+		h := RequestID(next)
 
-	res := rec.Result()
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 22, len(res.Header.Get(requestIDHeader)))
-}
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
 
-func TestRequestID_RequestIDFromContext(t *testing.T) {
-	var gotID string
-	var gotOK bool
+		h.ServeHTTP(rec, req)
 
-	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotID, gotOK = RequestIDFromContext(r.Context())
-		w.WriteHeader(http.StatusOK)
+		res := rec.Result()
+		require.Equal(t, http.StatusOK, res.StatusCode)
+		require.Equal(t, 22, len(res.Header.Get(requestIDHeader)))
+		require.Equal(t, gotID, res.Header.Get(requestIDHeader))
+		require.True(t, gotOK)
 	})
 
-	h := RequestID(next)
+	t.Run("stores request-scoped logger in context", func(t *testing.T) {
+		var gotLogger *slog.Logger
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
+		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotLogger = LoggerFromContext(r.Context())
+			w.WriteHeader(http.StatusOK)
+		})
 
-	h.ServeHTTP(rec, req)
+		h := RequestID(next)
 
-	res := rec.Result()
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 22, len(res.Header.Get(requestIDHeader)))
-	require.Equal(t, gotID, res.Header.Get(requestIDHeader))
-	require.True(t, gotOK)
-}
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
 
-func TestRequestID_RequestIDFromContext_NotFound(t *testing.T) {
-	id, ok := RequestIDFromContext(context.Background())
-	require.Equal(t, "", id)
-	require.False(t, ok)
-}
+		h.ServeHTTP(rec, req)
 
-func TestRequestID_LoggerFromContext(t *testing.T) {
-	var gotLogger *slog.Logger
-
-	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotLogger = LoggerFromContext(r.Context())
-		w.WriteHeader(http.StatusOK)
+		res := rec.Result()
+		require.Equal(t, http.StatusOK, res.StatusCode)
+		require.NotEqual(t, slog.Default(), gotLogger)
 	})
-
-	h := RequestID(next)
-
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
-
-	h.ServeHTTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.NotEqual(t, slog.Default(), gotLogger)
 }
 
-func TestRequestID_LoggerFromContextFallback(t *testing.T) {
-	logger := LoggerFromContext(context.Background())
-	require.Equal(t, slog.Default(), logger)
+func TestRequestIDFromContext(t *testing.T) {
+	t.Run("returns empty string and false when not set", func(t *testing.T) {
+		id, ok := RequestIDFromContext(context.Background())
+
+		require.Equal(t, "", id)
+		require.False(t, ok)
+	})
+}
+
+func TestLoggerFromContext(t *testing.T) {
+	t.Run("returns default logger when not set", func(t *testing.T) {
+		logger := LoggerFromContext(context.Background())
+
+		require.Equal(t, slog.Default(), logger)
+	})
 }
