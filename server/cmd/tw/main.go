@@ -102,7 +102,11 @@ func run(ctx context.Context, cfg *config.Config) error {
 
 		slog.Info("server shutting down")
 
-		defer server.Close()
+		defer func() {
+			if err := server.Close(); err != nil {
+				slog.Warn("failed to close server", "err", err)
+			}
+		}()
 
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer shutdownCancel()
