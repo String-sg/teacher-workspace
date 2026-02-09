@@ -104,7 +104,7 @@ func run(ctx context.Context, cfg *config.Config) error {
 
 		defer func() {
 			if err := server.Close(); err != nil {
-				slog.Warn("failed to close server", "err", err)
+				slog.Error("failed to close server", "err", err)
 			}
 		}()
 
