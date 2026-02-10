@@ -26,7 +26,7 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: 'login',
+        path: 'signin',
         lazy: () => import('./containers/LoginView'),
       },
     ],

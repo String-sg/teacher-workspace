@@ -25,10 +25,18 @@ const useCountdown = (initialValue: number, shouldStart: boolean) => {
 };
 
 const COUNTDOWN_TIME_IN_SECONDS = 60;
+const INVALID_OTP_MESSAGE = 'Invalid OTP. Try again or resend.';
+
+const Step = {
+  Email: 'email',
+  OTP: 'otp',
+} as const;
+
+type Step = (typeof Step)[keyof typeof Step];
 
 const LoginView: React.FC = () => {
-  const [step, setStep] = useState<'email' | 'otp'>('email');
-  const { countdown, reset } = useCountdown(COUNTDOWN_TIME_IN_SECONDS, step === 'otp');
+  const [step, setStep] = useState<Step>(Step.Email);
+  const { countdown, reset } = useCountdown(COUNTDOWN_TIME_IN_SECONDS, step === Step.OTP);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [otpPrefix, setOtpPrefix] = useState('e3myWwd5-');
 
@@ -48,7 +56,7 @@ const LoginView: React.FC = () => {
 
   const handleEmailSubmit = emailForm.handleSubmit((data) => {
     setSubmittedEmail(data.email);
-    setStep('otp');
+    setStep(Step.OTP);
     setOtpPrefix(randomPrefix() + '-');
   });
 
@@ -59,7 +67,7 @@ const LoginView: React.FC = () => {
     // Simulate OTP verification error for now
     otpForm.setError('otp', {
       type: 'manual',
-      message: 'Invalid OTP. Try again or resend.',
+      message: INVALID_OTP_MESSAGE,
     });
   });
 
@@ -86,7 +94,7 @@ const LoginView: React.FC = () => {
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col-reverse items-center justify-center gap-lg p-md lg:flex-row">
         <div className="w-full max-w-136 rounded-3xl border border-slate-7 px-xl py-4xl shadow-xs">
-          {step === 'email' ? (
+          {step === Step.Email ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col gap-md">
               <div className="flex flex-col gap-sm">
                 <Typography variant="title-md" className="text-slate-12">
@@ -139,29 +147,31 @@ const LoginView: React.FC = () => {
                 </Typography>
               </div>
 
-              <div className="flex items-baseline gap-2.5">
-                <Typography variant="body-md" className="text-slate-11" aria-label="OTP prefix">
-                  {otpPrefix}
-                </Typography>
+              <div className="flex flex-col gap-2.5 lg:flex-row">
+                <div className="flex flex-grow items-baseline gap-sm">
+                  <Typography variant="body-md" className="text-slate-11" aria-label="OTP prefix">
+                    {otpPrefix}
+                  </Typography>
 
-                <div className="flex w-full flex-col gap-xs">
-                  <Input
-                    placeholder="123123"
-                    type="text"
-                    inputMode="numeric"
-                    aria-invalid={!!otpForm.formState.errors.otp}
-                    autoFocus
-                    {...otpForm.register('otp', { required: true })}
-                  />
+                  <div className="flex w-full flex-col gap-xs">
+                    <Input
+                      placeholder="123123"
+                      type="text"
+                      inputMode="numeric"
+                      aria-invalid={!!otpForm.formState.errors.otp}
+                      autoFocus
+                      {...otpForm.register('otp', { required: INVALID_OTP_MESSAGE })}
+                    />
 
-                  {otpForm.formState.errors.otp && (
-                    <Typography variant="body-md" className="text-crimson-11">
-                      {otpForm.formState.errors.otp.message}
-                    </Typography>
-                  )}
+                    {otpForm.formState.errors.otp && (
+                      <Typography variant="body-md" className="text-crimson-11">
+                        {otpForm.formState.errors.otp.message}
+                      </Typography>
+                    )}
+                  </div>
                 </div>
 
-                <Button type="submit" variant="default">
+                <Button type="submit" variant="default" className="lg:self-baseline">
                   Sign in
                 </Button>
               </div>
