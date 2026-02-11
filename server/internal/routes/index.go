@@ -6,7 +6,7 @@ import (
 	"github.com/String-sg/teacher-workspace/server/internal/middleware"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 
 	w.WriteHeader(http.StatusOK)

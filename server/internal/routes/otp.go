@@ -10,11 +10,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 )
-
-var otpURL = os.Getenv("TECHPASS_OTP_HOST") + "/otp"
 
 var store = make(map[string]map[string]string)
 
@@ -34,11 +31,7 @@ type VerifyOTPResponse struct {
 	ID string `json:"id"`
 }
 
-func buildAuthToken() string {
-	appSecret := os.Getenv("APP_SECRET")
-	appId := os.Getenv("APP_ID")
-	appNamespace := os.Getenv("APP_NAMESPACE")
-
+func buildAuthToken(appSecret string, appId string, appNamespace string) string {
 	h := hmac.New(sha256.New, []byte(appSecret))
 	h.Write([]byte(appId))
 
@@ -48,7 +41,8 @@ func buildAuthToken() string {
 	return base64.StdEncoding.EncodeToString([]byte(combined))
 }
 
-func RequestOTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
+	var otpURL = h.cfg.OTPaas.Host + "/otp"
 	var sessionID string
 
 	var input RequestOTPInput
@@ -77,9 +71,9 @@ func RequestOTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+buildAuthToken())
-	req.Header.Set("X-App-Id", os.Getenv("APP_ID"))
-	req.Header.Set("X-App-Namespace", os.Getenv("APP_NAMESPACE"))
+	req.Header.Set("Authorization", "Bearer "+buildAuthToken(h.cfg.OTPaas.Secret, h.cfg.OTPaas.ID, h.cfg.OTPaas.Namespace))
+	req.Header.Set("X-App-Id", h.cfg.OTPaas.ID)
+	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
 	resp, err := http.DefaultClient.Do(req)
 
@@ -137,7 +131,9 @@ func RequestOTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func VerifyOTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
+	var otpURL = h.cfg.OTPaas.Host + "/otp"
+
 	c, err := r.Cookie("session_id")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -180,9 +176,9 @@ func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+buildAuthToken())
-	req.Header.Set("X-App-Id", os.Getenv("APP_ID"))
-	req.Header.Set("X-App-Namespace", os.Getenv("APP_NAMESPACE"))
+	req.Header.Set("Authorization", "Bearer "+buildAuthToken(h.cfg.OTPaas.Secret, h.cfg.OTPaas.ID, h.cfg.OTPaas.Namespace))
+	req.Header.Set("X-App-Id", h.cfg.OTPaas.ID)
+	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
 	resp, err := http.DefaultClient.Do(req)
 

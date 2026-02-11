@@ -56,7 +56,7 @@ func main() {
 func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
-	routes.Register(mux)
+	routes.Register(mux, cfg)
 
 	handler := middleware.Chain(mux, middleware.RequestID)
 

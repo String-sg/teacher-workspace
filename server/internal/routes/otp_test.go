@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/pkg/require"
 )
 
@@ -14,13 +15,14 @@ func resetStore() {
 }
 
 func TestRequestOTP_WithCookie(t *testing.T) {
+	h := &Handler{cfg: config.Default()}
 	resetStore()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", strings.NewReader("yes"))
 	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
 	rec := httptest.NewRecorder()
 
-	RequestOTP(rec, req)
+	h.RequestOTP(rec, req)
 
 	res := rec.Result()
 	require.Equal(t, http.StatusOK, res.StatusCode)
@@ -42,12 +44,13 @@ func TestRequestOTP_WithCookie(t *testing.T) {
 }
 
 func TestRequestOTP_NoCookie(t *testing.T) {
+	h := &Handler{cfg: config.Default()}
 	resetStore()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", strings.NewReader("yes"))
 	rec := httptest.NewRecorder()
 
-	RequestOTP(rec, req)
+	h.RequestOTP(rec, req)
 
 	res := rec.Result()
 	require.Equal(t, http.StatusOK, res.StatusCode)
@@ -72,6 +75,7 @@ func TestRequestOTP_NoCookie(t *testing.T) {
 }
 
 func TestVerifyOTP_KnownSession(t *testing.T) {
+	h := &Handler{cfg: config.Default()}
 	resetStore()
 	store["abc"] = map[string]string{"otp_flow_id": "123"}
 
@@ -79,7 +83,7 @@ func TestVerifyOTP_KnownSession(t *testing.T) {
 	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
 	rec := httptest.NewRecorder()
 
-	VerifyOTP(rec, req)
+	h.VerifyOTP(rec, req)
 
 	res := rec.Result()
 	require.Equal(t, http.StatusOK, res.StatusCode)
@@ -87,25 +91,27 @@ func TestVerifyOTP_KnownSession(t *testing.T) {
 }
 
 func TestVerifyOTP_MissingCookie(t *testing.T) {
+	h := &Handler{cfg: config.Default()}
 	resetStore()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/verify", nil)
 	rec := httptest.NewRecorder()
 
-	VerifyOTP(rec, req)
+	h.VerifyOTP(rec, req)
 
 	res := rec.Result()
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 }
 
 func TestVerifyOTP_UnknownSession(t *testing.T) {
+	h := &Handler{cfg: config.Default()}
 	resetStore()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/verify", nil)
 	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
 	rec := httptest.NewRecorder()
 
-	VerifyOTP(rec, req)
+	h.VerifyOTP(rec, req)
 
 	res := rec.Result()
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)

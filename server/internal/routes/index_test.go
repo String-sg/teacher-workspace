@@ -5,14 +5,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/pkg/require"
 )
 
 func TestIndex(t *testing.T) {
+	h := &Handler{cfg: config.Default()}
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 
-	Index(rec, req)
+	h.Index(rec, req)
 
 	res := rec.Result()
 	require.Equal(t, http.StatusOK, res.StatusCode)
