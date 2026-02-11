@@ -123,8 +123,7 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if resp.StatusCode == http.StatusOK {
-		w.WriteHeader(http.StatusOK)
-		w.Write(body)
+		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to request OTP."))
@@ -203,8 +202,7 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("PIN verified"))
+		w.WriteHeader(http.StatusNoContent)
 	case http.StatusUnauthorized:
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("Invalid PIN."))
