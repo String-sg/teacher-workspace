@@ -26,6 +26,14 @@ type OTPResponse struct {
 	ID string `json:"id"`
 }
 
+type VerifyOTPInput struct {
+	PIN string `json:"pin"`
+}
+
+type VerifyOTPResponse struct {
+	ID string `json:"id"`
+}
+
 func buildAuthToken() string {
 	appSecret := os.Getenv("APP_SECRET")
 	appId := os.Getenv("APP_ID")
@@ -132,18 +140,80 @@ func RequestOTP(w http.ResponseWriter, r *http.Request) {
 func VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session_id")
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Missing session_id in cookie."))
+		return
+	}
+
+	var input VerifyOTPInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Missing pin in request body."))
+		return
+	}
+
+	if len(input.PIN) != 6 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid pin"))
 		return
 	}
 
 	session, ok := store[c.Value]
 	if !ok || session == nil {
 		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Missing session_id in cookie."))
 		return
 	}
 
 	otpFlowID := session["otp_flow_id"]
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(otpFlowID))
+	payload, err := json.Marshal(input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	req, err := http.NewRequest("PUT", otpURL+"/"+otpFlowID, bytes.NewReader(payload))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+buildAuthToken())
+	req.Header.Set("X-App-Id", os.Getenv("APP_ID"))
+	req.Header.Set("X-App-Namespace", os.Getenv("APP_NAMESPACE"))
+
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var verifyOTPResponse VerifyOTPResponse
+	if err := json.Unmarshal(body, &verifyOTPResponse); err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		return
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("PIN verified"))
+	case http.StatusUnauthorized:
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("Invalid PIN."))
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to verify OTP."))
+	}
 }
