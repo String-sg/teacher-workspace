@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/pkg/require"
@@ -29,7 +30,7 @@ func TestRequestOTP_WithCookieOTPFlowID(t *testing.T) {
 	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
 	resetStore()
 
-	payload := map[string]string{"email": "test@gov.sg"}
+	payload := map[string]string{"email": "test@schools.gov.sg"}
 	b, _ := json.Marshal(payload)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", bytes.NewReader(b))
@@ -67,7 +68,7 @@ func TestRequestOTP_WithoutOTPFlowID(t *testing.T) {
 	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
 	resetStore()
 
-	payload := map[string]string{"email": "test@gov.sg"}
+	payload := map[string]string{"email": "test@schools.gov.sg"}
 	b, _ := json.Marshal(payload)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", bytes.NewReader(b))
@@ -122,7 +123,7 @@ func TestRequestOTP_NotAuthorized(t *testing.T) {
 	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
 	resetStore()
 
-	payload := map[string]string{"email": "test@gov.sg"}
+	payload := map[string]string{"email": "test@schools.gov.sg"}
 	b, _ := json.Marshal(payload)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", bytes.NewReader(b))
@@ -143,7 +144,7 @@ func TestRequestOTP_InternalServerError(t *testing.T) {
 	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
 	resetStore()
 
-	payload := map[string]string{"email": "test@gov.sg"}
+	payload := map[string]string{"email": "test@schools.gov.sg"}
 	b, _ := json.Marshal(payload)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", bytes.NewReader(b))
@@ -369,4 +370,68 @@ func TestVerifyOTP_MissingSession(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	require.Equal(t, "Missing session in store.", rec.Body.String())
+}
+
+func TestRequestOTP_Timeout(t *testing.T) {
+	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		select {
+		case <-req.Context().Done():
+			return nil, req.Context().Err()
+		case <-time.After(200 * time.Millisecond):
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewReader([]byte(`{"id":"123"}`))),
+			}, nil
+		}
+	})
+
+	h := &Handler{cfg: config.Default(), client: &http.Client{Timeout: 10 * time.Millisecond, Transport: rt}}
+	resetStore()
+
+	payload := map[string]string{"email": "test@schools.gov.sg"}
+	b, _ := json.Marshal(payload)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/otp/request", bytes.NewReader(b))
+
+	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
+	rec := httptest.NewRecorder()
+
+	h.RequestOTP(rec, req)
+
+	res := rec.Result()
+
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, "Client timeout", rec.Body.String())
+
+}
+
+func TestVerifyOTP_Timeout(t *testing.T) {
+	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		select {
+		case <-req.Context().Done():
+			return nil, req.Context().Err()
+		case <-time.After(200 * time.Millisecond):
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewReader([]byte(`{"id":"123"}`))),
+			}, nil
+		}
+	})
+
+	h := &Handler{cfg: config.Default(), client: &http.Client{Timeout: 10 * time.Millisecond, Transport: rt}}
+	resetStore()
+	store["abc"] = map[string]string{"otp_flow_id": "123"}
+
+	payload := map[string]string{"pin": "123456"}
+	b, _ := json.Marshal(payload)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/otp/verify", bytes.NewReader(b))
+	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
+	rec := httptest.NewRecorder()
+
+	h.VerifyOTP(rec, req)
+
+	res := rec.Result()
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, "Client timeout", rec.Body.String())
 }

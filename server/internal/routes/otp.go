@@ -77,6 +77,12 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.Do(req)
 
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Client timeout"))
+		return
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Failed to request OTP."))
@@ -187,6 +193,12 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
 	resp, err := h.client.Do(req)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Client timeout"))
+		return
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
