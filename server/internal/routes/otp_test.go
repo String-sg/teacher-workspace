@@ -22,7 +22,7 @@ type RoundTripperFunc func(*http.Request) (*http.Response, error)
 func (f RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 	return f(r)
 }
-func TestRequestOTP_WithCookieOTPFlowID(t *testing.T) {
+func TestRequestOTP_Success(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`)))}, nil
 	})
@@ -187,7 +187,7 @@ func TestRequestOTP_InternalServerError(t *testing.T) {
 	require.Equal(t, "Something went wrong. Please try again later.", got.Message)
 }
 
-func TestRequestOTP_WithoutOTPFlowID(t *testing.T) {
+func TestRequestOTP_MissingOTPFlowID(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
 	})
@@ -213,6 +213,28 @@ func TestRequestOTP_WithoutOTPFlowID(t *testing.T) {
 
 	cookies := res.Cookies()
 	require.True(t, len(cookies) == 0)
+}
+
+func TestVerifyOTP_Success(t *testing.T) {
+	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`)))}, nil
+	})
+
+	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
+	resetStore()
+	store["abc"] = map[string]string{"otp_flow_id": "123"}
+
+	payload := map[string]string{"pin": "123456"}
+	b, _ := json.Marshal(payload)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/otp/verify", bytes.NewReader(b))
+	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
+	rec := httptest.NewRecorder()
+
+	h.VerifyOTP(rec, req)
+
+	res := rec.Result()
+	require.Equal(t, http.StatusNoContent, res.StatusCode)
 }
 
 func TestVerifyOTP_MissingCookie(t *testing.T) {
@@ -477,26 +499,4 @@ func TestVerifyOTP_InternalServerError(t *testing.T) {
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
 	require.Equal(t, "INTERNAL_SERVER_ERROR", got.Code)
 	require.Equal(t, "Internal server error", got.Message)
-}
-
-func TestVerifyOTP_KnownSession(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/api/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusNoContent, res.StatusCode)
 }
