@@ -75,7 +75,13 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("X-App-Id", h.cfg.OTPaas.ID)
 	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := h.client.Do(req)
+
+	if resp.StatusCode != http.StatusOK {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to request OTP."))
+		return
+	}
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -108,6 +114,12 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 		sessionID = c.Value
 	}
 
+	if otpResp.ID == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to request OTP."))
+		return
+	}
+
 	store[sessionID] = map[string]string{"otp_flow_id": otpResp.ID}
 
 	cookie := http.Cookie{
@@ -121,13 +133,8 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 
-	if resp.StatusCode == http.StatusOK {
-		w.WriteHeader(http.StatusNoContent)
-	} else {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Failed to request OTP."))
-	}
 }
 
 func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +163,7 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	session, ok := store[c.Value]
 	if !ok || session == nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Missing session_id in cookie."))
+		w.Write([]byte("Missing session in store."))
 		return
 	}
 
@@ -179,7 +186,22 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("X-App-Id", h.cfg.OTPaas.ID)
 	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := h.client.Do(req)
+
+	if resp.StatusCode != http.StatusOK {
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Invalid PIN."))
+		case http.StatusNotFound:
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("PIN expired."))
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Failed to verify OTP."))
+			return
+		}
+	}
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -200,14 +222,6 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-		w.WriteHeader(http.StatusNoContent)
-	case http.StatusUnauthorized:
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("Invalid PIN."))
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Failed to verify OTP."))
-	}
+	w.WriteHeader(http.StatusNoContent)
+
 }
