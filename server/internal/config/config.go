@@ -12,6 +12,8 @@ type Config struct {
 	Server ServerConfig `dotenv:",squash"`
 
 	OTPaas OTPaasConfig `dotenv:",squash"`
+
+	Client ClientConfig `dotenv:",squash"`
 }
 
 // ServerConfig represents the configuration for the HTTP server.
@@ -22,6 +24,10 @@ type ServerConfig struct {
 	ReadHeaderTimeout time.Duration `dotenv:"TW_SERVER_READ_HEADER_TIMEOUT"`
 	WriteTimeout      time.Duration `dotenv:"TW_SERVER_WRITE_TIMEOUT"`
 	IdleTimeout       time.Duration `dotenv:"TW_SERVER_IDLE_TIMEOUT"`
+}
+
+type ClientConfig struct {
+	Timeout time.Duration `dotenv:"TW_CLIENT_TIMEOUT"`
 }
 
 type OTPaasConfig struct {
@@ -43,6 +49,10 @@ func Default() *Config {
 			ReadHeaderTimeout: 10 * time.Second,
 			WriteTimeout:      60 * time.Second,
 			IdleTimeout:       120 * time.Second,
+		},
+
+		Client: ClientConfig{
+			Timeout: 100 * time.Second,
 		},
 
 		OTPaas: OTPaasConfig{
