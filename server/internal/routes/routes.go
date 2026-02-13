@@ -12,8 +12,8 @@ type Handler struct {
 }
 
 // Register attaches all application routes to the provided ServeMux.
-func Register(mux *http.ServeMux, cfg *config.Config) {
-	routes := &Handler{cfg: cfg, client: &http.Client{Timeout: cfg.Client.Timeout}}
+func Register(mux *http.ServeMux, cfg *config.Config, client *http.Client) {
+	routes := &Handler{cfg: cfg, client: client}
 
 	mux.HandleFunc("/", routes.Index)
 	mux.HandleFunc("POST /api/otp/request", routes.RequestOTP)
