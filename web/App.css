@@ -21,5 +21,7 @@
   --btn-color-fill-brand-enabled: var(--color-blue-9);
   --btn-color-fill-brand-hover: var(--color-blue-10);
 
+  --color-border-focus: var(--color-blue-7);
+
   --ease-tw-default: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
