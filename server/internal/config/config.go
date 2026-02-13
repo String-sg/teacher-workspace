@@ -30,10 +30,10 @@ func Default() *Config {
 		Server: ServerConfig{
 			Port: 8080,
 
-			ReadTimeout:       60 * time.Second,
-			ReadHeaderTimeout: 10 * time.Second,
-			WriteTimeout:      60 * time.Second,
-			IdleTimeout:       120 * time.Second,
+			ReadHeaderTimeout: 2 * time.Second,
+			ReadTimeout:       15 * time.Second,
+			WriteTimeout:      30 * time.Second,
+			IdleTimeout:       60 * time.Second,
 		},
 	}
 }
