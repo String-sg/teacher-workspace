@@ -10,6 +10,10 @@ type Config struct {
 	LogLevel slog.Level `dotenv:"TW_LOG_LEVEL"`
 
 	Server ServerConfig `dotenv:",squash"`
+
+	OTPaas OTPaasConfig `dotenv:",squash"`
+
+	Client ClientConfig `dotenv:",squash"`
 }
 
 // ServerConfig represents the configuration for the HTTP server.
@@ -20,6 +24,17 @@ type ServerConfig struct {
 	ReadHeaderTimeout time.Duration `dotenv:"TW_SERVER_READ_HEADER_TIMEOUT"`
 	WriteTimeout      time.Duration `dotenv:"TW_SERVER_WRITE_TIMEOUT"`
 	IdleTimeout       time.Duration `dotenv:"TW_SERVER_IDLE_TIMEOUT"`
+}
+
+type ClientConfig struct {
+	Timeout time.Duration `dotenv:"TW_CLIENT_TIMEOUT"`
+}
+
+type OTPaasConfig struct {
+	ID        string `dotenv:"TW_APP_ID"`
+	Namespace string `dotenv:"TW_APP_NAMESPACE"`
+	Secret    string `dotenv:"TW_APP_SECRET"`
+	Host      string `dotenv:"TW_TECHPASS_OTP_HOST"`
 }
 
 // Default returns the default configuration for the application.
@@ -34,6 +49,17 @@ func Default() *Config {
 			ReadTimeout:       15 * time.Second,
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       60 * time.Second,
+		},
+
+		Client: ClientConfig{
+			Timeout: 100 * time.Second,
+		},
+
+		OTPaas: OTPaasConfig{
+			ID:        "",
+			Namespace: "",
+			Secret:    "",
+			Host:      "https://otp.techpass.suite.gov.sg",
 		},
 	}
 }
