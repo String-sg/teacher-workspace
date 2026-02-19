@@ -5,12 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/pkg/require"
 )
 
 func TestIndex(t *testing.T) {
-	h := &Handler{cfg: config.Default()}
+	h := &Handler{}
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 

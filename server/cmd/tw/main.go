@@ -56,7 +56,7 @@ func main() {
 func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
-	client := &http.Client{Timeout: cfg.Client.Timeout}
+	client := &http.Client{Timeout: cfg.OTPaas.ClientTimeout}
 	routes.Register(mux, cfg, client)
 
 	handler := middleware.Chain(mux, middleware.RequestID)

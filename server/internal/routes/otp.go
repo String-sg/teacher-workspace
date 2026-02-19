@@ -2,51 +2,32 @@ package routes
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
 	"strings"
 
+	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/internal/middleware"
 )
 
 var store = make(map[string]map[string]string)
 
-type RequestOTPInput struct {
-	Email string `json:"email"`
-}
-
-type OTPResponse struct {
-	ID string `json:"id"`
-}
-
-type VerifyOTPInput struct {
-	PIN string `json:"pin"`
-}
-
-type VerifyOTPResponse struct {
-	ID string `json:"id"`
-}
-
-type ErrorResponse struct {
+type errorResponse struct {
 	Code    string      `json:"code"`
 	Message string      `json:"message"`
-	Errors  []ErrorBody `json:"error,omitempty"`
+	Errors  []errorBody `json:"error,omitempty"`
 }
 
-type ErrorResponseNoErrors struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-type ErrorBody struct {
+type errorBody struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
@@ -55,71 +36,90 @@ const (
 	ErrorCodeInvalidForm         = "INVALID_FORM"
 	ErrorCodeInvalidAuth         = "AUTHORIZATION_FAILED"
 	ErrorCodeInternalServerError = "INTERNAL_SERVER_ERROR"
+	ErrorCodeRequestTimeout      = "REQUEST_TIMEOUT"
 )
 
-func writeErrorResponse(w http.ResponseWriter, logger *slog.Logger, code string, message string, errors ...ErrorBody) {
-	if len(errors) == 0 {
-		if err := json.NewEncoder(w).Encode(ErrorResponseNoErrors{
-			Code:    code,
-			Message: message,
-		}); err != nil {
-			logger.Error("Failed to encode error response", "error", err)
-		}
-		return
+// isAllowedEmail returns true if the email domain is allowed for the given environment.
+// Production: only @schools.gov.sg. Staging/development: @schools.gov.sg or @tech.gov.sg.
+func isAllowedEmail(email string, env config.Environment) bool {
+	if env == config.EnvironmentProduction {
+		return strings.HasSuffix(email, "@schools.gov.sg")
 	}
+	return strings.HasSuffix(email, "@schools.gov.sg") || strings.HasSuffix(email, "@tech.gov.sg")
+}
 
-	if err := json.NewEncoder(w).Encode(ErrorResponse{
+// writeClientErrorResponse writes a JSON error response for 4xx client errors
+func writeClientErrorResponse(w http.ResponseWriter, logger *slog.Logger, statusCode int, code string, message string, errors ...errorBody) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(errorResponse{
 		Code:    code,
 		Message: message,
 		Errors:  errors,
 	}); err != nil {
-		logger.Error("Failed to encode error response", "error", err)
+		logger.Error("Failed to encode error response", "err", err)
 	}
 }
 
-func buildAuthToken(appSecret string, appId string, appNamespace string) string {
-	h := hmac.New(sha256.New, []byte(appSecret))
-	h.Write([]byte(appId))
+// writeServerErrorResponse writes a plain text error response for 5xx server errors using http.Error
+func writeServerErrorResponse(w http.ResponseWriter, statusCode int, message string) {
+	http.Error(w, message, statusCode)
+}
 
-	secret := hex.EncodeToString(h.Sum(nil))
-	combined := appNamespace + ":" + appId + ":" + secret
+func buildAuthToken(appId, appNamespace, appSecret string) string {
+	mac := hmac.New(sha256.New, []byte(appSecret))
+	mac.Write([]byte(appId))
 
-	return base64.StdEncoding.EncodeToString([]byte(combined))
+	sig := hex.EncodeToString(mac.Sum(nil))
+	payload := appNamespace + ":" + appId + ":" + sig
+
+	return base64.StdEncoding.EncodeToString([]byte(payload))
+}
+
+type requestOTPRequest struct {
+	Email string `json:"email"`
+}
+
+type requestOTPResponse struct {
+	ID string `json:"id"`
+}
+
+type requestOTPOTPaasRequest struct {
+	Email string `json:"email"`
+}
+
+type requestOTPPaasResponse struct {
+	ID string `json:"id"`
 }
 
 func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
-	log := middleware.LoggerFromContext(r.Context())
-	var otpURL = h.cfg.OTPaas.Host + "/otp"
-	var sessionID string
+	logger := middleware.LoggerFromContext(r.Context())
 
-	var input RequestOTPInput
+	var input requestOTPRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		writeErrorResponse(w, log, ErrorCodeInvalidForm, "One or more input has an error")
-		log.Error(fmt.Sprintf("[%d]: Email not found in request body", http.StatusBadRequest), "error", err)
+		writeClientErrorResponse(w, logger, http.StatusBadRequest, ErrorCodeInvalidForm, "One or more input has an error")
+		logger.Error("Email not found in request body", "err", err)
 		return
 	}
 
-	if !strings.HasSuffix(input.Email, ".gov.sg") {
-		w.WriteHeader(http.StatusBadRequest)
-		writeErrorResponse(w, log, ErrorCodeInvalidForm, "One or more input has an error")
-		log.Error(fmt.Sprintf("[%d]: Email is not a valid schools.gov.sg email", http.StatusBadRequest), "error", nil)
+	if !isAllowedEmail(input.Email, h.cfg.Environment) {
+		writeClientErrorResponse(w, logger, http.StatusUnprocessableEntity, ErrorCodeInvalidForm, "One or more input has an error")
+		logger.Error("Email is not a valid schools.gov.sg email")
 		return
 	}
 
-	payload, err := json.Marshal(input)
+	otpaasPayload := requestOTPOTPaasRequest(input)
+	payload, err := json.Marshal(otpaasPayload)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to marshal request body", http.StatusInternalServerError), "error", err)
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to marshal request body", "err", err)
 		return
 	}
 
-	req, err := http.NewRequest("POST", otpURL, bytes.NewReader(payload))
+	req, err := http.NewRequest("POST", h.cfg.OTPaas.Host+"/otp", bytes.NewReader(payload))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to create request", http.StatusInternalServerError), "error", err)
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to create request", "err", err)
 		return
 	}
 
@@ -129,63 +129,64 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
 	resp, err := h.client.Do(req)
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Request timeout", http.StatusInternalServerError), "error", err)
+		if errors.Is(err, context.DeadlineExceeded) {
+			writeServerErrorResponse(w, http.StatusGatewayTimeout, "Request timeout. Please try again later.")
+			logger.Error("OTPaas request timeout", "err", err)
+			return
+		}
+
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Error sending request to OTPaas", "err", err)
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		w.WriteHeader(http.StatusInternalServerError)
 		// TODO: update the error message from figma when available
-		writeErrorResponse(w, log, ErrorCodeInvalidAuth, "Something went wrong. Please try again later.")
-		log.Error(fmt.Sprintf("[%d]: Authorization failed", resp.StatusCode), "error", err)
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Something went wrong. Please try again later.")
+		logger.Error("Authorization failed", "err", err, "otpaas_status_code", resp.StatusCode)
 		return
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Error("Failed to close response body", "error", err)
+			logger.Error("Failed to close response body", "err", err)
 		}
 	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to read response body", resp.StatusCode), "error", err)
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to read response body", "err", err, "otpaas_status_code", resp.StatusCode)
 		return
 	}
 
-	var otpResp OTPResponse
+	var otpResp requestOTPPaasResponse
 	if err := json.Unmarshal(body, &otpResp); err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to unmarshal response body", resp.StatusCode), "error", err)
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to unmarshal response body", "err", err, "otpaas_status_code", resp.StatusCode)
 		return
 	}
+
+	if otpResp.ID == "" {
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to get `otp_flow_id` from OTPaas", "err", err, "otpaas_status_code", resp.StatusCode)
+		return
+	}
+
+	var sessionID string
 
 	c, err := r.Cookie("session_id")
 	if err != nil {
 		id := make([]byte, 32)
 		if _, err := rand.Read(id); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-			log.Error(fmt.Sprintf("[%d]: Failed to generate session ID", resp.StatusCode), "error", err)
+			writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+			logger.Error("Failed to generate session ID", "err", err, "otpaas_status_code", resp.StatusCode)
 			return
 		}
 		sessionID = base64.RawURLEncoding.EncodeToString(id)
 	} else {
 		sessionID = c.Value
-	}
-
-	if otpResp.ID == "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to get `otp_flow_id` from OTPaas", resp.StatusCode), "error", err)
-		return
 	}
 
 	store[sessionID] = map[string]string{"otp_flow_id": otpResp.ID}
@@ -194,68 +195,74 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 		Name:     "session_id",
 		Value:    sessionID,
 		Path:     "/",
-		Secure:   true,
+		Secure:   h.cfg.Environment == config.EnvironmentProduction || h.cfg.Environment == config.EnvironmentStaging,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(w, &cookie)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(requestOTPResponse(otpResp)); err != nil {
+		logger.Error("Failed to encode error response", "err", err)
+	}
 
 }
 
+type verifyOTPRequest struct {
+	PIN string `json:"pin"`
+}
+
+type verifyOTPOTPaasRequest struct {
+	PIN string `json:"pin"`
+}
+
 func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
-	log := middleware.LoggerFromContext(r.Context())
-	var otpURL = h.cfg.OTPaas.Host + "/otp"
+	logger := middleware.LoggerFromContext(r.Context())
 
-	c, err := r.Cookie("session_id")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Missing session_id in cookie", http.StatusInternalServerError), "error", err)
-		return
-	}
-
-	var input VerifyOTPInput
+	var input verifyOTPRequest
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		writeErrorResponse(w, log, ErrorCodeInvalidForm, "One or more input has an error")
-		log.Error(fmt.Sprintf("[%d]: Pin not found in request body", http.StatusBadRequest), "error", err)
+		writeClientErrorResponse(w, logger, http.StatusBadRequest, ErrorCodeInvalidForm, "One or more input has an error")
+		logger.Error("Pin not found in request body", "err", err)
 		return
 	}
 
 	if len(input.PIN) != 6 {
-		w.WriteHeader(http.StatusBadRequest)
-		writeErrorResponse(w, log, ErrorCodeInvalidForm, "One or more input has an error")
-		log.Error(fmt.Sprintf("[%d]: Pin is not a valid 6 digit PIN", http.StatusBadRequest), "error", err)
+		writeClientErrorResponse(w, logger, http.StatusUnprocessableEntity, ErrorCodeInvalidForm, "One or more input has an error")
+		logger.Error("Pin is not a valid 6 digit PIN")
+		return
+	}
+
+	c, err := r.Cookie("session_id")
+	if err != nil {
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Missing session_id in cookie", "err", err)
 		return
 	}
 
 	session, ok := store[c.Value]
-	if !ok || session == nil {
-		w.WriteHeader(http.StatusUnauthorized)
+	if !ok {
 		// TODO: update the error message from figma when available
-		writeErrorResponse(w, log, ErrorCodeInvalidAuth, "Failed to authenticate session.")
-		log.Error(fmt.Sprintf("[%d]: Session not found in store", http.StatusUnauthorized), "error", err)
+		writeClientErrorResponse(w, logger, http.StatusUnauthorized, ErrorCodeInvalidAuth, "Failed to authenticate session.")
+		logger.Error("Session not found in store", "err", err)
+		return
+	}
+
+	otpaasPayload := verifyOTPOTPaasRequest(input)
+	payload, err := json.Marshal(otpaasPayload)
+	if err != nil {
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to marshal request body", "err", err)
 		return
 	}
 
 	otpFlowID := session["otp_flow_id"]
 
-	payload, err := json.Marshal(input)
+	req, err := http.NewRequest("PUT", h.cfg.OTPaas.Host+"/otp/"+otpFlowID, bytes.NewReader(payload))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to marshal request body", http.StatusInternalServerError), "error", err)
-		return
-	}
-
-	req, err := http.NewRequest("PUT", otpURL+"/"+otpFlowID, bytes.NewReader(payload))
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to create request", http.StatusInternalServerError), "error", err)
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Failed to create request", "err", err)
 		return
 	}
 
@@ -265,58 +272,38 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
 
 	resp, err := h.client.Do(req)
-
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Client timeout", http.StatusInternalServerError), "error", err)
+		if errors.Is(err, context.DeadlineExceeded) {
+			writeServerErrorResponse(w, http.StatusGatewayTimeout, "Request timeout. Please try again later.")
+			logger.Error("OTPaas request timeout", "err", err)
+			return
+		}
+
+		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+		logger.Error("Error sending request to OTPaas", "err", err)
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			w.WriteHeader(http.StatusUnauthorized)
-			writeErrorResponse(w, log, ErrorCodeInvalidAuth, "Failed to authenticate session.")
-			log.Error(fmt.Sprintf("[%d]: Invalid PIN", resp.StatusCode), "error", err)
+			writeClientErrorResponse(w, logger, http.StatusUnprocessableEntity, ErrorCodeInvalidAuth, "Failed to authenticate session.")
+			logger.Error("Invalid PIN", "err", err, "otpaas_status_code", resp.StatusCode)
 		case http.StatusNotFound:
-			w.WriteHeader(http.StatusUnauthorized)
-			writeErrorResponse(w, log, ErrorCodeInvalidAuth, "Failed to authenticate session.")
-			log.Error(fmt.Sprintf("[%d]: Pin expired", resp.StatusCode), "error", err)
-		case http.StatusGone:
-			w.WriteHeader(http.StatusUnauthorized)
-			writeErrorResponse(w, log, ErrorCodeInvalidAuth, "Failed to authenticate session.")
-			log.Error(fmt.Sprintf("[%d]", resp.StatusCode), "error", err)
-			return
+			writeClientErrorResponse(w, logger, http.StatusUnprocessableEntity, ErrorCodeInvalidAuth, "Failed to authenticate session.")
+			logger.Error("Pin expired", "err", err, "otpaas_status_code", resp.StatusCode)
 		default:
-			w.WriteHeader(http.StatusInternalServerError)
-			writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-			log.Error(fmt.Sprintf("[%d] Internal server error", resp.StatusCode), "error", err)
+			writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
+			logger.Error("Internal server error", "err", err, "otpaas_status_code", resp.StatusCode)
 			return
 		}
 	}
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.Error("Failed to close response body", "error", err)
+			logger.Error("Failed to close response body", "err", err)
 		}
 	}()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to read response body", resp.StatusCode), "error", err)
-		return
-	}
-
-	var verifyOTPResponse VerifyOTPResponse
-	if err := json.Unmarshal(body, &verifyOTPResponse); err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		writeErrorResponse(w, log, ErrorCodeInternalServerError, "Internal server error")
-		log.Error(fmt.Sprintf("[%d]: Failed to unmarshal response body", resp.StatusCode), "error", err)
-		return
-	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
