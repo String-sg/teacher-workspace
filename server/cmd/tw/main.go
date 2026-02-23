@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/String-sg/teacher-workspace/server/internal/config"
+	"github.com/String-sg/teacher-workspace/server/internal/handler"
 	"github.com/String-sg/teacher-workspace/server/internal/middleware"
-	"github.com/String-sg/teacher-workspace/server/internal/routes"
 	"github.com/String-sg/teacher-workspace/server/pkg/dotenv"
 	"golang.org/x/sync/errgroup"
 )
@@ -57,13 +57,13 @@ func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
 	client := &http.Client{Timeout: cfg.OTPaas.ClientTimeout}
-	routes.Register(mux, cfg, client)
+	handler.Register(mux, cfg, client)
 
-	handler := middleware.Chain(mux, middleware.RequestID)
+	app := middleware.Chain(mux, middleware.RequestID)
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf("[::1]:%d", cfg.Server.Port),
-		Handler:           handler,
+		Handler:           app,
 		ReadTimeout:       cfg.Server.ReadTimeout,
 		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
 		WriteTimeout:      cfg.Server.WriteTimeout,
