@@ -13,7 +13,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@flow/core": "^0.1.16",
+    "@flow/core": "^0.1.17",
     "@flow/icons": "^0.1.0",
     "motion": "^12.27.1",
     "react": "^19.2.3",
