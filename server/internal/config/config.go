@@ -32,6 +32,9 @@ type ServerConfig struct {
 	ReadHeaderTimeout time.Duration `dotenv:"TW_SERVER_READ_HEADER_TIMEOUT"`
 	WriteTimeout      time.Duration `dotenv:"TW_SERVER_WRITE_TIMEOUT"`
 	IdleTimeout       time.Duration `dotenv:"TW_SERVER_IDLE_TIMEOUT"`
+
+	ViteDevServerURL string `dotenv:"TW_VITE_DEV_SERVER_URL"`
+	FrontendBuildDir string `dotenv:"TW_FRONTEND_BUILD_DIR"`
 }
 
 type OTPaaSConfig struct {
@@ -56,6 +59,9 @@ func Default() *Config {
 			ReadTimeout:       15 * time.Second,
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       60 * time.Second,
+
+			ViteDevServerURL: "http://127.0.0.1:5173",
+			FrontendBuildDir: "dist",
 		},
 
 		OTPaaS: OTPaaSConfig{

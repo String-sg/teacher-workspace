@@ -61,7 +61,13 @@ func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
 	client := &http.Client{Timeout: cfg.OTPaaS.Timeout}
-	handler.Register(mux, cfg, client)
+
+	frontend, err := handler.NewFrontend(cfg, client)
+	if err != nil {
+		return err
+	}
+
+	handler.Register(mux, cfg, client, frontend)
 
 	app := middleware.Chain(mux, middleware.RequestID)
 
