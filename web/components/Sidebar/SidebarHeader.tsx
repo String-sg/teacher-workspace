@@ -36,11 +36,11 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
         )}
       </AnimatePresence>
 
-      <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <SidebarTrigger />
         </TooltipTrigger>
-        <TooltipContent side="right">
+        <TooltipContent showArrow={false} side="right" sideOffset={4}>
           <Typography variant="body-sm">
             {isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
           </Typography>

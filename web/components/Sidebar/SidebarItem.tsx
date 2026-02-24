@@ -120,7 +120,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 
   const tooltipContent = (
-    <TooltipContent side="right">
+    <TooltipContent showArrow={false} side="right" sideOffset={4}>
       <Typography variant="body-sm">{tooltip}</Typography>
     </TooltipContent>
   );
@@ -128,7 +128,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   if ('href' in props && props.href !== undefined) {
     const { onPointerMove, ...anchorProps } = props;
     return (
-      <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <a
             className={itemClassName}
@@ -150,7 +150,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   if ('to' in props && props.to !== undefined) {
     const { onPointerMove, ...linkProps } = props;
     return (
-      <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
           <Link
             className={itemClassName}
@@ -169,7 +169,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   const { onPointerMove, ...buttonProps } = props;
   return (
-    <Tooltip classNames={{ arrow: 'fill-transparent', content: 'bg-slate-12 z-10000' }}>
+    <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
       <TooltipTrigger asChild>
         <Button
           variant="ghost"
