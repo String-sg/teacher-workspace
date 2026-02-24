@@ -104,16 +104,16 @@ func (c OTPaaSConfig) validate() error {
 	var errs []error
 
 	if c.Host == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_HOST is required"))
+		errs = append(errs, errors.New("TW_OTPAAS_HOST is required"))
 	}
 	if c.ID == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_ID is required"))
+		errs = append(errs, errors.New("TW_OTPAAS_ID is required"))
 	}
 	if c.Namespace == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_NAMESPACE is required"))
+		errs = append(errs, errors.New("TW_OTPAAS_NAMESPACE is required"))
 	}
 	if c.Secret == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_SECRET is required"))
+		errs = append(errs, errors.New("TW_OTPAAS_SECRET is required"))
 	}
 	if c.Timeout <= 0 {
 		errs = append(errs, fmt.Errorf("TW_OTPAAS_TIMEOUT must be a positive duration; got %v", c.Timeout))
