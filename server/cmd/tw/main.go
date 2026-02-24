@@ -41,6 +41,10 @@ func main() {
 		slog.Error("failed to load environment config", "err", err)
 		os.Exit(1)
 	}
+	if err := cfg.Validate(); err != nil {
+		slog.Error("invalid configuration", "err", err)
+		os.Exit(1)
+	}
 
 	level.Set(cfg.LogLevel)
 
@@ -48,7 +52,7 @@ func main() {
 	defer cancel()
 
 	if err := run(ctx, cfg); err != nil {
-		slog.Error("server exited with error", "err", err)
+		slog.Error("server exited unexpectedly", "err", err)
 		os.Exit(1)
 	}
 }
@@ -56,7 +60,7 @@ func main() {
 func run(ctx context.Context, cfg *config.Config) error {
 	mux := http.NewServeMux()
 
-	client := &http.Client{Timeout: cfg.OTPaas.ClientTimeout}
+	client := &http.Client{Timeout: cfg.OTPaaS.Timeout}
 	handler.Register(mux, cfg, client)
 
 	app := middleware.Chain(mux, middleware.RequestID)
