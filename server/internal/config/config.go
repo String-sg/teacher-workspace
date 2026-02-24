@@ -21,7 +21,7 @@ type Config struct {
 	LogLevel    slog.Level  `dotenv:"TW_LOG_LEVEL"`
 
 	Server ServerConfig `dotenv:",squash"`
-	OTPaas OTPaasConfig `dotenv:",squash"`
+	OTPaaS OTPaaSConfig `dotenv:",squash"`
 }
 
 // ServerConfig represents the configuration for the HTTP server.
@@ -34,13 +34,13 @@ type ServerConfig struct {
 	IdleTimeout       time.Duration `dotenv:"TW_SERVER_IDLE_TIMEOUT"`
 }
 
-type OTPaasConfig struct {
-	ID        string `dotenv:"TW_OTPAAS_APP_ID"`
-	Namespace string `dotenv:"TW_OTPAAS_APP_NAMESPACE"`
-	Secret    string `dotenv:"TW_OTPAAS_APP_SECRET"`
-	Host      string `dotenv:"TW_OTPAAS_OTP_HOST"`
+type OTPaaSConfig struct {
+	Host      string `dotenv:"TW_OTPAAS_HOST"`
+	ID        string `dotenv:"TW_OTPAAS_ID"`
+	Namespace string `dotenv:"TW_OTPAAS_NAMESPACE"`
+	Secret    string `dotenv:"TW_OTPAAS_SECRET"`
 
-	ClientTimeout time.Duration `dotenv:"TW_OTPAAS_CLIENT_TIMEOUT"`
+	Timeout time.Duration `dotenv:"TW_OTPAAS_TIMEOUT"`
 }
 
 // Default returns the default configuration for the application.
@@ -58,12 +58,12 @@ func Default() *Config {
 			IdleTimeout:       60 * time.Second,
 		},
 
-		OTPaas: OTPaasConfig{
-			ID:            "",
-			Namespace:     "",
-			Secret:        "",
-			Host:          "https://otp.techpass.suite.gov.sg",
-			ClientTimeout: 10 * time.Second,
+		OTPaaS: OTPaaSConfig{
+			Host:      "https://otp.techpass.suite.gov.sg",
+			ID:        "",
+			Namespace: "",
+			Secret:    "",
+			Timeout:   10 * time.Second,
 		},
 	}
 }
@@ -100,23 +100,23 @@ func (c ServerConfig) Validate() error {
 	return errors.Join(errs...)
 }
 
-func (c OTPaasConfig) Validate() error {
+func (c OTPaaSConfig) Validate() error {
 	var errs []error
 
+	if c.Host == "" {
+		errs = append(errs, fmt.Errorf("TW_OTPAAS_HOST is required"))
+	}
 	if c.ID == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_APP_ID is required"))
+		errs = append(errs, fmt.Errorf("TW_OTPAAS_ID is required"))
 	}
 	if c.Namespace == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_APP_NAMESPACE is required"))
+		errs = append(errs, fmt.Errorf("TW_OTPAAS_NAMESPACE is required"))
 	}
 	if c.Secret == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_APP_SECRET is required"))
+		errs = append(errs, fmt.Errorf("TW_OTPAAS_SECRET is required"))
 	}
-	if c.Host == "" {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_OTP_HOST is required"))
-	}
-	if c.ClientTimeout <= 0 {
-		errs = append(errs, fmt.Errorf("TW_OTPAAS_CLIENT_TIMEOUT must be a positive duration; got %v", c.ClientTimeout))
+	if c.Timeout <= 0 {
+		errs = append(errs, fmt.Errorf("TW_OTPAAS_TIMEOUT must be a positive duration; got %v", c.Timeout))
 	}
 
 	return errors.Join(errs...)

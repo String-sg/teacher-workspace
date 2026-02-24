@@ -116,7 +116,7 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", h.cfg.OTPaas.Host+"/otp", bytes.NewReader(payload))
+	req, err := http.NewRequest("POST", h.cfg.OTPaaS.Host+"/otp", bytes.NewReader(payload))
 	if err != nil {
 		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		logger.Error("Failed to create request", "err", err)
@@ -124,9 +124,9 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+buildAuthToken(h.cfg.OTPaas.Secret, h.cfg.OTPaas.ID, h.cfg.OTPaas.Namespace))
-	req.Header.Set("X-App-Id", h.cfg.OTPaas.ID)
-	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
+	req.Header.Set("Authorization", "Bearer "+buildAuthToken(h.cfg.OTPaaS.Secret, h.cfg.OTPaaS.ID, h.cfg.OTPaaS.Namespace))
+	req.Header.Set("X-App-Id", h.cfg.OTPaaS.ID)
+	req.Header.Set("X-App-Namespace", h.cfg.OTPaaS.Namespace)
 
 	resp, err := h.client.Do(req)
 	if err != nil {
@@ -259,7 +259,7 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 
 	otpFlowID := session["otp_flow_id"]
 
-	req, err := http.NewRequest("PUT", h.cfg.OTPaas.Host+"/otp/"+otpFlowID, bytes.NewReader(payload))
+	req, err := http.NewRequest("PUT", h.cfg.OTPaaS.Host+"/otp/"+otpFlowID, bytes.NewReader(payload))
 	if err != nil {
 		writeServerErrorResponse(w, http.StatusInternalServerError, "Internal server error")
 		logger.Error("Failed to create request", "err", err)
@@ -267,9 +267,9 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+buildAuthToken(h.cfg.OTPaas.Secret, h.cfg.OTPaas.ID, h.cfg.OTPaas.Namespace))
-	req.Header.Set("X-App-Id", h.cfg.OTPaas.ID)
-	req.Header.Set("X-App-Namespace", h.cfg.OTPaas.Namespace)
+	req.Header.Set("Authorization", "Bearer "+buildAuthToken(h.cfg.OTPaaS.Secret, h.cfg.OTPaaS.ID, h.cfg.OTPaaS.Namespace))
+	req.Header.Set("X-App-Id", h.cfg.OTPaaS.ID)
+	req.Header.Set("X-App-Namespace", h.cfg.OTPaaS.Namespace)
 
 	resp, err := h.client.Do(req)
 	if err != nil {
