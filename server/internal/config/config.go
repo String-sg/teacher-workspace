@@ -75,10 +75,10 @@ func (c *Config) Validate() error {
 		errs = append(errs, fmt.Errorf("TW_ENV must be one of %q, %q or %q; got %q", EnvironmentDevelopment, EnvironmentStaging, EnvironmentProduction, c.Environment))
 	}
 
-	return errors.Join(append(errs, c.Server.Validate(), c.OTPaas.Validate())...)
+	return errors.Join(append(errs, c.Server.validate(), c.OTPaaS.validate())...)
 }
 
-func (c ServerConfig) Validate() error {
+func (c ServerConfig) validate() error {
 	var errs []error
 
 	if c.Port < 1 || c.Port > 65535 {
@@ -100,7 +100,7 @@ func (c ServerConfig) Validate() error {
 	return errors.Join(errs...)
 }
 
-func (c OTPaaSConfig) Validate() error {
+func (c OTPaaSConfig) validate() error {
 	var errs []error
 
 	if c.Host == "" {
