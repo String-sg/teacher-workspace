@@ -80,6 +80,12 @@ func (c *Config) Validate() error {
 	if c.Environment != EnvironmentDevelopment && c.Environment != EnvironmentStaging && c.Environment != EnvironmentProduction {
 		errs = append(errs, fmt.Errorf("TW_ENV must be one of %q, %q or %q; got %q", EnvironmentDevelopment, EnvironmentStaging, EnvironmentProduction, c.Environment))
 	}
+	if c.Environment == EnvironmentDevelopment && c.Server.ViteDevServerURL == "" {
+		errs = append(errs, errors.New("TW_VITE_DEV_SERVER_URL is required"))
+	}
+	if (c.Environment == EnvironmentStaging || c.Environment == EnvironmentProduction) && c.Server.FrontendBuildDir == "" {
+		errs = append(errs, errors.New("TW_FRONTEND_BUILD_DIR is required"))
+	}
 
 	return errors.Join(append(errs, c.Server.validate(), c.OTPaaS.validate())...)
 }
