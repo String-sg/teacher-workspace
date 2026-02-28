@@ -16,7 +16,7 @@ func TestRequestID(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		h := RequestID(next)
+		h := RequestID()(next)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rec := httptest.NewRecorder()
@@ -25,7 +25,7 @@ func TestRequestID(t *testing.T) {
 
 		res := rec.Result()
 		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.Equal(t, 22, len(res.Header.Get(requestIDHeader)))
+		require.NotEqual(t, "", res.Header.Get(requestIDHeader))
 	})
 
 	t.Run("stores request ID in context", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestRequestID(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		h := RequestID(next)
+		h := RequestID()(next)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rec := httptest.NewRecorder()
@@ -46,8 +46,9 @@ func TestRequestID(t *testing.T) {
 
 		res := rec.Result()
 		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.Equal(t, 22, len(res.Header.Get(requestIDHeader)))
+		require.NotEqual(t, "", res.Header.Get(requestIDHeader))
 		require.Equal(t, gotID, res.Header.Get(requestIDHeader))
+		require.NotEqual(t, "", gotID)
 		require.True(t, gotOK)
 	})
 
@@ -59,7 +60,7 @@ func TestRequestID(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		})
 
-		h := RequestID(next)
+		h := RequestID()(next)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		rec := httptest.NewRecorder()

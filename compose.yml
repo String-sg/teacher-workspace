@@ -1,0 +1,13 @@
+services:
+  valkey:
+    image: valkey/valkey:8.1.5-alpine3.23
+    container_name: tw-valkey
+    restart: unless-stopped
+    command: valkey-server --requirepass secret
+    ports:
+      - 6379:6379
+    volumes:
+      - valkey:/data
+
+volumes:
+  valkey:

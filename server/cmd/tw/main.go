@@ -7,15 +7,22 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/internal/handler"
 	"github.com/String-sg/teacher-workspace/server/internal/middleware"
+	"github.com/String-sg/teacher-workspace/server/internal/otp"
+	"github.com/String-sg/teacher-workspace/server/internal/session"
 	"github.com/String-sg/teacher-workspace/server/pkg/dotenv"
+	glide "github.com/valkey-io/valkey-glide/go/v2"
+	glideconfig "github.com/valkey-io/valkey-glide/go/v2/config"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -58,12 +65,31 @@ func main() {
 }
 
 func run(ctx context.Context, cfg *config.Config) error {
+	otpProvider := otp.NewOTPaaSProvider(
+		cfg.OTP.OTPaaS.Host,
+		cfg.OTP.OTPaaS.AppID,
+		cfg.OTP.OTPaaS.AppNamespace,
+		cfg.OTP.OTPaaS.Secret,
+		cfg.OTP.OTPaaS.Timeout,
+	)
+
+	h := handler.New(cfg, otpProvider)
+
 	mux := http.NewServeMux()
 
-	client := &http.Client{Timeout: cfg.OTPaaS.Timeout}
-	handler.Register(mux, cfg, client)
+	h.Register(mux)
 
-	app := middleware.Chain(mux, middleware.RequestID)
+	valkeyClient, err := newValkeyClient(cfg.Valkey.ConnectionString)
+	if err != nil {
+		return fmt.Errorf("create valkey client: %w", err)
+	}
+	defer valkeyClient.Close()
+
+	app := middleware.Chain(
+		mux,
+		middleware.RequestID(),
+		middleware.Session(session.NewValkeyStore(valkeyClient), cfg),
+	)
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf("[::1]:%d", cfg.Server.Port),
@@ -128,4 +154,43 @@ func run(ctx context.Context, cfg *config.Config) error {
 	}
 
 	return nil
+}
+
+func newValkeyClient(connStr string) (*glide.Client, error) {
+	u, err := url.Parse(connStr)
+	if err != nil {
+		return nil, fmt.Errorf("parse connection string: %w", err)
+	}
+
+	vcfg := glideconfig.NewClientConfiguration()
+
+	username := u.User.Username()
+	password, _ := u.User.Password()
+	vcfg.WithCredentials(glideconfig.NewServerCredentials(username, password))
+
+	host := u.Hostname()
+	port, err := strconv.Atoi(u.Port())
+	if err != nil {
+		return nil, fmt.Errorf("convert port to int: %w", err)
+	}
+	vcfg.WithAddress(&glideconfig.NodeAddress{Host: host, Port: port})
+
+	if u.Path != "" {
+		dbid, err := strconv.Atoi(strings.TrimPrefix(u.Path, "/"))
+		if err != nil {
+			return nil, fmt.Errorf("convert database ID to int: %w", err)
+		}
+		vcfg.WithDatabaseId(dbid)
+	}
+
+	if tls := u.Query().Get("tls"); tls == "true" {
+		vcfg.WithUseTLS(true)
+	}
+
+	client, err := glide.NewClient(vcfg)
+	if err != nil {
+		return nil, fmt.Errorf("create valkey client: %w", err)
+	}
+
+	return client, nil
 }

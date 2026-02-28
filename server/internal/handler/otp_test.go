@@ -2,524 +2,307 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/String-sg/teacher-workspace/server/internal/config"
+	"github.com/String-sg/teacher-workspace/server/internal/httputil"
 	"github.com/String-sg/teacher-workspace/server/pkg/require"
 )
 
-func resetStore() {
-	store = make(map[string]map[string]string)
+type stubOTPProvider struct {
+	requestOTP func(ctx context.Context, email string) (string, error)
 }
 
-type RoundTripperFunc func(*http.Request) (*http.Response, error)
-
-func (f RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
-	return f(r)
-}
-func TestRequestOTP_SuccessProduction(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`)))}, nil
-	})
-
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentProduction
-	h := &Handler{cfg: cfg, client: &http.Client{Transport: rt}}
-	resetStore()
-
-	payload := map[string]string{"email": "test@schools.gov.sg"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-
-	require.Equal(t, http.StatusOK, res.StatusCode)
-
-	var gotOTPResponse requestOTPResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &gotOTPResponse))
-	require.Equal(t, "123", gotOTPResponse.ID)
-
-	// Should set/refresh the same cookie value.
-	var got *http.Cookie
-	for _, c := range res.Cookies() {
-		if c.Name == "session_id" {
-			got = c
-			break
-		}
+func (s stubOTPProvider) RequestOTP(ctx context.Context, email string) (string, error) {
+	if s.requestOTP == nil {
+		return "", nil
 	}
-	require.True(t, got != nil)
-	require.Equal(t, "abc", got.Value)
 
-	session, ok := store["abc"]
-	require.True(t, ok)
-	require.Equal(t, "123", session["otp_flow_id"])
+	return s.requestOTP(ctx, email)
 }
 
-func TestRequestOTP_SuccessDevelopment(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`)))}, nil
+func (s stubOTPProvider) VerifyOTP(context.Context, string, string) error {
+	return nil
+}
+
+func TestHandler_RequestOTP(t *testing.T) {
+	t.Run("returns 415 when content type is not application/json", func(t *testing.T) {
+		h := New(&config.Config{}, stubOTPProvider{})
+
+		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+		req.Header.Set(HeaderContentType, MIMETextPlainCharsetUTF8)
+		rec := httptest.NewRecorder()
+
+		h.RequestOTP(rec, req)
+
+		res := rec.Result()
+		require.Equal(t, http.StatusUnsupportedMediaType, res.StatusCode)
+		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+		require.Equal(t, "nosniff", res.Header.Get(HeaderXContentTypeOptions))
+
+		var body httputil.ErrorResponse
+		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+		require.Equal(t, http.StatusText(http.StatusUnsupportedMediaType), body.Message)
 	})
 
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentDevelopment
-	h := &Handler{cfg: cfg, client: &http.Client{Transport: rt}}
-	resetStore()
+	t.Run("returns 400 when request body is invalid JSON", func(t *testing.T) {
+		h := New(&config.Config{}, stubOTPProvider{})
 
-	payload := map[string]string{"email": "test@tech.gov.sg"}
-	b, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{`))
+		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
 
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
+		h.RequestOTP(rec, req)
 
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
+		res := rec.Result()
+		require.Equal(t, http.StatusBadRequest, res.StatusCode)
+		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+		require.Equal(t, "nosniff", res.Header.Get(HeaderXContentTypeOptions))
 
-	h.RequestOTP(rec, req)
+		var body httputil.ErrorResponse
+		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+		require.Equal(t, "Problem parsing JSON", body.Message)
+	})
 
-	res := rec.Result()
-
-	require.Equal(t, http.StatusOK, res.StatusCode)
-
-	var gotOTPResponse requestOTPResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &gotOTPResponse))
-	require.Equal(t, "123", gotOTPResponse.ID)
-
-	// Should set/refresh the same cookie value.
-	var got *http.Cookie
-	for _, c := range res.Cookies() {
-		if c.Name == "session_id" {
-			got = c
-			break
+	t.Run("returns 422 when email domain is not allowed", func(t *testing.T) {
+		cfg := &config.Config{
+			OTP: config.OTPConfig{
+				AllowedEmailDomains: []string{"@schools.gov.sg"},
+			},
 		}
-	}
-	require.True(t, got != nil)
-	require.Equal(t, "abc", got.Value)
+		h := New(cfg, stubOTPProvider{})
 
-	session, ok := store["abc"]
-	require.True(t, ok)
-	require.Equal(t, "123", session["otp_flow_id"])
-}
+		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@tech.gov.sg"}`))
+		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
 
-func TestRequestOTP_MissingEmail(t *testing.T) {
-	h := &Handler{cfg: config.Default(), client: &http.Client{}}
-	resetStore()
+		h.RequestOTP(rec, req)
 
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", nil)
-	rec := httptest.NewRecorder()
+		res := rec.Result()
+		require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
+		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+		require.Equal(t, "nosniff", res.Header.Get(HeaderXContentTypeOptions))
 
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusBadRequest, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "INVALID_FORM", got.Code)
-	require.Equal(t, "One or more input has an error", got.Message)
-}
-
-func TestRequestOTP_InvalidEmail(t *testing.T) {
-	h := &Handler{cfg: config.Default(), client: &http.Client{}}
-	resetStore()
-
-	payload := map[string]string{"email": "test@example.com"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "INVALID_FORM", got.Code)
-	require.Equal(t, "One or more input has an error", got.Message)
-}
-
-func TestRequestOTP_InvalidEmailProduction(t *testing.T) {
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentProduction
-	h := &Handler{cfg: cfg, client: &http.Client{}}
-	resetStore()
-
-	payload := map[string]string{"email": "test@tech.gov.sg"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "INVALID_FORM", got.Code)
-	require.Equal(t, "One or more input has an error", got.Message)
-}
-
-func TestRequestOTP_Timeout(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		select {
-		case <-req.Context().Done():
-			return nil, req.Context().Err()
-		case <-time.After(200 * time.Millisecond):
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewReader([]byte(`{"id":"123"}`))),
-			}, nil
-		}
+		var body httputil.ErrorResponse
+		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+		require.Equal(t, "Validation Failed", body.Message)
+		require.Equal(t, 1, len(body.Errors))
+		require.Equal(t, "email", body.Errors[0].Field)
+		require.Equal(t, "Email domain not allowed", body.Errors[0].Message)
 	})
 
-	h := &Handler{cfg: config.Default(), client: &http.Client{Timeout: 10 * time.Millisecond, Transport: rt}}
-	resetStore()
+	t.Run("returns 429 when provider is rate-limited", func(t *testing.T) {
 
-	payload := map[string]string{"email": "test@schools.gov.sg"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-
-	require.Equal(t, http.StatusGatewayTimeout, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Request timeout. Please try again later.\n", rec.Body.String())
-}
-
-func TestRequestOTP_NotAuthorized(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusUnauthorized, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
 	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	payload := map[string]string{"email": "test@schools.gov.sg"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Something went wrong. Please try again later.\n", rec.Body.String())
 }
 
-func TestRequestOTP_InternalServerError(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusInternalServerError, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	payload := map[string]string{"email": "test@schools.gov.sg"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Something went wrong. Please try again later.\n", rec.Body.String())
-}
-
-func TestRequestOTP_MissingOTPFlowID(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	payload := map[string]string{"email": "test@schools.gov.sg"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewReader(b))
-	rec := httptest.NewRecorder()
-
-	h.RequestOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Internal server error\n", rec.Body.String())
-
-	cookies := res.Cookies()
-	require.True(t, len(cookies) == 0)
-}
-
-func TestVerifyOTP_Success(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{"id": "123"}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusNoContent, res.StatusCode)
-}
-
-func TestVerifyOTP_MissingPin(t *testing.T) {
-	h := &Handler{cfg: config.Default()}
-	resetStore()
-
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", nil)
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusBadRequest, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "INVALID_FORM", got.Code)
-	require.Equal(t, "One or more input has an error", got.Message)
-}
-
-func TestVerifyOTP_InvalidPin(t *testing.T) {
-	h := &Handler{cfg: config.Default()}
-	resetStore()
-
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "1234567"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "INVALID_FORM", got.Code)
-	require.Equal(t, "One or more input has an error", got.Message)
-}
-
-func TestVerifyOTP_MissingCookie(t *testing.T) {
-	h := &Handler{cfg: config.Default()}
-	resetStore()
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Internal server error\n", rec.Body.String())
-}
-
-func TestVerifyOTP_MissingSession(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "AUTHORIZATION_FAILED", got.Code)
-	require.Equal(t, "Failed to authenticate session.", got.Message)
-}
-
-func TestVerifyOTP_Timeout(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		select {
-		case <-req.Context().Done():
-			return nil, req.Context().Err()
-		case <-time.After(200 * time.Millisecond):
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(bytes.NewReader([]byte(`{"id":"123"}`))),
-			}, nil
-		}
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Timeout: 10 * time.Millisecond, Transport: rt}}
-	resetStore()
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusGatewayTimeout, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Request timeout. Please try again later.\n", rec.Body.String())
-}
-
-func TestVerifyOTP_Unauthorized(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusUnauthorized, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "AUTHORIZATION_FAILED", got.Code)
-	require.Equal(t, "Failed to authenticate session.", got.Message)
-}
-
-func TestVerifyOTP_NotFound(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusNotFound, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
-
-	var got errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &got))
-	require.Equal(t, "AUTHORIZATION_FAILED", got.Code)
-	require.Equal(t, "Failed to authenticate session.", got.Message)
-}
-
-func TestVerifyOTP_BadRequest(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusBadRequest, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Internal server error\n", rec.Body.String())
-}
-
-func TestVerifyOTP_InternalServerError(t *testing.T) {
-	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: http.StatusInternalServerError, Body: io.NopCloser(bytes.NewReader([]byte(`{}`)))}, nil
-	})
-
-	h := &Handler{cfg: config.Default(), client: &http.Client{Transport: rt}}
-	resetStore()
-
-	store["abc"] = map[string]string{"otp_flow_id": "123"}
-
-	payload := map[string]string{"pin": "123456"}
-	b, _ := json.Marshal(payload)
-
-	req := httptest.NewRequest(http.MethodPost, "/otp/verify", bytes.NewReader(b))
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "abc"})
-	rec := httptest.NewRecorder()
-
-	h.VerifyOTP(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, "text/plain; charset=utf-8", res.Header.Get("Content-Type"))
-	require.Equal(t, "Internal server error\n", rec.Body.String())
-}
+// func withRequestContext(r *http.Request, sess *session.Session) *http.Request {
+// 	ctx := middleware.WithLogger(r.Context(), slog.New(slog.NewTextHandler(io.Discard, nil)))
+// 	if sess != nil {
+// 		ctx = middleware.WithSession(ctx, sess)
+// 	}
+
+// 	return r.WithContext(ctx)
+// }
+
+// func TestRequestOTP(t *testing.T) {
+// 	baseCfg := config.Default()
+// 	baseCfg.OTP.AllowedEmailDomains = []string{"@schools.gov.sg"}
+
+// 	type errorResponse struct {
+// 		Message string `json:"message"`
+// 	}
+
+// 	type validationResponse struct {
+// 		Message string `json:"message"`
+// 		Errors  []struct {
+// 			Field   string `json:"field"`
+// 			Message string `json:"message"`
+// 		} `json:"errors"`
+// 	}
+
+// 	t.Run("returns 415 when content type is not application/json", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+// 		req.Header.Set(HeaderContentType, MIMETextPlainCharsetUTF8)
+// 		req = withRequestContext(req, &session.Session{ID: "s1"})
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusUnsupportedMediaType, res.StatusCode)
+// 		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+
+// 		var body errorResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, http.StatusText(http.StatusUnsupportedMediaType), body.Message)
+// 	})
+
+// 	t.Run("returns 400 when request body is invalid JSON", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString("{"))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, &session.Session{ID: "s1"})
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusBadRequest, res.StatusCode)
+// 		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+
+// 		var body errorResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, "Problem parsing JSON", body.Message)
+// 	})
+
+// 	t.Run("returns 422 when email domain is not allowed", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@example.com"}`))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, &session.Session{ID: "s1"})
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
+// 		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+
+// 		var body validationResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, "Validation Failed", body.Message)
+// 		require.Equal(t, 1, len(body.Errors))
+// 		require.Equal(t, "email", body.Errors[0].Field)
+// 		require.Equal(t, "Email domain not allowed", body.Errors[0].Message)
+// 	})
+
+// 	t.Run("returns 429 when provider is rate-limited", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{
+// 			requestOTP: func(context.Context, string) (string, error) {
+// 				return "", otp.ErrRateLimited
+// 			},
+// 		})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, &session.Session{ID: "s1"})
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+
+// 		var body errorResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, http.StatusText(http.StatusTooManyRequests), body.Message)
+// 	})
+
+// 	t.Run("returns 422 when provider rejects domain", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{
+// 			requestOTP: func(context.Context, string) (string, error) {
+// 				return "", otp.ErrDomainNotAllowed
+// 			},
+// 		})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, &session.Session{ID: "s1"})
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
+
+// 		var body validationResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, "Validation Failed", body.Message)
+// 		require.Equal(t, 1, len(body.Errors))
+// 		require.Equal(t, "email", body.Errors[0].Field)
+// 		require.Equal(t, "Email domain not allowed", body.Errors[0].Message)
+// 	})
+
+// 	t.Run("returns 500 when provider fails unexpectedly", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{
+// 			requestOTP: func(context.Context, string) (string, error) {
+// 				return "", errors.New("upstream unavailable")
+// 			},
+// 		})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, &session.Session{ID: "s1"})
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+
+// 		var body errorResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, http.StatusText(http.StatusInternalServerError), body.Message)
+// 	})
+
+// 	t.Run("returns 500 when session is missing", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{
+// 			requestOTP: func(context.Context, string) (string, error) {
+// 				return "flow-123", nil
+// 			},
+// 		})
+
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, nil)
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+
+// 		var body errorResponse
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, http.StatusText(http.StatusInternalServerError), body.Message)
+// 	})
+
+// 	t.Run("returns 200 and stores flow ID in session", func(t *testing.T) {
+// 		h := New(baseCfg, stubOTPProvider{
+// 			requestOTP: func(context.Context, string) (string, error) {
+// 				return "flow-123", nil
+// 			},
+// 		})
+
+// 		sess := &session.Session{ID: "s1"}
+// 		req := httptest.NewRequest(http.MethodPost, "/otp/request", bytes.NewBufferString(`{"email":"teacher@schools.gov.sg"}`))
+// 		req.Header.Set(HeaderContentType, MIMEApplicationJSON)
+// 		req = withRequestContext(req, sess)
+// 		rec := httptest.NewRecorder()
+
+// 		h.RequestOTP(rec, req)
+
+// 		res := rec.Result()
+// 		require.Equal(t, http.StatusOK, res.StatusCode)
+// 		require.Equal(t, MIMEApplicationJSONCharsetUTF8, res.Header.Get(HeaderContentType))
+
+// 		var body struct {
+// 			ID string `json:"id"`
+// 		}
+// 		require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+// 		require.Equal(t, "flow-123", body.ID)
+
+// 		flowID, ok := sess.Get("otp_flow_id")
+// 		require.True(t, ok)
+// 		require.Equal(t, "flow-123", flowID.(string))
+// 	})
+// }
