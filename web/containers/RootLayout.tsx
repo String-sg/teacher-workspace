@@ -1,5 +1,5 @@
 import { cn, TooltipProvider } from '@flow/core';
-import { Home, UsersRound } from '@flow/icons';
+import { HelpCircle, Home, UsersRound } from '@flow/icons';
 import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
@@ -33,23 +33,34 @@ const RootLayout: React.FC = () => {
     <TooltipProvider delayDuration={600}>
       <div className="flex h-svh">
         <SidebarProvider>
-          <Sidebar>
+          <Sidebar className="sm:flex sm:flex-col">
             <SidebarHeader />
 
-            <SidebarContent>
+            <div className="flex-1">
+              <SidebarContent>
+                <SidebarItem
+                  icon={Home}
+                  label="Home"
+                  tooltip="Home"
+                  to="/"
+                  selected={selected === '/'}
+                />
+                <SidebarItem
+                  icon={UsersRound}
+                  label="Students"
+                  tooltip="Students"
+                  to="/students"
+                  selected={selected === 'students'}
+                />
+              </SidebarContent>
+            </div>
+
+            <SidebarContent className="py-sm">
               <SidebarItem
-                icon={Home}
-                label="Home"
-                tooltip="Home"
-                to="/"
-                selected={selected === '/'}
-              />
-              <SidebarItem
-                icon={UsersRound}
-                label="Students"
-                tooltip="Students"
-                to="/students"
-                selected={selected === 'students'}
+                icon={HelpCircle}
+                label="Help"
+                tooltip="Help"
+                href="https://transform.gov.sg/"
               />
             </SidebarContent>
           </Sidebar>
