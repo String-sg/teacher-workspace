@@ -37,7 +37,7 @@ const RootLayout: React.FC = () => {
           <Sidebar>
             <SidebarHeader />
 
-            <SidebarContent className="flex-1">
+            <SidebarContent>
               <SidebarItem
                 icon={Home}
                 label="Home"
