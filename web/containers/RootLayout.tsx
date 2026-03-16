@@ -1,5 +1,5 @@
 import { cn, TooltipProvider } from '@flow/core';
-import { Home, UsersRound } from '@flow/icons';
+import { HelpCircle, Home, UsersRound } from '@flow/icons';
 import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
@@ -11,6 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '~/components/Sidebar';
+import SidebarFooter from '~/components/Sidebar/SidebarFooter';
 import { useIsWithinViewport } from '~/hooks/useIsWithinViewport';
 
 const RootLayout: React.FC = () => {
@@ -52,6 +53,15 @@ const RootLayout: React.FC = () => {
                 selected={selected === 'students'}
               />
             </SidebarContent>
+
+            <SidebarFooter>
+              <SidebarItem
+                icon={HelpCircle}
+                label="Help"
+                tooltip="Help"
+                href="https://transform.gov.sg/"
+              />
+            </SidebarFooter>
           </Sidebar>
 
           <div className="relative flex-1 overflow-y-auto">
