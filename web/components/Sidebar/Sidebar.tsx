@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, children, ...props }) => {
   return (
     <nav
       className={cn(
-        'ease-tw-default relative hidden w-16 bg-slate-2 inset-shadow-[0_0_0_1px] inset-shadow-slate-5 transition-[width] sm:block',
+        'ease-tw-default relative hidden w-16 bg-slate-2 inset-shadow-[0_0_0_1px] inset-shadow-slate-5 transition-[width] sm:flex sm:flex-col',
         isOpen && 'w-60',
         className,
       )}

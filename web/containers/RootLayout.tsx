@@ -11,6 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '~/components/Sidebar';
+import SidebarFooter from '~/components/Sidebar/SidebarFooter';
 import { useIsWithinViewport } from '~/hooks/useIsWithinViewport';
 
 const RootLayout: React.FC = () => {
@@ -33,36 +34,34 @@ const RootLayout: React.FC = () => {
     <TooltipProvider delayDuration={600}>
       <div className="flex h-svh">
         <SidebarProvider>
-          <Sidebar className="sm:flex sm:flex-col">
+          <Sidebar>
             <SidebarHeader />
 
-            <div className="flex-1">
-              <SidebarContent>
-                <SidebarItem
-                  icon={Home}
-                  label="Home"
-                  tooltip="Home"
-                  to="/"
-                  selected={selected === '/'}
-                />
-                <SidebarItem
-                  icon={UsersRound}
-                  label="Students"
-                  tooltip="Students"
-                  to="/students"
-                  selected={selected === 'students'}
-                />
-              </SidebarContent>
-            </div>
+            <SidebarContent className="flex-1">
+              <SidebarItem
+                icon={Home}
+                label="Home"
+                tooltip="Home"
+                to="/"
+                selected={selected === '/'}
+              />
+              <SidebarItem
+                icon={UsersRound}
+                label="Students"
+                tooltip="Students"
+                to="/students"
+                selected={selected === 'students'}
+              />
+            </SidebarContent>
 
-            <SidebarContent className="py-sm">
+            <SidebarFooter>
               <SidebarItem
                 icon={HelpCircle}
                 label="Help"
                 tooltip="Help"
                 href="https://transform.gov.sg/"
               />
-            </SidebarContent>
+            </SidebarFooter>
           </Sidebar>
 
           <div className="relative flex-1 overflow-y-auto">
