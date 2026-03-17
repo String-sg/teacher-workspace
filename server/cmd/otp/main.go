@@ -47,7 +47,7 @@ func main() {
 	defer cancel()
 
 	if err := run(ctx, cfg); err != nil {
-		slog.Error("server exited", "err", err)
+		slog.Error("server exited unexpectedly", "err", err)
 		os.Exit(1)
 	}
 }

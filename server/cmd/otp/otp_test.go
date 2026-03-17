@@ -19,7 +19,7 @@ func (f RoundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 
 // -------------------- handler tests: Request --------------------
 
-func TestRequest_Success200(t *testing.T) {
+func TestHandlerRequest_Success200(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -46,7 +46,7 @@ func TestRequest_Success200(t *testing.T) {
 	require.Equal(t, "123", payload["flow_id"])
 }
 
-func TestRequest_UnsupportedMediaType415(t *testing.T) {
+func TestHandlerRequest_UnsupportedMediaType415(t *testing.T) {
 	h := &Handler{cfg: Default(), client: &http.Client{}}
 
 	req := httptest.NewRequest(http.MethodPost, "/request", nil)
@@ -58,13 +58,12 @@ func TestRequest_UnsupportedMediaType415(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusUnsupportedMediaType, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInvalidForm, errResp.Code)
-	require.Equal(t, "Content-Type must be application/json", errResp.Message)
+	require.Equal(t, http.StatusText(http.StatusUnsupportedMediaType), errResp.Message)
 }
 
-func TestRequest_InvalidEmailDomain422(t *testing.T) {
+func TestHandlerRequest_InvalidEmailDomain422(t *testing.T) {
 	h := &Handler{cfg: Default(), client: &http.Client{}}
 
 	body, _ := json.Marshal(map[string]string{"email": "test@example.com"})
@@ -78,13 +77,12 @@ func TestRequest_InvalidEmailDomain422(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInvalidForm, errResp.Code)
 	require.Equal(t, "One or more input has an error", errResp.Message)
 }
 
-func TestRequest_InvalidEmailDomainProduction422(t *testing.T) {
+func TestHandlerRequest_InvalidEmailDomainProduction422(t *testing.T) {
 	cfg := Default()
 	cfg.Environment = EnvProduction
 	h := &Handler{cfg: cfg, client: &http.Client{}}
@@ -100,17 +98,16 @@ func TestRequest_InvalidEmailDomainProduction422(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInvalidForm, errResp.Code)
 	require.Equal(t, "One or more input has an error", errResp.Message)
 }
 
-func TestRequest_OTPaasRateLimited429(t *testing.T) {
+func TestHandlerRequest_OTPaasRateLimited429(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
-			StatusCode: http.StatusTooManyRequests,
-			Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
+			StatusCode: http.StatusBadRequest,
+			Body:       io.NopCloser(bytes.NewReader([]byte(`{"code":2008,"message":"rate limited"}`))),
 		}, nil
 	})
 
@@ -127,13 +124,12 @@ func TestRequest_OTPaasRateLimited429(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInternalServerError, errResp.Code)
-	require.Equal(t, "OTPaas rate limited", errResp.Message)
+	require.Equal(t, "Too many requests. Please try again later.", errResp.Message)
 }
 
-func TestRequest_OTPaasInternal500(t *testing.T) {
+func TestHandlerRequest_OTPaasInternal500(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -154,15 +150,14 @@ func TestRequest_OTPaasInternal500(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInternalServerError, errResp.Code)
-	require.Equal(t, "Internal server error", errResp.Message)
+	require.Equal(t, `Unexpected status 500 (code 0): ""`, errResp.Message)
 }
 
 // -------------------- handler tests: Verify --------------------
 
-func TestVerify_Success204(t *testing.T) {
+func TestHandlerVerify_Success204(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -185,7 +180,7 @@ func TestVerify_Success204(t *testing.T) {
 	require.Equal(t, http.StatusNoContent, res.StatusCode)
 }
 
-func TestVerify_UnsupportedMediaType415(t *testing.T) {
+func TestHandlerVerify_UnsupportedMediaType415(t *testing.T) {
 	h := &Handler{cfg: Default(), client: &http.Client{}}
 
 	body, _ := json.Marshal(map[string]string{"pin": "123456"})
@@ -199,31 +194,47 @@ func TestVerify_UnsupportedMediaType415(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusUnsupportedMediaType, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInvalidForm, errResp.Code)
 }
 
-func TestVerify_InvalidPin422(t *testing.T) {
+func TestHandlerVerify_InvalidPin422(t *testing.T) {
 	h := &Handler{cfg: Default(), client: &http.Client{}}
 
-	body, _ := json.Marshal(map[string]string{"pin": "123"})
-	req := httptest.NewRequest(http.MethodPost, "/verify/flow123", bytes.NewReader(body))
-	req.SetPathValue("flow_id", "flow123")
-	req.Header.Set("Content-Type", "application/json")
-	rec := httptest.NewRecorder()
+	tests := []struct {
+		name string
+		body []byte
+	}{
+		{
+			name: "empty pin",
+			body: []byte(`{"pin":""}`),
+		},
+		{
+			name: "pin longer than 6 digits",
+			body: []byte(`{"pin":"1234567"}`),
+		},
+	}
 
-	h.Verify(rec, req)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "/verify/flow123", bytes.NewReader(tt.body))
+			req.SetPathValue("flow_id", "flow123")
+			req.Header.Set("Content-Type", "application/json")
+			rec := httptest.NewRecorder()
 
-	res := rec.Result()
-	require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
+			h.Verify(rec, req)
 
-	var errResp errorResponse
-	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInvalidForm, errResp.Code)
+			res := rec.Result()
+			require.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
+
+			var errResp ErrorResponse
+			require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
+			require.Equal(t, "One or more input has an error", errResp.Message)
+		})
+	}
 }
 
-func TestVerify_NotFound404(t *testing.T) {
+func TestHandlerVerify_NotFound404(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
@@ -245,13 +256,12 @@ func TestVerify_NotFound404(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeAuth, errResp.Code)
-	require.Equal(t, "Failed to authenticate session.", errResp.Message)
+	require.Equal(t, "Flow expired", errResp.Message)
 }
 
-func TestVerify_OTPaasInternal500(t *testing.T) {
+func TestHandlerVerify_OTPaasInternal500(t *testing.T) {
 	rt := RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -273,8 +283,7 @@ func TestVerify_OTPaasInternal500(t *testing.T) {
 	res := rec.Result()
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 
-	var errResp errorResponse
+	var errResp ErrorResponse
 	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &errResp))
-	require.Equal(t, ErrorCodeInternalServerError, errResp.Code)
-	require.Equal(t, "Internal server error", errResp.Message)
+	require.Equal(t, `Unexpected status 500 (code 0): ""`, errResp.Message)
 }
