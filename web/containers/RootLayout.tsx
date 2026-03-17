@@ -71,12 +71,12 @@ const RootLayout: React.FC = () => {
                   'ease-tw-default absolute inset-x-0 top-full h-px bg-transparent transition-colors duration-300',
                   !isWithinViewport && 'bg-slate-12/7.5',
                 )}
-              ></div>
+              />
 
               <SidebarTrigger />
             </div>
 
-            <div ref={topbarRef} className="absolute inset-x-0 top-0 h-px"></div>
+            <div ref={topbarRef} className="absolute inset-x-0 top-0 h-px" />
 
             <Outlet />
           </div>

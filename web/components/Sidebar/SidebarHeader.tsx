@@ -8,9 +8,9 @@ import SidebarTrigger from './SidebarTrigger';
 export type SidebarHeaderProps = React.ComponentPropsWithoutRef<'div'>;
 
 const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) => {
-  const { isOpen, isMobileOpen } = useSidebarContext();
+  const { isOpen, isMobileOpen, isMobile } = useSidebarContext();
 
-  const isExpanded = isOpen || isMobileOpen;
+  const isExpanded = isOpen || (isMobile && isMobileOpen);
 
   return (
     <div className={cn('relative flex items-center justify-end p-sm', className)} {...props}>
