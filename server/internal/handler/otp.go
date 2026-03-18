@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -20,6 +21,24 @@ import (
 
 var store = make(map[string]map[string]string)
 
+type errorResponse struct {
+	Code    string      `json:"code"`
+	Message string      `json:"message"`
+	Errors  []errorBody `json:"error,omitempty"`
+}
+
+type errorBody struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+const (
+	ErrorCodeInvalidForm         = "INVALID_FORM"
+	ErrorCodeInvalidAuth         = "AUTHORIZATION_FAILED"
+	ErrorCodeInternalServerError = "INTERNAL_SERVER_ERROR"
+	ErrorCodeRequestTimeout      = "REQUEST_TIMEOUT"
+)
+
 // isAllowedEmail returns true if the email domain is allowed for the given environment.
 // Production: only @schools.gov.sg. Staging/development: @schools.gov.sg or @tech.gov.sg.
 func isAllowedEmail(email string, env config.Environment) bool {
@@ -27,6 +46,24 @@ func isAllowedEmail(email string, env config.Environment) bool {
 		return strings.HasSuffix(email, "@schools.gov.sg")
 	}
 	return strings.HasSuffix(email, "@schools.gov.sg") || strings.HasSuffix(email, "@tech.gov.sg")
+}
+
+// writeClientErrorResponse writes a JSON error response for 4xx client errors
+func writeClientErrorResponse(w http.ResponseWriter, logger *slog.Logger, statusCode int, code string, message string, errors ...errorBody) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(errorResponse{
+		Code:    code,
+		Message: message,
+		Errors:  errors,
+	}); err != nil {
+		logger.Error("Failed to encode error response", "err", err)
+	}
+}
+
+// writeServerErrorResponse writes a plain text error response for 5xx server errors using http.Error
+func writeServerErrorResponse(w http.ResponseWriter, statusCode int, message string) {
+	http.Error(w, message, statusCode)
 }
 
 func buildAuthToken(appId, appNamespace, appSecret string) string {
