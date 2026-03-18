@@ -8,7 +8,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	t.Run("parses key value pairs", func(t *testing.T) {
+	t.Run("parses a typical dotenv file", func(t *testing.T) {
 		input := strings.Join([]string{
 			`FOO=bar`,
 			`SPACED =  hello world  `,
