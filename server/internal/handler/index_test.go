@@ -1,164 +1,187 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
-	"strings"
+	"net/http/httputil"
+	"net/url"
 	"testing"
 
 	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/pkg/require"
 )
 
-func TestFrontend_Index_NonDev(t *testing.T) {
-	dir := t.TempDir()
-	indexHTML := `<!DOCTYPE html><html><body><script type="application/json" id="preloaded-data">{{.}}</script></body></html>`
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "index.html"), []byte(indexHTML), 0644))
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "assets"), 0755))
-
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentStaging
-	cfg.Server.FrontendBuildDir = dir
-
-	f, err := NewFrontend(cfg, &http.Client{})
-	require.NoError(t, err)
-
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
-
-	f.Index(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, "text/html; charset=utf-8", res.Header.Get("Content-Type"))
-	body := rec.Body.String()
-	require.True(t, strings.Contains(body, `id="preloaded-data"`))
-	require.True(t, strings.Contains(body, "{}"))
-}
-
-func TestFrontend_Index_Dev(t *testing.T) {
-	viteHTML := `<!DOCTYPE html><html><body><script type="application/json" id="preloaded-data">{{.}}</script></body></html>`
-	vite := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			http.NotFound(w, r)
-			return
+func TestHandler_Index(t *testing.T) {
+	t.Run("renders HTML for non-asset requests", func(t *testing.T) {
+		h := &Handler{
+			cfg:      &config.Config{Environment: config.EnvironmentProduction},
+			executor: &stubExecutor{body: "<html>Hello World</html>"},
 		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(viteHTML))
-	}))
-	defer vite.Close()
 
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentDevelopment
-	cfg.Server.ViteDevServerURL = vite.URL
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
 
-	f, err := NewFrontend(cfg, vite.Client())
-	require.NoError(t, err)
+		h.Index(rec, req)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
+		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "<html>Hello World</html>", rec.Body.String())
+	})
 
-	f.Index(rec, req)
+	t.Run("delegates asset requests to the asset handler", func(t *testing.T) {
+		h := &Handler{
+			cfg: &config.Config{Environment: config.EnvironmentProduction},
+			assets: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, _ = w.Write([]byte("console.log('Hello World!');"))
+			}),
+		}
 
-	res := rec.Result()
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, "text/html; charset=utf-8", res.Header.Get("Content-Type"))
-	body := rec.Body.String()
-	require.True(t, strings.Contains(body, `id="preloaded-data"`))
-	require.True(t, strings.Contains(body, "{}"))
+		req := httptest.NewRequest(http.MethodGet, "/assets/main.js", nil)
+		rec := httptest.NewRecorder()
+
+		h.Index(rec, req)
+
+		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "console.log('Hello World!');", rec.Body.String())
+	})
+
+	t.Run("renders HTML for non-Vite requests in development", func(t *testing.T) {
+		h := &Handler{
+			cfg:      &config.Config{Environment: config.EnvironmentDevelopment},
+			executor: &stubExecutor{body: "<html>Hello World</html>"},
+		}
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
+
+		h.Index(rec, req)
+
+		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "<html>Hello World</html>", rec.Body.String())
+	})
+
+	t.Run("proxies Vite requests in development", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte("vite-client-script"))
+		}))
+		t.Cleanup(srv.Close)
+
+		srvURL, err := url.Parse(srv.URL)
+		require.NoError(t, err)
+
+		h := &Handler{
+			cfg:   &config.Config{Environment: config.EnvironmentDevelopment},
+			proxy: httputil.NewSingleHostReverseProxy(srvURL),
+		}
+
+		req := httptest.NewRequest(http.MethodGet, "/@vite/client", nil)
+		rec := httptest.NewRecorder()
+
+		h.Index(rec, req)
+
+		require.Equal(t, http.StatusOK, rec.Code)
+		require.Equal(t, "vite-client-script", rec.Body.String())
+	})
 }
 
-func TestFrontend_Index_MethodNotAllowed(t *testing.T) {
-	dir := t.TempDir()
-	indexHTML := `<!DOCTYPE html><html><body>{{.}}</body></html>`
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "index.html"), []byte(indexHTML), 0644))
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "assets"), 0755))
-
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentStaging
-	cfg.Server.FrontendBuildDir = dir
-
-	f, err := NewFrontend(cfg, &http.Client{})
-	require.NoError(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", nil)
-	rec := httptest.NewRecorder()
-
-	f.Index(rec, req)
-
-	res := rec.Result()
-	require.Equal(t, http.StatusMethodNotAllowed, res.StatusCode)
-	require.Equal(t, "application/json", res.Header.Get("Content-Type"))
-
-	var errResp errorResponse
-	require.NoError(t, json.NewDecoder(rec.Body).Decode(&errResp))
-	require.Equal(t, ErrorCodeMethodNotAllowed, errResp.Code)
-	require.Equal(t, "Method not allowed", errResp.Message)
-}
-
-func TestNewFrontend_Development_Success(t *testing.T) {
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentDevelopment
-	cfg.Server.ViteDevServerURL = "http://localhost:5173"
-
-	f, err := NewFrontend(cfg, &http.Client{})
-	require.NoError(t, err)
-	if f == nil {
-		t.Fatal("expected non-nil Frontend")
+func TestIsViteRequest(t *testing.T) {
+	tests := []struct {
+		name    string
+		path    string
+		headers map[string]string
+		want    bool
+	}{
+		{
+			name: "matches @vite path prefix",
+			path: "/@vite/client",
+			want: true,
+		},
+		{
+			name: "matches @fs path prefix",
+			path: "/@fs/some/module.js",
+			want: true,
+		},
+		{
+			name: "matches @react-refresh path",
+			path: "/@react-refresh",
+			want: true,
+		},
+		{
+			name: "matches .ts extension",
+			path: "/src/main.ts",
+			want: true,
+		},
+		{
+			name: "matches .tsx extension",
+			path: "/src/App.tsx",
+			want: true,
+		},
+		{
+			name: "matches .css extension",
+			path: "/src/index.css",
+			want: true,
+		},
+		{
+			name: "matches Vite HMR WebSocket headers",
+			path: "/",
+			headers: map[string]string{
+				"Connection":             "Upgrade",
+				"Upgrade":                "websocket",
+				"Sec-Websocket-Protocol": "vite-hmr",
+			},
+			want: true,
+		},
+		{
+			name: "matches case-insensitive WebSocket headers",
+			path: "/",
+			headers: map[string]string{
+				"Connection":             "UPGRADE",
+				"Upgrade":                "WEBSOCKET",
+				"Sec-Websocket-Protocol": "VITE-HMR",
+			},
+			want: true,
+		},
+		{
+			name: "rejects plain root path",
+			path: "/",
+			want: false,
+		},
+		{
+			name: "rejects regular application route",
+			path: "/dashboard",
+			want: false,
+		},
+		{
+			name: "rejects unrecognised file extension",
+			path: "/image.png",
+			want: false,
+		},
+		{
+			name: "rejects WebSocket without vite-hmr protocol",
+			path: "/",
+			headers: map[string]string{
+				"Connection": "Upgrade",
+				"Upgrade":    "websocket",
+			},
+			want: false,
+		},
+		{
+			name: "rejects partial WebSocket headers with only connection upgrade",
+			path: "/",
+			headers: map[string]string{
+				"Connection": "Upgrade",
+			},
+			want: false,
+		},
 	}
-}
 
-func TestNewFrontend_Development_InvalidURL(t *testing.T) {
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentDevelopment
-	cfg.Server.ViteDevServerURL = "http://%zz" // invalid percent-encoding so url.Parse returns error
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			for k, v := range tt.headers {
+				req.Header.Set(k, v)
+			}
 
-	_, err := NewFrontend(cfg, &http.Client{})
-	require.HasError(t, err)
-}
-
-func TestNewFrontend_NonDev_Success(t *testing.T) {
-	dir := t.TempDir()
-	indexHTML := `<!DOCTYPE html><html><body>{{.}}</body></html>`
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "index.html"), []byte(indexHTML), 0644))
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "assets"), 0755))
-
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentStaging
-	cfg.Server.FrontendBuildDir = dir
-
-	f, err := NewFrontend(cfg, &http.Client{})
-	require.NoError(t, err)
-	if f == nil {
-		t.Fatal("expected non-nil Frontend")
+			require.Equal(t, tt.want, isViteRequest(req))
+		})
 	}
-}
-
-func TestNewFrontend_NonDev_MissingIndex(t *testing.T) {
-	dir := t.TempDir()
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "assets"), 0755))
-
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentStaging
-	cfg.Server.FrontendBuildDir = dir
-
-	_, err := NewFrontend(cfg, &http.Client{})
-	require.HasError(t, err)
-}
-
-func TestNewFrontend_NonDev_InvalidTemplate(t *testing.T) {
-	dir := t.TempDir()
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "assets"), 0755))
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "index.html"), []byte("{{end}}"), 0644))
-
-	cfg := config.Default()
-	cfg.Environment = config.EnvironmentStaging
-	cfg.Server.FrontendBuildDir = dir
-
-	_, err := NewFrontend(cfg, &http.Client{})
-	require.HasError(t, err)
 }

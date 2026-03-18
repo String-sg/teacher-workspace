@@ -158,7 +158,7 @@ func (h *Handler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 		Name:     "session_id",
 		Value:    sessionID,
 		Path:     "/",
-		Secure:   h.cfg.Environment == config.EnvironmentProduction || h.cfg.Environment == config.EnvironmentStaging,
+		Secure:   h.cfg.Environment == config.EnvironmentProduction,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}

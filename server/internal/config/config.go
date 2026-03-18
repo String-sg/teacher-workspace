@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
+	"os"
 	"time"
 )
 
@@ -11,7 +13,6 @@ type Environment string
 
 const (
 	EnvironmentDevelopment Environment = "development"
-	EnvironmentStaging     Environment = "staging"
 	EnvironmentProduction  Environment = "production"
 )
 
@@ -19,6 +20,9 @@ const (
 type Config struct {
 	Environment Environment `dotenv:"TW_ENV"`
 	LogLevel    slog.Level  `dotenv:"TW_LOG_LEVEL"`
+
+	ViteDevServerURL *url.URL `dotenv:"TW_VITE_DEV_SERVER_URL"`
+	BundleDirectory  string   `dotenv:"TW_BUNDLE_DIRECTORY"`
 
 	Server ServerConfig `dotenv:",squash"`
 	OTPaaS OTPaaSConfig `dotenv:",squash"`
@@ -32,9 +36,6 @@ type ServerConfig struct {
 	ReadHeaderTimeout time.Duration `dotenv:"TW_SERVER_READ_HEADER_TIMEOUT"`
 	WriteTimeout      time.Duration `dotenv:"TW_SERVER_WRITE_TIMEOUT"`
 	IdleTimeout       time.Duration `dotenv:"TW_SERVER_IDLE_TIMEOUT"`
-
-	ViteDevServerURL string `dotenv:"TW_VITE_DEV_SERVER_URL"`
-	FrontendBuildDir string `dotenv:"TW_FRONTEND_BUILD_DIR"`
 }
 
 type OTPaaSConfig struct {
@@ -52,6 +53,9 @@ func Default() *Config {
 		Environment: EnvironmentDevelopment,
 		LogLevel:    slog.LevelInfo,
 
+		ViteDevServerURL: must(url.Parse("http://localhost:5173")),
+		BundleDirectory:  "dist",
+
 		Server: ServerConfig{
 			Port: 3000,
 
@@ -59,9 +63,6 @@ func Default() *Config {
 			ReadTimeout:       15 * time.Second,
 			WriteTimeout:      30 * time.Second,
 			IdleTimeout:       60 * time.Second,
-
-			ViteDevServerURL: "http://127.0.0.1:5173",
-			FrontendBuildDir: "dist",
 		},
 
 		OTPaaS: OTPaaSConfig{
@@ -74,20 +75,32 @@ func Default() *Config {
 	}
 }
 
-func (c *Config) Validate() error {
+func (cfg *Config) Validate() error {
 	var errs []error
 
-	if c.Environment != EnvironmentDevelopment && c.Environment != EnvironmentStaging && c.Environment != EnvironmentProduction {
-		errs = append(errs, fmt.Errorf("TW_ENV must be one of %q, %q or %q; got %q", EnvironmentDevelopment, EnvironmentStaging, EnvironmentProduction, c.Environment))
-	}
-	if c.Environment == EnvironmentDevelopment && c.Server.ViteDevServerURL == "" {
-		errs = append(errs, errors.New("TW_VITE_DEV_SERVER_URL is required"))
-	}
-	if (c.Environment == EnvironmentStaging || c.Environment == EnvironmentProduction) && c.Server.FrontendBuildDir == "" {
-		errs = append(errs, errors.New("TW_FRONTEND_BUILD_DIR is required"))
+	if cfg.Environment != EnvironmentDevelopment && cfg.Environment != EnvironmentProduction {
+		errs = append(errs, fmt.Errorf("TW_ENV must be one of %q or %q; got %q", EnvironmentDevelopment, EnvironmentProduction, cfg.Environment))
 	}
 
-	return errors.Join(append(errs, c.Server.validate(), c.OTPaaS.validate())...)
+	switch cfg.Environment {
+	case EnvironmentDevelopment:
+		if cfg.ViteDevServerURL.Scheme != "http" && cfg.ViteDevServerURL.Scheme != "https" {
+			errs = append(errs, fmt.Errorf("TW_VITE_DEV_SERVER_URL must use scheme http or https; got %q", cfg.ViteDevServerURL.Scheme))
+		}
+		if cfg.ViteDevServerURL.Host == "" {
+			errs = append(errs, fmt.Errorf("TW_VITE_DEV_SERVER_URL must include host[:port]; got %q", cfg.ViteDevServerURL.Host))
+		}
+	case EnvironmentProduction:
+		if cfg.BundleDirectory == "" {
+			errs = append(errs, errors.New("TW_BUNDLE_DIRECTORY is required"))
+		} else {
+			if _, err := os.Stat(cfg.BundleDirectory); os.IsNotExist(err) {
+				errs = append(errs, fmt.Errorf("TW_BUNDLE_DIRECTORY does not exist: %w", err))
+			}
+		}
+	}
+
+	return errors.Join(append(errs, cfg.Server.validate(), cfg.OTPaaS.validate())...)
 }
 
 func (c ServerConfig) validate() error {
@@ -132,4 +145,11 @@ func (c OTPaaSConfig) validate() error {
 	}
 
 	return errors.Join(errs...)
+}
+
+func must[T any](value T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return value
 }
