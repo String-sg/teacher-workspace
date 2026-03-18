@@ -74,14 +74,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   selected,
   ...props
 }) => {
-  const { isOpen, isMobileOpen } = useSidebarContext();
+  const { isOpen, isMobileOpen, isMobile } = useSidebarContext();
 
-  // A workaround to prevent the tooltip from being shown when the sidebar is open.
+  const isExpanded = isOpen || (isMobile && isMobileOpen);
+
   const handlePointerMove = <T extends HTMLElement>(
     event: React.PointerEvent<T>,
     handler?: React.PointerEventHandler<T>,
   ) => {
-    if (isOpen) {
+    if (isExpanded) {
       event.preventDefault();
       return;
     }
@@ -100,7 +101,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       <Icon className="flex h-4 w-4 shrink-0 text-slate-11" />
 
       <AnimatePresence initial={false}>
-        {(isOpen || isMobileOpen) && (
+        {isExpanded && (
           <Typography asChild variant="label-md" className="text-slate-12">
             <motion.p
               initial={{ opacity: 0, x: -16 }}
@@ -127,6 +128,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   if ('href' in props && props.href !== undefined) {
     const { onPointerMove, ...anchorProps } = props;
+
     return (
       <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
@@ -149,6 +151,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   if ('to' in props && props.to !== undefined) {
     const { onPointerMove, ...linkProps } = props;
+
     return (
       <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
         <TooltipTrigger asChild>
@@ -168,6 +171,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   }
 
   const { onPointerMove, ...buttonProps } = props;
+
   return (
     <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
       <TooltipTrigger asChild>
