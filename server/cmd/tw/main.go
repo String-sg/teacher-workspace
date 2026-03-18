@@ -58,12 +58,18 @@ func main() {
 }
 
 func run(ctx context.Context, cfg *config.Config) error {
+	h, err := handler.New(cfg)
+	if err != nil {
+		return fmt.Errorf("create handler: %w", err)
+	}
+
 	mux := http.NewServeMux()
+	h.Register(mux)
 
-	client := &http.Client{Timeout: cfg.OTPaaS.Timeout}
-	handler.Register(mux, cfg, client)
-
-	app := middleware.Chain(mux, middleware.RequestID)
+	app := middleware.Chain(
+		mux,
+		middleware.RequestID,
+	)
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf("[::1]:%d", cfg.Server.Port),

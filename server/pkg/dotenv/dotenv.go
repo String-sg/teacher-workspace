@@ -56,6 +56,7 @@ func decode(data []byte, output any) error {
 		WeaklyTypedInput: true,
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(
 			mapstructure.StringToTimeDurationHookFunc(),
+			mapstructure.StringToURLHookFunc(),
 			stringToLogLevelFunc(),
 		),
 	})

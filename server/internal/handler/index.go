@@ -2,15 +2,63 @@ package handler
 
 import (
 	"net/http"
+	"path"
+	"strings"
 
-	"github.com/String-sg/teacher-workspace/server/internal/middleware"
+	"github.com/String-sg/teacher-workspace/server/internal/config"
 )
 
-func (handler *Handler) Index(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+var allowedViteRequests = []func(r *http.Request) bool{
+	hasPathPrefix("/@vite/"),
+	hasPathPrefix("/@fs/"),
+	hasPathPrefix("/@react-refresh"),
+	hasPathExt(".ts"),
+	hasPathExt(".tsx"),
+	hasPathExt(".css"),
+	isViteHMRWebSocket,
+}
 
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte("Hello, World!")); err != nil {
-		logger.Warn("failed to write response", "err", err)
+func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
+	p := r.URL.Path
+
+	if h.cfg.Environment == config.EnvironmentDevelopment && isViteRequest(r) {
+		h.proxy.ServeHTTP(w, r)
+		return
+	} else if strings.HasPrefix(p, "/assets/") {
+		h.assets.ServeHTTP(w, r)
+		return
 	}
+
+	h.renderHTML(r, w, nil)
+}
+
+// isViteRequest checks if the request is a Vite request.
+func isViteRequest(r *http.Request) bool {
+	for _, check := range allowedViteRequests {
+		if check(r) {
+			return true
+		}
+	}
+	return false
+}
+
+// hasPathPrefix checks if the request path has the given prefix.
+func hasPathPrefix(prefix string) func(r *http.Request) bool {
+	return func(r *http.Request) bool {
+		return strings.HasPrefix(r.URL.Path, prefix)
+	}
+}
+
+// hasPathExt checks if the request path has the given extension.
+func hasPathExt(ext string) func(r *http.Request) bool {
+	return func(r *http.Request) bool {
+		return path.Ext(r.URL.Path) == ext
+	}
+}
+
+// isViteHMRWebSocket checks if the request is a Vite HMR WebSocket request.
+func isViteHMRWebSocket(r *http.Request) bool {
+	return strings.EqualFold(r.Header.Get("Connection"), "upgrade") &&
+		strings.EqualFold(r.Header.Get("Upgrade"), "websocket") &&
+		strings.EqualFold(r.Header.Get("Sec-Websocket-Protocol"), "vite-hmr")
 }

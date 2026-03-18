@@ -2,6 +2,7 @@ package dotenv
 
 import (
 	"log/slog"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -190,6 +191,54 @@ func TestDecode(t *testing.T) {
 
 				require.NoError(t, err)
 				require.Equal(t, test.want, cfg.ReadTimeout)
+			})
+		}
+	})
+
+	t.Run("url", func(t *testing.T) {
+		type TestConfig struct {
+			BaseURL *url.URL `dotenv:"TEST_BASE_URL"`
+		}
+
+		tests := []struct {
+			name  string
+			value string
+			want  string
+		}{
+			{
+				name:  "http",
+				value: "http://localhost:8080",
+				want:  "http://localhost:8080",
+			},
+			{
+				name:  "postgres",
+				value: "postgres://user:pass@host:5432/db",
+				want:  "postgres://user:pass@host:5432/db",
+			},
+			{
+				name:  "empty string",
+				value: "",
+				want:  "",
+			},
+		}
+
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				content := strings.Join([]string{
+					"TEST_BASE_URL=" + test.value,
+				}, "\n")
+
+				var cfg TestConfig
+				err := decode([]byte(content), &cfg)
+
+				t.Cleanup(func() {
+					if err := os.Unsetenv("TEST_BASE_URL"); err != nil {
+						t.Fatalf("failed to unset env: %v", err)
+					}
+				})
+
+				require.NoError(t, err)
+				require.Equal(t, test.want, cfg.BaseURL.String())
 			})
 		}
 	})
