@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 	if err := cfg.Validate(); err != nil {
-		slog.Error("invalid configuration", "err", err)
+		slog.Error("invalid configuration", "errs", collectErrorMessages(err))
 		os.Exit(1)
 	}
 
@@ -128,4 +128,22 @@ func run(ctx context.Context, cfg *config.Config) error {
 	}
 
 	return nil
+}
+
+// collectErrorMessages recursively unwraps joined errors and returns their
+// leaf error messages as a flat slice of strings.
+func collectErrorMessages(err error) []string {
+	if err == nil {
+		return nil
+	}
+
+	if werr, ok := err.(interface{ Unwrap() []error }); ok {
+		var msgs []string
+		for _, cerr := range werr.Unwrap() {
+			msgs = append(msgs, collectErrorMessages(cerr)...)
+		}
+		return msgs
+	}
+
+	return []string{err.Error()}
 }
