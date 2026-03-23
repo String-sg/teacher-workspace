@@ -21,15 +21,14 @@ var allowedViteRequests = []func(r *http.Request) bool{
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Path
 
-	if h.cfg.Environment == config.EnvironmentDevelopment && isViteRequest(r) {
+	switch {
+	case h.cfg.Environment == config.EnvironmentDevelopment && isViteRequest(r):
 		h.proxy.ServeHTTP(w, r)
-		return
-	} else if strings.HasPrefix(p, "/assets/") {
+	case h.cfg.Environment == config.EnvironmentProduction && strings.HasPrefix(p, "/assets/"):
 		h.assets.ServeHTTP(w, r)
-		return
+	default:
+		h.renderHTML(r, w, nil)
 	}
-
-	h.renderHTML(r, w, nil)
 }
 
 // isViteRequest checks if the request is a Vite request.
