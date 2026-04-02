@@ -1,4 +1,25 @@
-import { cn, Typography } from '@flow/core';
+import {
+  Badge,
+  Button,
+  cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Input,
+  Progress,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Typography,
+} from '@flow/core';
 import {
   AlertTriangle,
   Copy,
@@ -7,30 +28,15 @@ import {
   Search,
   Trash2,
   Users,
-} from 'lucide-react';
+} from '@flow/icons';
 import React, { useMemo, useState } from 'react';
 
-import { Badge } from '~/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
-import { Input } from '~/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '~/components/ui/table';
 import {
   mockPGAnnouncements,
   type PGAnnouncement,
   type PGStatus,
+  type ResponseTypeWithResponse,
+  requiresResponse,
 } from '~/data/mock-pg-announcements';
 
 type PostTab = 'view-only' | 'with-responses';
@@ -50,13 +56,32 @@ const STATUS_CONFIG: Record<PGStatus, { label: string; className: string }> = {
   },
 };
 
+const RESPONSE_TYPE_CONFIG: Record<
+  ResponseTypeWithResponse,
+  { label: string; className: string }
+> = {
+  acknowledge: {
+    label: 'Acknowledge',
+    className: 'bg-blue-50 text-blue-600 ring-blue-200',
+  },
+  'yes-no': {
+    label: 'Yes/No',
+    className: 'bg-violet-50 text-violet-600 ring-violet-200',
+  },
+};
+
+const DATE_FORMATTER = new Intl.DateTimeFormat('en-SG', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'Asia/Singapore',
+});
+
 function formatDate(iso: string | undefined): string {
   if (!iso) return '\u2014';
-  return new Intl.DateTimeFormat('en-SG', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(iso));
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '\u2014';
+  return DATE_FORMATTER.format(date);
 }
 
 function isLowReadRate(
@@ -76,29 +101,26 @@ function getRelevantDate(announcement: PGAnnouncement): string | undefined {
   return announcement.createdAt;
 }
 
-function SegmentedTab({
-  active,
-  onClick,
-  children,
+function CountWithProgress({
+  count,
+  total,
 }: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
+  count: number;
+  total: number;
 }) {
   return (
-    <button
-      className={cn(
-        'whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-all',
-        active
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground',
-      )}
-      onClick={onClick}
-    >
-      {children}
-    </button>
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-muted-foreground">
+        {count}/{total}
+      </span>
+      <Progress
+        value={total > 0 ? (count / total) * 100 : 0}
+        className="h-1.5 w-16"
+      />
+    </div>
   );
 }
+
 
 const PostsView: React.FC = () => {
   const [tab, setTab] = useState<PostTab>('view-only');
@@ -107,10 +129,10 @@ const PostsView: React.FC = () => {
   const filtered = useMemo(() => {
     return mockPGAnnouncements
       .filter((a) => {
-        const hasResponse =
-          a.responseType === 'acknowledge' || a.responseType === 'yes-no';
-        if (tab === 'view-only' && hasResponse) return false;
-        if (tab === 'with-responses' && !hasResponse) return false;
+        if (tab === 'view-only' && requiresResponse(a.responseType))
+          return false;
+        if (tab === 'with-responses' && !requiresResponse(a.responseType))
+          return false;
 
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
@@ -136,37 +158,37 @@ const PostsView: React.FC = () => {
           <Typography variant="title-lg" asChild>
             <h1>Posts</h1>
           </Typography>
-          <button
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            disabled
-          >
+          <Button variant="default" size="sm" disabled>
             <Plus className="h-4 w-4" />
             Create
-          </button>
+          </Button>
         </div>
-        <p className="mt-1 hidden text-sm text-muted-foreground md:block">
-          Send posts to parents via Parents Gateway. Send a view-only post or
-          collect responses.
-        </p>
+        <Typography
+          variant="body-sm"
+          className="mt-1 hidden text-muted-foreground md:block"
+          asChild
+        >
+          <p>
+            Send posts to parents via Parents Gateway. Send a view-only post or
+            collect responses.
+          </p>
+        </Typography>
       </div>
 
       {/* Toolbar: tabs + search */}
       <div className="mt-4 space-y-4">
-        <div className="flex items-center justify-between gap-4 px-6">
-          <div className="flex shrink-0 gap-1 rounded-full bg-muted p-1">
-            <SegmentedTab
-              active={tab === 'view-only'}
-              onClick={() => setTab('view-only')}
-            >
-              Posts
-            </SegmentedTab>
-            <SegmentedTab
-              active={tab === 'with-responses'}
-              onClick={() => setTab('with-responses')}
-            >
-              Posts with responses
-            </SegmentedTab>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 px-6">
+          <Tabs
+            value={tab}
+            onValueChange={(v) => setTab(v as PostTab)}
+          >
+            <TabsList>
+              <TabsTrigger value="view-only">Posts</TabsTrigger>
+              <TabsTrigger value="with-responses">
+                Posts with responses
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -175,17 +197,19 @@ const PostsView: React.FC = () => {
               placeholder="Search posts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-[240px] pl-9"
+              className="w-full min-w-[180px] max-w-[240px] pl-9"
               aria-label="Search posts"
             />
           </div>
         </div>
 
         {/* Table */}
-        <div className="max-w-full overflow-x-auto bg-white">
+        <div className="max-w-full overflow-x-auto bg-card">
           {filtered.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              No posts match your search.
+            <div className="py-12 text-center">
+              <Typography variant="body-md" className="text-muted-foreground">
+                No posts match your search.
+              </Typography>
             </div>
           ) : (
             <Table>
@@ -205,22 +229,16 @@ const PostsView: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map((announcement) => {
-                  const totalCount = announcement.recipients.length;
-                  const readCount = announcement.recipients.filter(
-                    (r) => r.readStatus === 'read',
-                  ).length;
-                  const responseCount = announcement.recipients.filter(
-                    (r) => r.respondedAt != null,
-                  ).length;
-                  const yesCount = announcement.recipients.filter(
-                    (r) => r.formResponse === 'yes',
-                  ).length;
-                  const noCount = announcement.recipients.filter(
-                    (r) => r.formResponse === 'no',
-                  ).length;
-                  const hasResponseType =
-                    announcement.responseType === 'acknowledge' ||
-                    announcement.responseType === 'yes-no';
+                  const {
+                    totalCount,
+                    readCount,
+                    responseCount,
+                    yesCount,
+                    noCount,
+                  } = announcement.stats;
+                  const hasResponseType = requiresResponse(
+                    announcement.responseType,
+                  );
                   const showLowRead = isLowReadRate(
                     announcement.postedAt,
                     readCount,
@@ -229,9 +247,14 @@ const PostsView: React.FC = () => {
                   const relevantDate = getRelevantDate(announcement);
                   const isShared = announcement.ownership === 'shared';
                   const statusConfig = STATUS_CONFIG[announcement.status];
+                  const responseTypeConfig = requiresResponse(
+                    announcement.responseType,
+                  )
+                    ? RESPONSE_TYPE_CONFIG[announcement.responseType]
+                    : undefined;
 
                   return (
-                    <TableRow key={announcement.id} className="cursor-pointer">
+                    <TableRow key={announcement.id}>
                       {/* Title */}
                       <TableCell className="overflow-hidden pl-6 whitespace-normal">
                         <div className="min-w-0">
@@ -239,15 +262,16 @@ const PostsView: React.FC = () => {
                             <span className="truncate font-medium">
                               {announcement.title}
                             </span>
-                            {announcement.responseType === 'acknowledge' && (
-                              <span className="shrink-0 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-600 ring-1 ring-inset ring-blue-200">
-                                Acknowledge
-                              </span>
-                            )}
-                            {announcement.responseType === 'yes-no' && (
-                              <span className="shrink-0 rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-600 ring-1 ring-inset ring-violet-200">
-                                Yes/No
-                              </span>
+                            {responseTypeConfig && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[10px]',
+                                  responseTypeConfig.className,
+                                )}
+                              >
+                                {responseTypeConfig.label}
+                              </Badge>
                             )}
                             {showLowRead && (
                               <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
@@ -304,69 +328,64 @@ const PostsView: React.FC = () => {
                           </span>
                         ) : hasResponseType ? (
                           <div className="space-y-0.5">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground">
-                                {responseCount}/{totalCount}
-                              </span>
-                              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-4">
-                                <div
-                                  className="h-full rounded-full bg-blue-9 transition-all"
-                                  style={{
-                                    width: `${totalCount > 0 ? (responseCount / totalCount) * 100 : 0}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
+                            <CountWithProgress
+                              count={responseCount}
+                              total={totalCount}
+                            />
                             {announcement.responseType === 'yes-no' &&
                               totalCount > 0 && (
-                                <p className="text-[11px] text-muted-foreground">
-                                  {yesCount} yes &middot; {noCount} no
-                                </p>
+                                <Typography
+                                  variant="label-xs"
+                                  className="text-muted-foreground"
+                                  asChild
+                                >
+                                  <p>
+                                    {yesCount} yes &middot; {noCount} no
+                                  </p>
+                                </Typography>
                               )}
-                            {announcement.responseType === 'acknowledge' && (
-                              <p className="text-[11px] text-muted-foreground">
-                                Acknowledged
-                              </p>
-                            )}
+                            {announcement.responseType === 'acknowledge' &&
+                              responseCount > 0 && (
+                                <Typography
+                                  variant="label-xs"
+                                  className="text-muted-foreground"
+                                  asChild
+                                >
+                                  <p>{responseCount} acknowledged</p>
+                                </Typography>
+                              )}
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">
-                              {readCount}/{totalCount}
-                            </span>
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-4">
-                              <div
-                                className="h-full rounded-full bg-blue-9 transition-all"
-                                style={{
-                                  width: `${totalCount > 0 ? (readCount / totalCount) * 100 : 0}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
+                          <CountWithProgress
+                            count={readCount}
+                            total={totalCount}
+                          />
                         )}
                       </TableCell>
 
                       {/* Actions */}
-                      <TableCell
-                        className="w-[48px] pr-2 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <TableCell className="w-[48px] pr-2 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               aria-label="More actions"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <MoreHorizontal className="h-4 w-4" />
-                            </button>
+                            </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem disabled>
                               <Copy className="mr-2 h-4 w-4" />
                               Duplicate
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive focus:text-destructive">
+                            <DropdownMenuItem
+                              disabled
+                              className="text-destructive focus:text-destructive"
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete
                             </DropdownMenuItem>

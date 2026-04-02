@@ -1,5 +1,13 @@
 export type PGStatus = 'posted' | 'scheduled' | 'draft';
 export type ResponseType = 'view-only' | 'acknowledge' | 'yes-no';
+
+export type ResponseTypeWithResponse = 'acknowledge' | 'yes-no';
+
+export function requiresResponse(
+  rt: ResponseType,
+): rt is ResponseTypeWithResponse {
+  return rt === 'acknowledge' || rt === 'yes-no';
+}
 export type PGOwnership = 'mine' | 'shared';
 
 export interface PGRecipient {
@@ -12,6 +20,14 @@ export interface PGRecipient {
   formResponse?: 'yes' | 'no';
 }
 
+export interface PGAnnouncementStats {
+  totalCount: number;
+  readCount: number;
+  responseCount: number;
+  yesCount: number;
+  noCount: number;
+}
+
 export interface PGAnnouncement {
   id: string;
   title: string;
@@ -21,6 +37,7 @@ export interface PGAnnouncement {
   ownership: PGOwnership;
   role?: 'owner' | 'viewer';
   recipients: PGRecipient[];
+  stats: PGAnnouncementStats;
   postedAt?: string;
   scheduledAt?: string;
   createdAt: string;
@@ -39,6 +56,7 @@ export const mockPGAnnouncements: PGAnnouncement[] = [
     postedAt: '2026-03-10T09:00:00+08:00',
     createdAt: '2026-03-09T14:30:00+08:00',
     createdBy: 'Ms Tan Wei Ling',
+    stats: { totalCount: 4, readCount: 2, responseCount: 0, yesCount: 0, noCount: 0 },
     recipients: [
       {
         studentId: 'S001',
@@ -82,6 +100,7 @@ export const mockPGAnnouncements: PGAnnouncement[] = [
     postedAt: '2026-03-12T10:00:00+08:00',
     createdAt: '2026-03-11T16:00:00+08:00',
     createdBy: 'Mr Ahmad Bin Ibrahim',
+    stats: { totalCount: 3, readCount: 2, responseCount: 2, yesCount: 1, noCount: 1 },
     recipients: [
       {
         studentId: 'S001',
@@ -121,6 +140,7 @@ export const mockPGAnnouncements: PGAnnouncement[] = [
     scheduledAt: '2026-04-05T08:00:00+08:00',
     createdAt: '2026-03-20T11:00:00+08:00',
     createdBy: 'Ms Tan Wei Ling',
+    stats: { totalCount: 3, readCount: 0, responseCount: 0, yesCount: 0, noCount: 0 },
     recipients: [
       {
         studentId: 'S001',

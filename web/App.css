@@ -74,7 +74,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-border);
+    outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
   }
 }
