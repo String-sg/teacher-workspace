@@ -19,6 +19,10 @@ const router = createBrowserRouter([
         path: 'students',
         lazy: () => import('./containers/StudentsView'),
       },
+      {
+        path: 'announcements',
+        lazy: () => import('./containers/PostsView'),
+      },
     ],
   },
 ]);

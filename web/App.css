@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@flow/core/tailwind.no-reset.css';
+@import 'tw-animate-css';
 
 :root {
   --color-foreground-default: var(--color-slate-12);
@@ -22,4 +23,58 @@
   --btn-color-fill-brand-hover: var(--color-blue-10);
 
   --ease-tw-default: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* shadcn/ui semantic tokens mapped to @flow/core color scale */
+  --background: var(--color-slate-1);
+  --foreground: var(--color-slate-12);
+  --card: var(--color-white-default, #fff);
+  --card-foreground: var(--color-olive-12);
+  --popover: var(--color-white-default, #fff);
+  --popover-foreground: var(--color-slate-12);
+  --primary: var(--color-blue-9);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-slate-4);
+  --secondary-foreground: var(--color-slate-12);
+  --muted: var(--color-slate-2);
+  --muted-foreground: var(--color-olive-11);
+  --accent: var(--color-slate-4);
+  --accent-foreground: var(--color-slate-12);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: var(--color-slate-6);
+  --input: var(--color-slate-6);
+  --ring: var(--color-blue-9);
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }

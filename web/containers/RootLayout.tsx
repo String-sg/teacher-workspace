@@ -1,5 +1,5 @@
 import { cn, TooltipProvider } from '@flow/core';
-import { HelpCircle, Home, UsersRound } from '@flow/icons';
+import { HelpCircle, Home, Mail, UsersRound } from '@flow/icons';
 import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
@@ -24,6 +24,7 @@ const RootLayout: React.FC = () => {
   const selected = useMemo(() => {
     switch (segment) {
       case 'students':
+      case 'announcements':
         return segment;
       default:
         return '/';
@@ -51,6 +52,13 @@ const RootLayout: React.FC = () => {
                 tooltip="Students"
                 to="/students"
                 selected={selected === 'students'}
+              />
+              <SidebarItem
+                icon={Mail}
+                label="Posts"
+                tooltip="Posts"
+                to="/announcements"
+                selected={selected === 'announcements'}
               />
             </SidebarContent>
 
