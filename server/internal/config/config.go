@@ -26,6 +26,7 @@ type Config struct {
 
 	Server ServerConfig `dotenv:",squash"`
 	OTPaaS OTPaaSConfig `dotenv:",squash"`
+	PG     PGConfig     `dotenv:",squash"`
 }
 
 // ServerConfig represents the configuration for the HTTP server.
@@ -36,6 +37,12 @@ type ServerConfig struct {
 	ReadHeaderTimeout time.Duration `dotenv:"TW_SERVER_READ_HEADER_TIMEOUT"`
 	WriteTimeout      time.Duration `dotenv:"TW_SERVER_WRITE_TIMEOUT"`
 	IdleTimeout       time.Duration `dotenv:"TW_SERVER_IDLE_TIMEOUT"`
+}
+
+// PGConfig holds configuration for the Parents Gateway integration.
+type PGConfig struct {
+	Mock    bool   `dotenv:"TW_PG_MOCK"`
+	BaseURL string `dotenv:"TW_PG_BASE_URL"`
 }
 
 type OTPaaSConfig struct {
@@ -71,6 +78,11 @@ func Default() *Config {
 			Namespace: "",
 			Secret:    "",
 			Timeout:   10 * time.Second,
+		},
+
+		PG: PGConfig{
+			Mock:    true,
+			BaseURL: "https://pg.moe.edu.sg",
 		},
 	}
 }

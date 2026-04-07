@@ -9,6 +9,7 @@ import (
 	"github.com/String-sg/teacher-workspace/server/internal/config"
 	"github.com/String-sg/teacher-workspace/server/internal/htmlutil"
 	"github.com/String-sg/teacher-workspace/server/internal/middleware"
+	"github.com/String-sg/teacher-workspace/server/internal/pg"
 )
 
 const (
@@ -63,6 +64,8 @@ func New(cfg *config.Config) (*Handler, error) {
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /otp/request", h.RequestOTP)
 	mux.HandleFunc("POST /otp/verify", h.VerifyOTP)
+
+	pg.New(&h.cfg.PG).Register(mux)
 
 	mux.HandleFunc("GET /", h.Index)
 }
