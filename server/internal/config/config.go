@@ -41,8 +41,9 @@ type ServerConfig struct {
 
 // PGConfig holds configuration for the Parents Gateway integration.
 type PGConfig struct {
-	Mock    bool   `dotenv:"TW_PG_MOCK"`
-	BaseURL string `dotenv:"TW_PG_BASE_URL"`
+	Mock      bool   `dotenv:"TW_PG_MOCK"`
+	BaseURL   string `dotenv:"TW_PG_BASE_URL"`
+	TimeoutMS int    `dotenv:"TW_PG_TIMEOUT_MS"`
 }
 
 type OTPaaSConfig struct {
@@ -81,8 +82,9 @@ func Default() *Config {
 		},
 
 		PG: PGConfig{
-			Mock:    true,
-			BaseURL: "https://pg.moe.edu.sg",
+			Mock:      true,
+			BaseURL:   "https://pg.moe.edu.sg",
+			TimeoutMS: 10000,
 		},
 	}
 }

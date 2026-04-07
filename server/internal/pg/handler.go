@@ -22,5 +22,5 @@ func (h *Handler) Register(mux *http.ServeMux) {
 		h.registerMock(mux)
 		return
 	}
-	// Phase 2: real proxy routes go here
+	h.registerProxy(mux)
 }
