@@ -21,3 +21,6 @@ out
 # Ignore environment variables.
 *.env*
 !.env.example
+
+# Ignore worktrees.
+.worktrees
