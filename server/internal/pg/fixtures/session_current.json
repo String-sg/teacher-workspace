@@ -1,0 +1,18 @@
+{
+  "staffId": 1013,
+  "staffName": "TAN GUANG SHIN",
+  "isA": false,
+  "staffSchoolId": 1001,
+  "staffEmailAdd": "tangs@schools.gov.sg",
+  "is2FAAuthorized": true,
+  "schoolEmailAddress": "greenridge_sec@moe.edu.sg",
+  "schoolName": "GREENRIDGE SECONDARY SCHOOL",
+  "sessionTimeLeft": 1799,
+  "displayName": "",
+  "displayEmail": "",
+  "displayUpdatedBy": "",
+  "displayUpdatedAt": "",
+  "isAdminUpdated": false,
+  "isIhl": false,
+  "heyTaliaAccess": true
+}

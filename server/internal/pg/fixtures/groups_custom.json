@@ -1,0 +1,13 @@
+{
+  "customGroups": [
+    {
+      "customGroupId": 5,
+      "name": "Olympiad Study Group",
+      "studentCount": 8,
+      "createdBy": 1013,
+      "createdByName": "TAN GUANG SHIN",
+      "isShared": false,
+      "createdAt": "2026-03-01T08:00:00.000Z"
+    }
+  ]
+}

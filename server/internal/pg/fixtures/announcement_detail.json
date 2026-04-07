@@ -1,0 +1,27 @@
+{
+  "announcementId": 1036,
+  "title": "Term 4 Letter to Parents",
+  "content": null,
+  "richTextContent": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Dear Parents,\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Please find attached the letter regarding Term 4 arrangements including exam schedules and upcoming school events.\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Thank you.\"}]}]}",
+  "staffName": "MS TAN WEI LING",
+  "createdBy": 1013,
+  "createdAt": "2026-03-09T06:30:00.000Z",
+  "postedDate": "2026-03-10T01:00:00.000Z",
+  "enquiryEmailAddress": "greenridge_sec@moe.edu.sg",
+  "attachments": [],
+  "images": [],
+  "shortcutLink": [],
+  "websiteLinks": [],
+  "staffOwners": [
+    { "staffID": 1013, "staffName": "TAN GUANG SHIN" }
+  ],
+  "students": [
+    { "studentId": 1, "studentName": "TAN XIAO MING", "className": "4A", "isRead": true },
+    { "studentId": 2, "studentName": "LEE WEI LIANG", "className": "4A", "isRead": true },
+    { "studentId": 3, "studentName": "CAROL CHEN HUI", "className": "4A", "isRead": false },
+    { "studentId": 4, "studentName": "DAVID NG JUN WEI", "className": "4A", "isRead": false }
+  ],
+  "status": "POSTED",
+  "scheduledSendAt": null,
+  "scheduledSendFailureCode": null
+}

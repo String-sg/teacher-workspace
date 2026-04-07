@@ -1,0 +1,40 @@
+{
+  "eventId": 1001,
+  "timeslots": [
+    {
+      "slotId": 1,
+      "startDateTime": "2026-04-10T01:00:00.000Z",
+      "endDateTime": "2026-04-10T01:10:00.000Z",
+      "capacity": 1,
+      "booked": 0,
+      "isBlocked": false,
+      "bookings": []
+    },
+    {
+      "slotId": 2,
+      "startDateTime": "2026-04-10T01:10:00.000Z",
+      "endDateTime": "2026-04-10T01:20:00.000Z",
+      "capacity": 1,
+      "booked": 1,
+      "isBlocked": false,
+      "bookings": [
+        {
+          "bookingId": 10,
+          "studentId": 1,
+          "studentName": "TAN XIAO MING",
+          "parentName": "TAN AH KOW",
+          "bookedAt": "2026-04-06T09:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "slotId": 3,
+      "startDateTime": "2026-04-10T01:20:00.000Z",
+      "endDateTime": "2026-04-10T01:30:00.000Z",
+      "capacity": 1,
+      "booked": 0,
+      "isBlocked": true,
+      "bookings": []
+    }
+  ]
+}

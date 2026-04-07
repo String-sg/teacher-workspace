@@ -1,0 +1,18 @@
+{
+  "posts": [
+    {
+      "id": "ann_1040",
+      "postId": 1040,
+      "title": "Sports Day Arrangements",
+      "date": "2026-03-15T03:00:00.000Z",
+      "status": "POSTED",
+      "toParentsOf": ["4A", "4B"],
+      "readMetrics": { "readPerStudent": 0.8, "totalStudents": 60 },
+      "scheduledSendFailureCode": null,
+      "createdByName": "MR LEE KAH SENG"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "pageSize": 10
+}

@@ -1,0 +1,15 @@
+{
+  "classes": [
+    { "classId": 101, "className": "4A", "level": "SECONDARY 4", "year": 2026 },
+    { "classId": 102, "className": "4B", "level": "SECONDARY 4", "year": 2026 },
+    { "classId": 103, "className": "4C", "level": "SECONDARY 4", "year": 2026 }
+  ],
+  "levels": [
+    { "levelId": 4, "levelName": "SECONDARY 4", "year": 2026 }
+  ],
+  "ccas": [
+    { "ccaId": 10, "ccaName": "BOXING" },
+    { "ccaId": 11, "ccaName": "CHOIR" },
+    { "ccaId": 12, "ccaName": "BASKETBALL" }
+  ]
+}

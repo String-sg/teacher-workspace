@@ -1,0 +1,54 @@
+{
+  "upcoming": [
+    {
+      "eventId": 1001,
+      "title": "Parent-Teacher Meeting Term 2 2026",
+      "eventDates": [
+        {
+          "startDateTime": "2026-04-10T01:00:00.000Z",
+          "endDateTime": "2026-04-10T05:00:00.000Z"
+        }
+      ],
+      "bookingWindows": [
+        {
+          "windowDate": {
+            "startDateTime": "2026-04-05T00:00:00.000Z",
+            "endDateTime": "2026-04-09T16:00:00.000Z"
+          }
+        }
+      ],
+      "bookingSummary": { "available": 4, "pending": 2, "booked": 2 },
+      "targetStudents": 30,
+      "createdDate": "2026-03-20T08:00:00.000Z",
+      "slotDuration": 10,
+      "bookingsPerSlot": 1,
+      "status": "BOOKING_OPEN"
+    }
+  ],
+  "past": [
+    {
+      "eventId": 1000,
+      "title": "Parent-Teacher Meeting Term 1 2026",
+      "eventDates": [
+        {
+          "startDateTime": "2026-01-15T01:00:00.000Z",
+          "endDateTime": "2026-01-15T05:00:00.000Z"
+        }
+      ],
+      "bookingWindows": [
+        {
+          "windowDate": {
+            "startDateTime": "2026-01-10T00:00:00.000Z",
+            "endDateTime": "2026-01-14T16:00:00.000Z"
+          }
+        }
+      ],
+      "bookingSummary": { "available": 0, "pending": 0, "booked": 28 },
+      "targetStudents": 30,
+      "createdDate": "2026-01-05T08:00:00.000Z",
+      "slotDuration": 10,
+      "bookingsPerSlot": 1,
+      "status": "PAST"
+    }
+  ]
+}

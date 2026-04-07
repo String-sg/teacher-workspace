@@ -1,0 +1,13 @@
+{
+  "staffId": 1013,
+  "staffName": "TAN GUANG SHIN",
+  "email": "tangs@schools.gov.sg",
+  "schoolEmail": "greenridge_sec@moe.edu.sg",
+  "schoolName": "GREENRIDGE SECONDARY SCHOOL",
+  "displayName": "",
+  "displayEmail": "",
+  "recentLogins": [
+    { "loginAt": "2026-04-07T08:00:00.000Z", "device": "MacBook Pro", "browser": "Chrome 124", "ipAddress": "128.106.1.1" },
+    { "loginAt": "2026-04-06T09:30:00.000Z", "device": "iPhone 15", "browser": "Mobile Safari", "ipAddress": "128.106.1.1" }
+  ]
+}

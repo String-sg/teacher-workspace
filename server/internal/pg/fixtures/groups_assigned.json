@@ -1,0 +1,32 @@
+{
+  "classes": [
+    {
+      "classId": 101,
+      "className": "4A",
+      "level": "SECONDARY 4",
+      "year": 2026,
+      "role": "FORM_TEACHER",
+      "studentCount": 30
+    }
+  ],
+  "ccas": [
+    {
+      "ccaId": 10,
+      "ccaName": "BOXING",
+      "studentCount": 15
+    }
+  ],
+  "levels": [
+    {
+      "levelId": 4,
+      "levelName": "SECONDARY 4",
+      "year": 2026,
+      "studentCount": 120
+    }
+  ],
+  "school": {
+    "schoolId": 1001,
+    "schoolName": "GREENRIDGE SECONDARY SCHOOL",
+    "studentCount": 600
+  }
+}

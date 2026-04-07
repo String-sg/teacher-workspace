@@ -1,0 +1,10 @@
+{
+  "students": [
+    { "studentId": 1, "studentName": "TAN XIAO MING", "className": "4A", "level": "SECONDARY 4", "indexNumber": 15, "ccas": ["BOXING"] },
+    { "studentId": 2, "studentName": "LEE WEI LIANG", "className": "4A", "level": "SECONDARY 4", "indexNumber": 8, "ccas": [] },
+    { "studentId": 3, "studentName": "CAROL CHEN HUI", "className": "4A", "level": "SECONDARY 4", "indexNumber": 3, "ccas": ["CHOIR"] },
+    { "studentId": 4, "studentName": "DAVID NG JUN WEI", "className": "4A", "level": "SECONDARY 4", "indexNumber": 5, "ccas": ["BASKETBALL"] },
+    { "studentId": 5, "studentName": "EMILY WONG SHU HUI", "className": "4A", "level": "SECONDARY 4", "indexNumber": 7, "ccas": ["BOXING"] }
+  ],
+  "total": 5
+}

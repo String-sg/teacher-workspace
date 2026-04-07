@@ -1,0 +1,7 @@
+{
+  "preferences": [
+    { "eventType": "CONSENT_FORM_RESPONSE_YES", "label": "When a parent responds 'Yes'", "enabled": true },
+    { "eventType": "CONSENT_FORM_RESPONSE_NO", "label": "When a parent responds 'No'", "enabled": true },
+    { "eventType": "CONSENT_FORM_RESPONSE_CHANGED", "label": "When a parent changes their response", "enabled": false }
+  ]
+}
