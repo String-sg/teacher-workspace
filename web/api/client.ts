@@ -21,14 +21,26 @@ async function fetchApi<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/** Wrapper that returns a fallback instead of crashing when the API is unavailable. */
+async function fetchApiSafe<T>(path: string, fallback: T): Promise<T> {
+  try {
+    return await fetchApi<T>(path);
+  } catch {
+    console.warn(`[PG API] Failed to fetch ${path}, using fallback`);
+    return fallback;
+  }
+}
+
 // ─── Raw fetch functions ────────────────────────────────────────────────────
 
+const EMPTY_LIST: PGApiAnnouncementList = { posts: [], total: 0, page: 1, pageSize: 10 };
+
 function fetchAnnouncements() {
-  return fetchApi<PGApiAnnouncementList>('/announcements');
+  return fetchApiSafe<PGApiAnnouncementList>('/announcements', EMPTY_LIST);
 }
 
 function fetchSharedAnnouncements() {
-  return fetchApi<PGApiAnnouncementList>('/announcements/shared');
+  return fetchApiSafe<PGApiAnnouncementList>('/announcements/shared', EMPTY_LIST);
 }
 
 function fetchAnnouncementDetail(postId: string) {
@@ -55,10 +67,15 @@ export async function loadPostsList(): Promise<PGAnnouncement[]> {
 
 export async function loadPostDetail(
   postId: string,
-): Promise<PGAnnouncement> {
-  const [detail, readStatus] = await Promise.all([
-    fetchAnnouncementDetail(postId),
-    fetchAnnouncementReadStatus(postId),
-  ]);
-  return mapAnnouncementDetail(detail, readStatus);
+): Promise<PGAnnouncement | null> {
+  try {
+    const [detail, readStatus] = await Promise.all([
+      fetchAnnouncementDetail(postId),
+      fetchAnnouncementReadStatus(postId),
+    ]);
+    return mapAnnouncementDetail(detail, readStatus);
+  } catch {
+    console.warn(`[PG API] Failed to load post ${postId}`);
+    return null;
+  }
 }
