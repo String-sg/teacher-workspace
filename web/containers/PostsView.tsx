@@ -27,7 +27,7 @@ import {
   Users,
 } from '@flow/icons';
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { ReadRate } from '~/components/comms/ReadRate';
 import { StatusBadge } from '~/components/comms/StatusBadge';
@@ -41,6 +41,7 @@ type PostTab = 'view-only' | 'with-responses';
 
 
 const PostsView: React.FC = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<PostTab>('view-only');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -196,7 +197,11 @@ const PostsView: React.FC = () => {
                   const isShared = announcement.ownership === 'shared';
 
                   return (
-                    <TableRow key={announcement.id}>
+                    <TableRow
+                      key={announcement.id}
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/posts/${announcement.id}`)}
+                    >
                       {/* Title */}
                       <TableCell className="overflow-hidden pl-6 whitespace-normal">
                         <div className="min-w-0">
@@ -304,7 +309,12 @@ const PostsView: React.FC = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem disabled>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate('/posts/new');
+                              }}
+                            >
                               <Copy className="mr-2 h-4 w-4" />
                               Duplicate
                             </DropdownMenuItem>
