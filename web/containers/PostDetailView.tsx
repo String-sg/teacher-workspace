@@ -10,10 +10,11 @@ import {
 } from 'react-router';
 
 import { loadPostDetail } from '~/api/client';
+import { AnnouncementCard } from '~/components/comms/AnnouncementCard';
 import { ReadTrackingCards } from '~/components/comms/ReadTrackingCards';
 import { RecipientReadTable } from '~/components/comms/RecipientReadTable';
 import { StatusBadge } from '~/components/comms/StatusBadge';
-import { Button, Separator } from '~/components/ui';
+import { Button } from '~/components/ui';
 import type { PGAnnouncement } from '~/data/mock-pg-announcements';
 import { formatDate } from '~/helpers/dateTime';
 
@@ -82,7 +83,7 @@ const PostDetailView: React.FC = () => {
   );
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 px-6 py-6">
+    <div className="px-6 py-6 space-y-6">
       {/* Header: Back + Edit */}
       <div className="flex items-center justify-between">
         <Link
@@ -98,7 +99,7 @@ const PostDetailView: React.FC = () => {
         </Button>
       </div>
 
-      {/* Post content */}
+      {/* Post title + status + date */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <StatusBadge status={announcement.status} />
@@ -113,34 +114,52 @@ const PostDetailView: React.FC = () => {
             {formatDate(announcement.postedAt ?? announcement.createdAt)}
           </p>
         </Typography>
-
-        {announcement.description && (
-          <Typography variant="body-md" className="mt-4 whitespace-pre-line" asChild>
-            <p>{announcement.description}</p>
-          </Typography>
-        )}
       </div>
 
-      <Separator />
+      {/* Two-column grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left column (2/3) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Read tracking cards */}
+          <div className="space-y-3">
+            <Typography
+              variant="label-sm"
+              className="text-muted-foreground uppercase tracking-widest"
+            >
+              {announcement.responseType === 'view-only'
+                ? 'READ STATUS'
+                : 'RESPONSES RECEIVED'}
+            </Typography>
+            <ReadTrackingCards
+              responseType={announcement.responseType}
+              stats={announcement.stats}
+            />
+          </div>
 
-      {/* Read tracking */}
-      <div className="space-y-4">
-        <Typography variant="label-lg-strong">Read Tracking</Typography>
-        <ReadTrackingCards
-          responseType={announcement.responseType}
-          stats={announcement.stats}
-        />
-      </div>
+          {/* Recipients table */}
+          <div className="space-y-3">
+            <Typography
+              variant="label-sm"
+              className="text-muted-foreground uppercase tracking-widest"
+            >
+              RESPONSE STATUS
+            </Typography>
+            <RecipientReadTable
+              recipients={sortedRecipients}
+              responseType={announcement.responseType}
+            />
+          </div>
+        </div>
 
-      <Separator />
-
-      {/* Recipients table */}
-      <div className="space-y-4">
-        <Typography variant="label-lg-strong">Recipients</Typography>
-        <RecipientReadTable
-          recipients={sortedRecipients}
-          responseType={announcement.responseType}
-        />
+        {/* Right column (1/3) */}
+        <div>
+          <AnnouncementCard
+            title={announcement.title}
+            description={announcement.description}
+            enquiryEmail={announcement.enquiryEmail}
+            staffInCharge={announcement.staffInCharge}
+          />
+        </div>
       </div>
     </div>
   );

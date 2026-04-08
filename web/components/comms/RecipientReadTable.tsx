@@ -1,7 +1,10 @@
-import { Check, X } from '@flow/icons';
+import { Typography } from '@flow/core';
+import { Check, Columns3, Download, Search, SlidersHorizontal, X } from '@flow/icons';
 
 import {
   Badge,
+  Button,
+  Input,
   Table,
   TableBody,
   TableCell,
@@ -20,7 +23,40 @@ interface RecipientReadTableProps {
 
 export function RecipientReadTable({ recipients, responseType }: RecipientReadTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border">
+    <div className="space-y-3">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search student or parent..."
+            className="pl-9"
+            aria-label="Search student or parent"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" disabled>
+            <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+            Filter
+          </Button>
+          <Button variant="outline" size="sm" disabled>
+            <Columns3 className="mr-1.5 h-4 w-4" />
+            Columns
+          </Button>
+          <Button variant="outline" size="sm" disabled>
+            <Download className="mr-1.5 h-4 w-4" />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      {/* Recipient count */}
+      <Typography variant="body-sm" className="text-muted-foreground">
+        {recipients.length} recipients
+      </Typography>
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-lg border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -109,6 +145,7 @@ export function RecipientReadTable({ recipients, responseType }: RecipientReadTa
           ))}
         </TableBody>
       </Table>
+    </div>
     </div>
   );
 }
