@@ -1,6 +1,7 @@
 import type {
   PGApiAnnouncementDetail,
   PGApiAnnouncementSummary,
+  PGApiConsentFormSummary,
   PGApiReadStatus,
 } from './types';
 import type {
@@ -97,6 +98,16 @@ export function mapAnnouncementDetail(
     staffInCharge: detail.staffOwners[0]?.staffName,
     enquiryEmail: detail.enquiryEmailAddress,
   };
+}
+
+/**
+ * Map a consent form summary from the API to a list item with ownership.
+ */
+export function mapConsentFormSummary(
+  api: PGApiConsentFormSummary,
+  ownership: 'mine' | 'shared',
+): PGApiConsentFormSummary & { ownership: 'mine' | 'shared' } {
+  return { ...api, ownership };
 }
 
 /**

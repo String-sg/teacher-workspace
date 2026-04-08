@@ -1,6 +1,6 @@
 /** Types matching the actual PG API response shapes from the Go BFF. */
 
-// ─── List endpoint (/api/web/2/staff/announcements) ────────────────────────
+// ─── Announcements ──────────────────────────────────────────────────────────
 
 export interface PGApiAnnouncementList {
   posts: PGApiAnnouncementSummary[];
@@ -21,8 +21,6 @@ export interface PGApiAnnouncementSummary {
   scheduledSendFailureCode: string | null;
   createdByName: string;
 }
-
-// ─── Detail endpoint (/api/web/2/staff/announcements/{postId}) ─────────────
 
 export interface PGApiAnnouncementDetail {
   announcementId: number;
@@ -50,8 +48,6 @@ export interface PGApiAnnouncementDetail {
   scheduledSendFailureCode: string | null;
 }
 
-// ─── Read status endpoint (/api/web/2/staff/announcements/{postId}/readStatus)
-
 export interface PGApiReadStatus {
   postId: number;
   totalRecipients: number;
@@ -63,4 +59,182 @@ export interface PGApiReadStatus {
     isRead: boolean;
     readAt: string | null;
   }>;
+}
+
+export interface PGApiAnnouncementDraft {
+  announcementDraftId: number;
+  title: string;
+  content: string | null;
+  richTextContent: string;
+  enquiryEmailAddress: string;
+  attachments: unknown[];
+  images: unknown[];
+  shortcutLink: unknown[];
+  websiteLinks: unknown[];
+  staffOwners: Array<{ staffID: number; staffName: string }>;
+  recipients: {
+    classIds: number[];
+    customGroupIds: number[];
+    ccaIds: number[];
+    levelIds: number[];
+  };
+  scheduledSendAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Announcement write payloads ────────────────────────────────────────────
+
+export interface PGApiCreateAnnouncementPayload {
+  title: string;
+  richTextContent: string;
+  enquiryEmailAddress?: string;
+  recipients: {
+    classIds: number[];
+    customGroupIds: number[];
+    ccaIds: number[];
+    levelIds: number[];
+  };
+  staffOwnerIds?: number[];
+  shortcutLink?: unknown[];
+  websiteLinks?: unknown[];
+  attachments?: unknown[];
+  images?: unknown[];
+}
+
+export interface PGApiCreateDraftPayload extends PGApiCreateAnnouncementPayload {
+  scheduledSendAt?: string | null;
+}
+
+export interface PGApiScheduleDraftPayload {
+  announcementDraftId: number;
+  scheduledSendAt: string;
+}
+
+export interface PGApiDuplicatePayload {
+  postId: number;
+}
+
+// ─── Consent Forms ──────────────────────────────────────────────────────────
+
+export interface PGApiConsentFormList {
+  posts: PGApiConsentFormSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface PGApiConsentFormSummary {
+  id: string;
+  postId: number;
+  title: string;
+  date: string;
+  status: 'OPEN' | 'CLOSED' | 'DRAFT';
+  toParentsOf: string[];
+  respondedMetrics: { respondedPerStudent: number; totalStudents: number };
+  scheduledSendFailureCode: string | null;
+  createdByName: string;
+  consentByDate: string;
+}
+
+export interface PGApiConsentFormDetail {
+  consentFormId: number;
+  title: string;
+  richTextContent: string;
+  responseType: string;
+  eventStartDate: string;
+  eventEndDate: string;
+  consentByDate: string;
+  addReminderType: string;
+  reminderDate: string;
+  postedDate: string;
+  enquiryEmailAddress: string;
+  staffName: string;
+  createdBy: number;
+  createdAt: string;
+  attachments: unknown[];
+  images: unknown[];
+  websiteLinks: unknown[];
+  customQuestions: unknown[];
+  staffOwners: Array<{ staffID: number; staffName: string }>;
+  students: Array<{
+    studentId: number;
+    studentName: string;
+    className: string;
+    response: 'YES' | 'NO' | null;
+    respondedAt: string | null;
+  }>;
+  status: string;
+  consentFormHistory: unknown[];
+}
+
+// ─── School Data (for selectors) ────────────────────────────────────────────
+
+export interface PGApiSchoolStaff {
+  staffId: number;
+  staffName: string;
+  email: string;
+  schoolEmail: string;
+  assignedClass: string | null;
+}
+
+export interface PGApiSchoolGroups {
+  classes: Array<{ classId: number; className: string; level: string; year: number }>;
+  levels: Array<{ levelId: number; levelName: string; year: number }>;
+  ccas: Array<{ ccaId: number; ccaName: string }>;
+}
+
+export interface PGApiGroupsAssigned {
+  classes: Array<{
+    classId: number;
+    className: string;
+    level: string;
+    year: number;
+    role: string;
+    studentCount: number;
+  }>;
+  ccas: Array<{ ccaId: number; ccaName: string; studentCount: number }>;
+  levels: Array<{ levelId: number; levelName: string; year: number; studentCount: number }>;
+  school: { schoolId: number; schoolName: string; studentCount: number };
+}
+
+export interface PGApiClassDetail {
+  classId: number;
+  className: string;
+  level: string;
+  year: number;
+  students: Array<{
+    studentId: number;
+    studentName: string;
+    admissionNumber: string;
+  }>;
+  formTeachers: Array<{ staffID: number; staffName: string }>;
+}
+
+// ─── Session & Config ───────────────────────────────────────────────────────
+
+export interface PGApiSession {
+  staffId: number;
+  staffName: string;
+  schoolId: number;
+  email: string;
+  displayName: string;
+  displayEmail: string;
+}
+
+export interface PGApiConfig {
+  flags: Record<string, { enabled: boolean }>;
+  configs: Record<string, unknown>;
+}
+
+// ─── User Account ───────────────────────────────────────────────────────────
+
+export interface PGApiUserProfile {
+  staffId: number;
+  staffName: string;
+  email: string;
+  schoolEmail: string;
+  schoolName: string;
+  displayName: string;
+  displayEmail: string;
 }

@@ -29,7 +29,11 @@ import {
 import React, { useMemo, useState } from 'react';
 import { Link, useLoaderData, useNavigate } from 'react-router';
 
-import { loadPostsList } from '~/api/client';
+import {
+  deleteAnnouncement,
+  duplicateAnnouncement,
+  loadPostsList,
+} from '~/api/client';
 import { ReadRate } from '~/components/comms/ReadRate';
 import { StatusBadge } from '~/components/comms/StatusBadge';
 import type { PGAnnouncement } from '~/data/mock-pg-announcements';
@@ -273,7 +277,14 @@ const PostsView: React.FC = () => {
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate('/posts/new');
+                                duplicateAnnouncement({
+                                  postId: Number(announcement.id),
+                                }).then(() => {
+                                  navigate('/posts', { replace: true });
+                                }).catch(() => {
+                                  // Fallback: navigate to create page
+                                  navigate('/posts/new');
+                                });
                               }}
                             >
                               <Copy className="mr-2 h-4 w-4" />
@@ -281,8 +292,14 @@ const PostsView: React.FC = () => {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              disabled
                               className="text-destructive focus:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!confirm('Delete this post?')) return;
+                                deleteAnnouncement(announcement.id).catch(
+                                  () => {},
+                                );
+                              }}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete

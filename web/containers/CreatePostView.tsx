@@ -9,7 +9,12 @@ import {
   useParams,
 } from 'react-router';
 
-import { loadPostDetail } from '~/api/client';
+import {
+  createAnnouncement,
+  createDraft,
+  loadPostDetail,
+  updateDraft,
+} from '~/api/client';
 import { PostPreview } from '~/components/comms/PostPreview';
 import { QuestionBuilder } from '~/components/comms/QuestionBuilder';
 import { RecipientSelector } from '~/components/comms/RecipientSelector';
@@ -298,14 +303,46 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const recipientCount = getRecipientCount(state.selectedClasses);
   const isEditing = Boolean(editId);
 
+  function buildPayload() {
+    return {
+      title: state.title,
+      richTextContent: JSON.stringify({
+        type: 'doc',
+        content: state.description
+          .split('\n')
+          .map((line) => ({
+            type: 'paragraph',
+            attrs: { textAlign: 'left' },
+            content: line ? [{ type: 'text', text: line }] : [],
+          })),
+      }),
+      enquiryEmailAddress: state.enquiryEmail || undefined,
+      recipients: {
+        classIds: state.selectedClasses.map((c) =>
+          MOCK_CLASSES.findIndex((mc) => mc.id === c) + 100,
+        ),
+        customGroupIds: [],
+        ccaIds: [],
+        levelIds: [],
+      },
+    };
+  }
+
   function handleSaveDraft() {
-    // eslint-disable-next-line no-alert
+    const payload = buildPayload();
+    if (isEditing && editId) {
+      updateDraft(Number(editId), payload).catch(() => {});
+    } else {
+      createDraft(payload).catch(() => {});
+    }
     alert('Draft saved');
+    navigate('/posts');
   }
 
   function handleSendConfirm() {
     setShowSendDialog(false);
-    // eslint-disable-next-line no-alert
+    const payload = buildPayload();
+    createAnnouncement(payload).catch(() => {});
     alert('Post sent successfully');
     navigate('/posts');
   }
