@@ -13,6 +13,11 @@ export default defineConfig({
       '~': path.resolve(import.meta.dirname, 'web'),
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
   build: {
     outDir: '../dist',
     emptyOutDir: true,
