@@ -28,7 +28,6 @@ import {
   Button,
   Card,
   CardContent,
-  Checkbox,
   Input,
   Label,
   Select,
@@ -77,20 +76,6 @@ const MOCK_STAFF = [
   { id: 'staff-5', name: 'Mrs. Chen Li Hua', department: 'SEN Coordinator' },
 ];
 
-const PG_SHORTCUTS = [
-  {
-    id: 'travel',
-    label: 'Travel Declaration',
-    emoji: '\u2708\uFE0F',
-    url: 'https://pg.moe.edu.sg/travel',
-  },
-  {
-    id: 'contact',
-    label: 'Contact Details',
-    emoji: '\uD83E\uDDD1',
-    url: 'https://pg.moe.edu.sg/contact',
-  },
-];
 
 const MOCK_EMAILS = [
   'school_enquiry@moe.gov.sg',
@@ -106,7 +91,7 @@ interface PostFormState {
   selectedClasses: string[];
   responseType: ResponseType;
   questions: FormQuestion[];
-  selectedShortcuts: string[];
+
   staffInCharge: string;
   enquiryEmail: string;
   dueDate: string;
@@ -121,7 +106,6 @@ type PostFormAction =
   | { type: 'UPDATE_QUESTION'; id: string; payload: Partial<FormQuestion> }
   | { type: 'REMOVE_QUESTION'; id: string }
   | { type: 'MOVE_QUESTION'; id: string; direction: 'up' | 'down' }
-  | { type: 'TOGGLE_SHORTCUT'; id: string }
   | { type: 'SET_STAFF'; payload: string }
   | { type: 'SET_EMAIL'; payload: string }
   | { type: 'SET_DUE_DATE'; payload: string };
@@ -132,7 +116,7 @@ const INITIAL_STATE: PostFormState = {
   selectedClasses: [],
   responseType: 'view-only',
   questions: [],
-  selectedShortcuts: [],
+
   staffInCharge: '',
   enquiryEmail: '',
   dueDate: '',
@@ -224,13 +208,6 @@ function formReducer(state: PostFormState, action: PostFormAction): PostFormStat
       return { ...state, questions: newQuestions };
     }
 
-    case 'TOGGLE_SHORTCUT': {
-      const id = action.id;
-      const shortcuts = state.selectedShortcuts.includes(id)
-        ? state.selectedShortcuts.filter((s) => s !== id)
-        : [...state.selectedShortcuts, id];
-      return { ...state, selectedShortcuts: shortcuts };
-    }
 
     case 'SET_STAFF':
       return { ...state, staffInCharge: action.payload };
@@ -259,7 +236,7 @@ function announcementToFormState(
     ],
     responseType: announcement.responseType,
     questions: announcement.questions ?? [],
-    selectedShortcuts: announcement.shortcuts?.map((s) => s.id) ?? [],
+
     staffInCharge:
       MOCK_STAFF.find((s) => s.name === announcement.staffInCharge)?.id ?? '',
     enquiryEmail: announcement.enquiryEmail ?? '',
@@ -561,31 +538,6 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
                 </div>
               </div>
 
-              {/* Shortcuts */}
-              <div className="space-y-1.5">
-                <Label>Shortcuts</Label>
-                <Typography variant="body-sm" className="text-muted-foreground">
-                  To direct parents to existing features within Parents Gateway app.
-                </Typography>
-                <div className="divide-y rounded-xl border">
-                  {PG_SHORTCUTS.map((shortcut) => (
-                    <label
-                      key={shortcut.id}
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-slate-50"
-                    >
-                      <Checkbox
-                        checked={state.selectedShortcuts.includes(shortcut.id)}
-                        onCheckedChange={() =>
-                          dispatch({ type: 'TOGGLE_SHORTCUT', id: shortcut.id })
-                        }
-                      />
-                      <span className="text-sm">
-                        {shortcut.emoji} {shortcut.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
 
               {/* Attachments */}
               <AttachmentSection />
