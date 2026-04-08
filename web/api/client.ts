@@ -5,6 +5,10 @@ import {
   mapAnnouncementSummary,
   mergeAndDedup,
 } from './mappers';
+import announcementsFixture from '../../server/internal/pg/fixtures/announcements.json';
+import sharedFixture from '../../server/internal/pg/fixtures/announcements_shared.json';
+import detailFixture from '../../server/internal/pg/fixtures/announcement_detail.json';
+import readStatusFixture from '../../server/internal/pg/fixtures/announcement_read_status.json';
 import type {
   PGApiAnnouncementDetail,
   PGApiAnnouncementList,
@@ -26,29 +30,39 @@ async function fetchApiSafe<T>(path: string, fallback: T): Promise<T> {
   try {
     return await fetchApi<T>(path);
   } catch {
-    console.warn(`[PG API] Failed to fetch ${path}, using fallback`);
+    console.warn(`[PG API] Failed to fetch ${path}, using fixture fallback`);
     return fallback;
   }
 }
 
-// ─── Raw fetch functions ────────────────────────────────────────────────────
-
-const EMPTY_LIST: PGApiAnnouncementList = { posts: [], total: 0, page: 1, pageSize: 10 };
+// ─── Raw fetch functions (fall back to embedded fixtures when API unavailable)
 
 function fetchAnnouncements() {
-  return fetchApiSafe<PGApiAnnouncementList>('/announcements', EMPTY_LIST);
+  return fetchApiSafe<PGApiAnnouncementList>(
+    '/announcements',
+    announcementsFixture as unknown as PGApiAnnouncementList,
+  );
 }
 
 function fetchSharedAnnouncements() {
-  return fetchApiSafe<PGApiAnnouncementList>('/announcements/shared', EMPTY_LIST);
+  return fetchApiSafe<PGApiAnnouncementList>(
+    '/announcements/shared',
+    sharedFixture as unknown as PGApiAnnouncementList,
+  );
 }
 
 function fetchAnnouncementDetail(postId: string) {
-  return fetchApi<PGApiAnnouncementDetail>(`/announcements/${postId}`);
+  return fetchApiSafe<PGApiAnnouncementDetail>(
+    `/announcements/${postId}`,
+    detailFixture as unknown as PGApiAnnouncementDetail,
+  );
 }
 
 function fetchAnnouncementReadStatus(postId: string) {
-  return fetchApi<PGApiReadStatus>(`/announcements/${postId}/readStatus`);
+  return fetchApiSafe<PGApiReadStatus>(
+    `/announcements/${postId}/readStatus`,
+    readStatusFixture as unknown as PGApiReadStatus,
+  );
 }
 
 // ─── Composed loaders (called by route loaders, return mapped FE types) ─────
