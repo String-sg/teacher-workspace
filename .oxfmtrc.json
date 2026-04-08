@@ -5,6 +5,8 @@
   "singleQuote": true,
   "trailingComma": "all",
 
+  "sortImports": true,
+
   "sortTailwindcss": {
     "stylesheet": "./web/App.css",
     "functions": ["cn"]
