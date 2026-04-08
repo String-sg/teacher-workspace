@@ -15,13 +15,19 @@ import {
   loadPostDetail,
   updateDraft,
 } from '~/api/client';
+import { AttachmentSection } from '~/components/comms/AttachmentSection';
 import { PostPreview } from '~/components/comms/PostPreview';
+import { PostTypePicker } from '~/components/comms/PostTypePicker';
 import { QuestionBuilder } from '~/components/comms/QuestionBuilder';
 import { RecipientSelector } from '~/components/comms/RecipientSelector';
 import { ResponseTypeSelector } from '~/components/comms/ResponseTypeSelector';
+import { RichTextToolbar } from '~/components/comms/RichTextToolbar';
 import { SendConfirmationDialog } from '~/components/comms/SendConfirmationDialog';
+import { SplitPostButton } from '~/components/comms/SplitPostButton';
 import {
   Button,
+  Card,
+  CardContent,
   Checkbox,
   Input,
   Label,
@@ -30,7 +36,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Separator,
   Textarea,
 } from '~/components/ui';
 import type { FormQuestion, PGAnnouncement, ResponseType } from '~/data/mock-pg-announcements';
@@ -278,6 +283,11 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Type picker state — skip in edit mode
+  const [selectedType, setSelectedType] = useState<'post' | 'post-with-response' | null>(
+    editId ? 'post' : null,
+  );
+
   // For edit mode, map loader data to form state
   const editData = loaderData ? announcementToFormState(loaderData) : null;
 
@@ -295,6 +305,13 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const isFormValid = state.title.trim().length > 0;
   const recipientCount = getRecipientCount(state.selectedClasses);
   const isEditing = Boolean(editId);
+
+  function handleTypeSelect(type: 'post' | 'post-with-response') {
+    setSelectedType(type);
+    if (type === 'post-with-response') {
+      dispatch({ type: 'SET_RESPONSE_TYPE', payload: 'acknowledge' });
+    }
+  }
 
   function buildPayload() {
     return {
@@ -352,209 +369,265 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     }
   }
 
-  return (
-    <div className="flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 z-10 border-b bg-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link
-            to="/posts"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Posts
-          </Link>
-
-          <div className="flex items-center gap-2">
-            {/* Mobile preview toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="lg:hidden"
-              onClick={() => setShowMobilePreview((prev) => !prev)}
-            >
-              <Eye className="h-4 w-4" />
-              Preview
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!isFormValid || isSaving}
-              onClick={handleSaveDraft}
-            >
-              {isSaving ? 'Saving...' : 'Save Draft'}
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              disabled={!isFormValid || isSaving}
-              onClick={() => setShowSendDialog(true)}
-            >
-              {isEditing ? 'Update & Send' : 'Send'}
-            </Button>
+  // ── Type picker (shown before form) ────────────────────────────────────
+  if (!selectedType) {
+    return (
+      <div className="flex flex-col">
+        {/* Minimal header */}
+        <div className="sticky top-0 z-10 border-b bg-white/95 backdrop-blur-sm px-6 py-3">
+          <div className="flex items-center gap-3">
+            <Link to="/posts" className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <Typography variant="title-md" asChild>
+              <h1>New Post</h1>
+            </Typography>
           </div>
         </div>
 
-        <Typography variant="title-lg" className="mt-2" asChild>
-          <h1>{isEditing ? 'Edit Post' : 'Create Post'}</h1>
-        </Typography>
+        <PostTypePicker onSelect={handleTypeSelect} />
+      </div>
+    );
+  }
+
+  // ── Form view ──────────────────────────────────────────────────────────
+  return (
+    <div className="flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-10 border-b bg-white/95 backdrop-blur-sm px-6 py-3">
+        <div className="flex items-center justify-between">
+          {/* Left: back arrow + title */}
+          <div className="flex items-center gap-3">
+            <Link to="/posts" className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <Typography variant="title-md" asChild>
+              <h1>{isEditing ? 'Edit Post' : 'New Post'}</h1>
+            </Typography>
+          </div>
+
+          {/* Right: preview toggle + split button */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobilePreview(!showMobilePreview)}
+              className="hidden max-lg:flex"
+            >
+              <Eye className="h-4 w-4 mr-1.5" />
+              Show Preview
+            </Button>
+
+            <SplitPostButton
+              disabled={!isFormValid || isSaving}
+              onPost={() => setShowSendDialog(true)}
+              onSchedule={handleSaveDraft}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Body */}
-      <div className="flex gap-8 px-6 py-6">
-        {/* Left column: Form */}
-        <div className="flex-1 max-w-[640px] space-y-8">
-          {/* Section 1: Title & Description */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="post-title">Title</Label>
-              <Input
-                id="post-title"
-                placeholder="Enter post title"
-                value={state.title}
-                onChange={(e) =>
-                  dispatch({ type: 'SET_TITLE', payload: e.target.value })
-                }
-              />
-            </div>
+      <div className="flex gap-8 px-6 py-6 justify-center">
+        {/* Form column */}
+        <div className="flex-1 max-w-2xl space-y-6">
+          {/* RECIPIENTS Card */}
+          <Card>
+            <CardContent className="p-6 space-y-5">
+              <Typography variant="label-sm" className="text-muted-foreground uppercase tracking-widest">
+                Recipients
+              </Typography>
 
-            <div className="space-y-2">
-              <Label htmlFor="post-description">Description</Label>
-              <Textarea
-                id="post-description"
-                placeholder="Enter post description"
-                value={state.description}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'SET_DESCRIPTION',
-                    payload: e.target.value,
-                  })
-                }
-                className="min-h-[120px]"
-              />
-            </div>
-          </div>
+              {/* Students field */}
+              <div className="space-y-1.5">
+                <Label>Students <span className="text-red-500">*</span></Label>
+                <Typography variant="body-sm" className="text-muted-foreground">
+                  Parents of the selected students will receive this post via Parents Gateway.
+                </Typography>
+                <RecipientSelector
+                  classes={MOCK_CLASSES}
+                  selectedClasses={state.selectedClasses}
+                  onToggleClass={(classId) =>
+                    dispatch({ type: 'TOGGLE_CLASS', payload: classId })
+                  }
+                />
+              </div>
 
-          <Separator />
+              {/* Staff in charge */}
+              <div className="space-y-1.5">
+                <Label>Staff in charge</Label>
+                <Typography variant="body-sm" className="text-muted-foreground">
+                  These staff will be able to view read status, and delete the post.
+                </Typography>
+                <Select
+                  value={state.staffInCharge}
+                  onValueChange={(value) =>
+                    dispatch({ type: 'SET_STAFF', payload: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select staff member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOCK_STAFF.map((staff) => (
+                      <SelectItem key={staff.id} value={staff.id}>
+                        {staff.name} ({staff.department})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Section 2: Recipients */}
-          <div className="space-y-4">
-            <Label>Recipients</Label>
-            <RecipientSelector
-              classes={MOCK_CLASSES}
-              selectedClasses={state.selectedClasses}
-              onToggleClass={(classId) =>
-                dispatch({ type: 'TOGGLE_CLASS', payload: classId })
-              }
-            />
-          </div>
+              {/* Enquiry email */}
+              <div className="space-y-1.5">
+                <Label>Enquiry email</Label>
+                <Typography variant="body-sm" className="text-muted-foreground">
+                  Select the preferred email address to receive enquiries from parents.
+                </Typography>
+                <Select
+                  value={state.enquiryEmail}
+                  onValueChange={(value) =>
+                    dispatch({ type: 'SET_EMAIL', payload: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select enquiry email" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOCK_EMAILS.map((email) => (
+                      <SelectItem key={email} value={email}>
+                        {email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
 
-          <Separator />
+          {/* CONTENT Card */}
+          <Card>
+            <CardContent className="p-6 space-y-5">
+              <Typography variant="label-sm" className="text-muted-foreground uppercase tracking-widest">
+                Content
+              </Typography>
 
-          {/* Section 3: Response Type */}
-          <div className="space-y-4">
-            <Label>Response Type</Label>
-            <ResponseTypeSelector
-              value={state.responseType}
-              onChange={(value) =>
-                dispatch({ type: 'SET_RESPONSE_TYPE', payload: value })
-              }
-            >
-              {/* Conditional content for acknowledge/yes-no */}
-              <div className="mt-6 space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="due-date">Due Date</Label>
-                  <Input
-                    id="due-date"
-                    type="date"
-                    value={state.dueDate}
+              {/* Title with counter */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="post-title">Title <span className="text-red-500">*</span></Label>
+                  <Typography variant="body-sm" className="text-muted-foreground">
+                    {state.title.length}/120
+                  </Typography>
+                </div>
+                <Input
+                  id="post-title"
+                  placeholder="e.g. Term 3 School Camp Consent & Payment"
+                  value={state.title}
+                  maxLength={120}
+                  onChange={(e) =>
+                    dispatch({ type: 'SET_TITLE', payload: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Description with counter and toolbar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="post-description">Description</Label>
+                  <Typography variant="body-sm" className="text-muted-foreground">
+                    {state.description.length}/2000
+                  </Typography>
+                </div>
+                <div>
+                  <RichTextToolbar />
+                  <Textarea
+                    id="post-description"
+                    className="rounded-t-none min-h-[120px]"
+                    placeholder="Write your announcement here. Use the toolbar to format text and insert inline links."
+                    value={state.description}
+                    maxLength={2000}
                     onChange={(e) =>
                       dispatch({
-                        type: 'SET_DUE_DATE',
+                        type: 'SET_DESCRIPTION',
                         payload: e.target.value,
                       })
                     }
-                    className="max-w-[240px]"
                   />
                 </div>
-
-                <QuestionBuilder questions={state.questions} dispatch={dispatch} />
               </div>
-            </ResponseTypeSelector>
-          </div>
 
-          <Separator />
+              {/* Shortcuts */}
+              <div className="space-y-1.5">
+                <Label>Shortcuts</Label>
+                <Typography variant="body-sm" className="text-muted-foreground">
+                  To direct parents to existing features within Parents Gateway app.
+                </Typography>
+                <div className="divide-y rounded-xl border">
+                  {PG_SHORTCUTS.map((shortcut) => (
+                    <label
+                      key={shortcut.id}
+                      className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-slate-50"
+                    >
+                      <Checkbox
+                        checked={state.selectedShortcuts.includes(shortcut.id)}
+                        onCheckedChange={() =>
+                          dispatch({ type: 'TOGGLE_SHORTCUT', id: shortcut.id })
+                        }
+                      />
+                      <span className="text-sm">
+                        {shortcut.emoji} {shortcut.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-          {/* Section 4: Additional Options */}
-          <div className="space-y-6">
-            {/* PG Shortcuts */}
-            <div className="space-y-3">
-              <Label>PG Shortcuts</Label>
-              <div className="flex flex-wrap gap-4">
-                {PG_SHORTCUTS.map((shortcut) => (
-                  <label
-                    key={shortcut.id}
-                    className="flex items-center gap-2 cursor-pointer"
+              {/* Attachments */}
+              <AttachmentSection />
+            </CardContent>
+          </Card>
+
+          {/* RESPONSE Card (only for post-with-response) */}
+          {selectedType === 'post-with-response' && (
+            <Card>
+              <CardContent className="p-6 space-y-5">
+                <Typography variant="label-sm" className="text-muted-foreground uppercase tracking-widest">
+                  Response
+                </Typography>
+
+                <div className="space-y-4">
+                  <ResponseTypeSelector
+                    value={state.responseType}
+                    onChange={(value) =>
+                      dispatch({ type: 'SET_RESPONSE_TYPE', payload: value })
+                    }
                   >
-                    <Checkbox
-                      checked={state.selectedShortcuts.includes(shortcut.id)}
-                      onCheckedChange={() =>
-                        dispatch({ type: 'TOGGLE_SHORTCUT', id: shortcut.id })
-                      }
-                    />
-                    <Typography variant="body-sm">
-                      {shortcut.emoji} {shortcut.label}
-                    </Typography>
-                  </label>
-                ))}
-              </div>
-            </div>
+                    {/* Conditional content for acknowledge/yes-no */}
+                    <div className="mt-6 space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="due-date">Due Date</Label>
+                        <Input
+                          id="due-date"
+                          type="date"
+                          value={state.dueDate}
+                          onChange={(e) =>
+                            dispatch({
+                              type: 'SET_DUE_DATE',
+                              payload: e.target.value,
+                            })
+                          }
+                          className="max-w-[240px]"
+                        />
+                      </div>
 
-            {/* Staff in Charge */}
-            <div className="space-y-2">
-              <Label htmlFor="staff-select">Staff in Charge</Label>
-              <Select
-                value={state.staffInCharge}
-                onValueChange={(value) =>
-                  dispatch({ type: 'SET_STAFF', payload: value })
-                }
-              >
-                <SelectTrigger id="staff-select" className="max-w-[320px]">
-                  <SelectValue placeholder="Select staff member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MOCK_STAFF.map((staff) => (
-                    <SelectItem key={staff.id} value={staff.id}>
-                      {staff.name} ({staff.department})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Enquiry Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email-select">Enquiry Email</Label>
-              <Select
-                value={state.enquiryEmail}
-                onValueChange={(value) =>
-                  dispatch({ type: 'SET_EMAIL', payload: value })
-                }
-              >
-                <SelectTrigger id="email-select" className="max-w-[320px]">
-                  <SelectValue placeholder="Select enquiry email" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MOCK_EMAILS.map((email) => (
-                    <SelectItem key={email} value={email}>
-                      {email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+                      <QuestionBuilder questions={state.questions} dispatch={dispatch} />
+                    </div>
+                  </ResponseTypeSelector>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Right column: Preview (desktop) */}
