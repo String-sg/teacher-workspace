@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["**/build/**", "**/dist/**", "**/node_modules/**"],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "plugins": ["typescript", "react", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "eslint/no-console": "warn",
+    "typescript/use-unknown-in-catch-callback-variable": "error",
+
+    // Rules from the original ESLint config not enabled by default in Oxlint.
+    "eslint/no-array-constructor": "error",
+    "eslint/no-case-declarations": "error",
+    "eslint/no-empty": "error",
+    "eslint/no-empty-function": "error",
+    "eslint/no-fallthrough": "error",
+    "eslint/no-prototype-builtins": "error",
+    "eslint/no-redeclare": "error",
+    "eslint/no-regex-spaces": "error",
+    "eslint/no-unexpected-multiline": "error",
+    "typescript/adjacent-overload-signatures": "error",
+    "typescript/array-type": "error",
+    "typescript/ban-ts-comment": "error",
+    "typescript/ban-tslint-comment": "error",
+    "typescript/class-literal-property-style": "error",
+    "typescript/consistent-generic-constructors": "error",
+    "typescript/consistent-indexed-object-style": "error",
+    "typescript/consistent-type-assertions": "error",
+    "typescript/consistent-type-definitions": "error",
+    "typescript/no-confusing-non-null-assertion": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-inferrable-types": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unsafe-function-type": "error",
+    "typescript/prefer-for-of": "error",
+    "typescript/prefer-function-type": "error",
+    "react/display-name": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-unescaped-entities": "error",
+    "react/no-unknown-property": "error",
+    "react/rules-of-hooks": "error"
+  }
+}
