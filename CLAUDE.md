@@ -10,7 +10,7 @@ A unified platform that consolidates teacher-facing applications into day-to-day
 
 - Go 1.26.1
 - PNPM 10
-- TypeScript 5.9
+- TypeScript 6.0
 - React 19
 - Vite 7
 - Tailwind CSS 4
