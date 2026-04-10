@@ -21,6 +21,7 @@ out
 # Ignore environment variables.
 *.env*
 !.env.example
+!pgw-web.env.example
 
 # Ignore worktrees.
 .worktrees
