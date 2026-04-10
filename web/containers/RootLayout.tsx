@@ -3,6 +3,8 @@ import { HelpCircle, Home, Mail, UsersRound } from '@flow/icons';
 import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
+import { ChunkErrorBoundary } from '~/components/ChunkErrorBoundary';
+
 import {
   Sidebar,
   SidebarContent,
@@ -86,9 +88,11 @@ const RootLayout: React.FC = () => {
 
             <div ref={topbarRef} className="absolute inset-x-0 top-0 h-px" />
 
-            <React.Suspense fallback={null}>
-              <Outlet />
-            </React.Suspense>
+            <ChunkErrorBoundary>
+              <React.Suspense fallback={null}>
+                <Outlet />
+              </React.Suspense>
+            </ChunkErrorBoundary>
           </div>
         </SidebarProvider>
       </div>

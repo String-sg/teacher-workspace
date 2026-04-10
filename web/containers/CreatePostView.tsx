@@ -1,6 +1,7 @@
 import { Typography } from '@flow/core';
 import { ArrowLeft, Eye } from '@flow/icons';
 import { useDeferredValue, useReducer, useState } from 'react';
+import type { LoaderFunctionArgs } from 'react-router';
 import {
   Link,
   Navigate,
@@ -38,8 +39,6 @@ import {
   Textarea,
 } from '~/components/ui';
 import type { FormQuestion, PGAnnouncement, ResponseType } from '~/data/mock-pg-announcements';
-
-import type { LoaderFunctionArgs } from 'react-router';
 
 // ─── Route loader (only fetches for edit mode) ──────────────────────────────
 
@@ -328,11 +327,11 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
       } else {
         await createDraft(payload);
       }
-      navigate('/posts');
     } catch {
       alert('Failed to save draft. Please try again.');
     } finally {
       setIsSaving(false);
+      navigate('/posts');
     }
   }
 
@@ -342,7 +341,8 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     const payload = buildPayload();
     try {
       await createAnnouncement(payload);
-      navigate('/posts');
+      // Wait for dialog close animation before navigating (prevents unmount mid-animation)
+      setTimeout(() => navigate('/posts'), 150);
     } catch {
       alert('Failed to send post. Please try again.');
     } finally {
@@ -600,26 +600,36 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
         </div>
       </div>
 
-      {/* Mobile preview */}
-      {showMobilePreview && (
-        <div className="fixed inset-0 z-50 bg-black/50 lg:hidden">
-          <div className="absolute right-0 top-0 bottom-0 w-[340px] bg-white p-4 shadow-xl overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <Typography variant="body-sm" className="font-medium">
-                Preview
-              </Typography>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobilePreview(false)}
-              >
-                Close
-              </Button>
-            </div>
-            <PostPreview formState={deferredState} />
+      {/* Mobile preview — kept mounted to avoid flicker on toggle */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-150 ${
+          showMobilePreview
+            ? 'bg-black/50 pointer-events-auto'
+            : 'bg-transparent pointer-events-none'
+        }`}
+        onClick={() => setShowMobilePreview(false)}
+      >
+        <div
+          className={`absolute right-0 top-0 bottom-0 w-[340px] bg-white p-4 shadow-xl overflow-y-auto transition-transform duration-150 ${
+            showMobilePreview ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <Typography variant="body-sm" className="font-medium">
+              Preview
+            </Typography>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobilePreview(false)}
+            >
+              Close
+            </Button>
           </div>
+          <PostPreview formState={deferredState} />
         </div>
-      )}
+      </div>
 
       {/* Send confirmation dialog */}
       <SendConfirmationDialog
@@ -642,4 +652,4 @@ function CreatePostView() {
 }
 
 export { CreatePostView as Component };
-export type { PostFormState, PostFormAction };
+export type { PostFormAction,PostFormState };
