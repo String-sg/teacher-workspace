@@ -74,6 +74,28 @@ services:
     volumes:
       - redis_data:/data
 
+  pgw-web:
+    build:
+      context: ..
+      dockerfile: tw-pg-experiment/docker/pgw-web/Dockerfile
+    container_name: pgw-web
+    ports:
+      - "3001:3001"
+    env_file:
+      - pgw-web.env.example
+    environment:
+      # Override DB hosts to use Docker network names instead of localhost
+      DB_LOCAL_WRITER_CONNECTION_CONFIG: '{"username":"pg-local","password":"iloveida","host":"mysql-master","connectionEndpoint":"mysql-master","port":"3306"}'
+      DB_LOCAL_READER_CONNECTION_CONFIG: '{"username":"pg-local-read","password":"iloveidaread","host":"mysql-replica","connectionEndpoint":"mysql-replica","port":"3307"}'
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
 volumes:
   mysql_master_data:
   mysql_replica_data:
