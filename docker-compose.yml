@@ -1,0 +1,80 @@
+# Infrastructure for local pgw-web development.
+# Provides MySQL (master + replica) and Redis.
+#
+# Usage:
+#   docker compose up -d          # start containers
+#   docker compose down            # stop containers
+#   docker compose down -v         # stop and wipe all data
+
+services:
+  mysql-master:
+    image: mysql:8.0
+    platform: linux/x86_64
+    container_name: pgw-mysql-master
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: pgdb
+      MYSQL_USER: pg-local
+      MYSQL_PASSWORD: iloveida
+      MYSQL_ROOT_PASSWORD: iloveida
+      TZ: Asia/Singapore
+    volumes:
+      - mysql_master_data:/var/lib/mysql
+      - ./docker/mysql/master.cnf:/etc/my.cnf
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-piloveida"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  mysql-replica:
+    image: mysql:8.0
+    platform: linux/x86_64
+    container_name: pgw-mysql-replica
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: pgdb
+      MYSQL_USER: pg-local
+      MYSQL_PASSWORD: iloveida
+      MYSQL_ROOT_PASSWORD: iloveida
+      TZ: Asia/Singapore
+    volumes:
+      - mysql_replica_data:/var/lib/mysql
+      - ./docker/mysql/slave.cnf:/etc/my.cnf
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-piloveida"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  mysql-init:
+    image: mysql:8.0
+    platform: linux/x86_64
+    container_name: pgw-mysql-init
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+    volumes:
+      - ./docker/mysql/init-replica.sh:/init-replica.sh
+    entrypoint: ["sh", "/init-replica.sh"]
+    restart: "no"
+
+  redis:
+    image: redis:7.0.15-alpine
+    container_name: pgw-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_master_data:
+  mysql_replica_data:
+  redis_data:
