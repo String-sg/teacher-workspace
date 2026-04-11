@@ -116,3 +116,16 @@ func serveFixture(path string) http.HandlerFunc {
 		_, _ = w.Write(data)
 	}
 }
+
+func jsonStub(statusCode int, body string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.WriteHeader(statusCode)
+		_, _ = w.Write([]byte(body))
+	}
+}
+
+var noContent http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -179,6 +179,10 @@ export interface PGApiSchoolStaff {
   assignedClass: string | null;
 }
 
+export interface PGApiSchoolStaffList {
+  staff: PGApiSchoolStaff[];
+}
+
 export interface PGApiSchoolGroups {
   classes: { classId: number; className: string; level: string; year: number }[];
   levels: { levelId: number; levelName: string; year: number }[];
@@ -217,10 +221,20 @@ export interface PGApiClassDetail {
 export interface PGApiSession {
   staffId: number;
   staffName: string;
-  schoolId: number;
-  email: string;
+  isA: boolean;
+  staffSchoolId: number;
+  staffEmailAdd: string;
+  is2FAAuthorized: boolean;
+  schoolEmailAddress: string;
+  schoolName: string;
+  sessionTimeLeft: number;
   displayName: string;
   displayEmail: string;
+  displayUpdatedBy: string;
+  displayUpdatedAt: string;
+  isAdminUpdated: boolean;
+  isIhl: boolean;
+  heyTaliaAccess: boolean;
 }
 
 export interface PGApiConfig {

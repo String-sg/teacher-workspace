@@ -25,7 +25,7 @@ import type {
   PGApiReadStatus,
   PGApiScheduleDraftPayload,
   PGApiSchoolGroups,
-  PGApiSchoolStaff,
+  PGApiSchoolStaffList,
   PGApiSession,
   PGApiUserProfile,
 } from './types';
@@ -55,7 +55,11 @@ async function mutateApi<T>(
   if (!res.ok) {
     throw new Response('API error', { status: res.status });
   }
-  return res.json() as Promise<T>;
+  // Handle empty responses (204 No Content or empty body)
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 async function deleteApi(path: string): Promise<void> {
@@ -65,14 +69,17 @@ async function deleteApi(path: string): Promise<void> {
   }
 }
 
-/** Returns fallback instead of crashing when the API is unavailable. */
+/** Returns fallback on network errors; re-throws HTTP and abort errors. */
 async function fetchApiSafe<T>(path: string, fallback: T): Promise<T> {
   try {
     return await fetchApi<T>(path);
   } catch (err) {
     // Re-throw AbortError so React Router's navigation cancellation works
     if (err instanceof DOMException && err.name === 'AbortError') throw err;
-    console.warn(`[PG API] Failed to fetch ${path}, using fixture fallback`);
+    // Re-throw HTTP errors so they surface to error boundaries
+    if (err instanceof Response) throw err;
+    // Only fall back for network-level failures (server unreachable)
+    console.warn(`[PG API] Network error fetching ${path}, using fixture fallback`);
     return fallback;
   }
 }
@@ -246,8 +253,9 @@ export async function loadConsentFormsList(): Promise<ConsentFormListItem[]> {
 // SCHOOL DATA (for selectors and forms)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function fetchSchoolStaff() {
-  return fetchApi<PGApiSchoolStaff[]>('/school/staff');
+export async function fetchSchoolStaff() {
+  const data = await fetchApi<PGApiSchoolStaffList>('/school/staff');
+  return data.staff;
 }
 
 export function fetchSchoolGroups() {
