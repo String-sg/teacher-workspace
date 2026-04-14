@@ -16,10 +16,18 @@ func (h *Handler) registerMock(mux *http.ServeMux) {
 	// Announcements
 	mux.HandleFunc("GET /api/web/2/staff/announcements", serveFixture("fixtures/announcements.json"))
 	mux.HandleFunc("GET /api/web/2/staff/announcements/shared", serveFixture("fixtures/announcements_shared.json"))
-	mux.HandleFunc("GET /api/web/2/staff/announcements/drafts/{announcementDraftId}", serveFixture("fixtures/announcement_draft.json"))
-	mux.HandleFunc("GET /api/web/2/staff/announcements/prefilled/{announcementPrefilledId}", serveFixture("fixtures/announcement_draft.json"))
 	mux.HandleFunc("GET /api/web/2/staff/announcements/{postId}", serveFixture("fixtures/announcement_detail.json"))
-	mux.HandleFunc("GET /api/web/2/staff/announcements/{postId}/readStatus", serveFixture("fixtures/announcement_read_status.json"))
+	// Dispatched: Go ServeMux panics on `drafts/{id}` vs `{postId}/readStatus`.
+	mux.HandleFunc("GET /api/web/2/staff/announcements/{first}/{second}", func(w http.ResponseWriter, r *http.Request) {
+		switch first, second := r.PathValue("first"), r.PathValue("second"); {
+		case first == "drafts", first == "prefilled":
+			serveFixture("fixtures/announcement_draft.json")(w, r)
+		case second == "readStatus":
+			serveFixture("fixtures/announcement_read_status.json")(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 
 	// Consent forms
 	mux.HandleFunc("GET /api/web/2/staff/consentForms", serveFixture("fixtures/consent_forms.json"))
@@ -64,8 +72,15 @@ func (h *Handler) registerMock(mux *http.ServeMux) {
 	// Consent forms — write
 	mux.HandleFunc("POST /api/web/2/staff/consentForms", jsonStub(http.StatusCreated, `{"consentFormId":301}`))
 	mux.HandleFunc("POST /api/web/2/staff/consentForms/drafts", jsonStub(http.StatusCreated, `{"consentFormDraftId":401}`))
-	mux.HandleFunc("PUT /api/web/2/staff/consentForms/drafts/{consentFormDraftId}", jsonStub(http.StatusOK, `{}`))
-	mux.HandleFunc("PUT /api/web/2/staff/consentForms/{consentFormId}/updateDueDate", jsonStub(http.StatusOK, `{}`))
+	// Dispatched: Go ServeMux panics on `drafts/{id}` vs `{id}/updateDueDate`.
+	mux.HandleFunc("PUT /api/web/2/staff/consentForms/{first}/{second}", func(w http.ResponseWriter, r *http.Request) {
+		first, second := r.PathValue("first"), r.PathValue("second")
+		if first != "drafts" && second != "updateDueDate" {
+			http.NotFound(w, r)
+			return
+		}
+		jsonStub(http.StatusOK, `{}`)(w, r)
+	})
 	mux.HandleFunc("DELETE /api/web/2/staff/consentForms/{consentFormId}", noContent)
 	mux.HandleFunc("DELETE /api/web/2/staff/consentForms/drafts/{consentFormDraftId}", noContent)
 
