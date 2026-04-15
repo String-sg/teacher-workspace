@@ -2,7 +2,14 @@
   "announcementId": 1036,
   "title": "Term 4 Letter to Parents",
   "content": null,
-  "richTextContent": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Dear Parents,\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Please find attached the letter regarding Term 4 arrangements including exam schedules and upcoming school events.\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Thank you.\"}]}]}",
+  "richTextContent": {
+    "type": "doc",
+    "content": [
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Dear Parents," }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Please find attached the letter regarding Term 4 arrangements including exam schedules and upcoming school events." }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Thank you." }] }
+    ]
+  },
   "responseType": "VIEW_ONLY",
   "staffName": "MS TAN WEI LING",
   "createdBy": 1013,
@@ -13,6 +20,7 @@
   "images": [],
   "shortcutLink": [],
   "websiteLinks": [],
+  "target": [],
   "staffOwners": [
     { "staffID": 1013, "staffName": "TAN GUANG SHIN" }
   ],

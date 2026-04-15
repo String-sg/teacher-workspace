@@ -1,7 +1,13 @@
 {
   "consentFormId": 1038,
   "title": "Consent Form for Boxing Competition 1 April 2026",
-  "richTextContent": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Dear Parents,\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Your child has been selected to represent the school in the National Boxing Competition on 1 April 2026. Please indicate your consent below.\"}]}]}",
+  "richTextContent": {
+    "type": "doc",
+    "content": [
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Dear Parents," }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Your child has been selected to represent the school in the National Boxing Competition on 1 April 2026. Please indicate your consent below." }] }
+    ]
+  },
   "responseType": "YES_NO",
   "eventStartDate": "2026-04-01T04:00:00.000Z",
   "eventEndDate": "2026-04-01T09:00:00.000Z",
@@ -9,6 +15,7 @@
   "addReminderType": "ONE_TIME",
   "reminderDate": "2026-03-29T15:59:59.000Z",
   "postedDate": "2026-03-24T03:08:05.000Z",
+  "venue": null,
   "enquiryEmailAddress": "greenridge_sec@moe.edu.sg",
   "staffName": "TAN GUANG SHIN",
   "createdBy": 1013,

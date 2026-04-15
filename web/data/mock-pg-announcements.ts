@@ -1,4 +1,4 @@
-export type PGStatus = 'posted' | 'scheduled' | 'draft';
+export type PGStatus = 'posted' | 'scheduled' | 'draft' | 'posting';
 export type ResponseType = 'view-only' | 'acknowledge' | 'yes-no';
 
 export const RESPONSE_TYPE_META: Record<
@@ -67,7 +67,7 @@ export interface PGAnnouncement {
   stats: PGAnnouncementStats;
   postedAt?: string;
   scheduledAt?: string;
-  createdAt: string;
+  createdAt?: string;
   createdBy: string;
   staffInCharge?: string;
   enquiryEmail?: string;

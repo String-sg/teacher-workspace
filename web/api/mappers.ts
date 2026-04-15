@@ -8,9 +8,9 @@ import type {
 
 import type {
   PGApiAnnouncementDetail,
+  PGApiAnnouncementStatus,
   PGApiAnnouncementSummary,
   PGApiConsentFormSummary,
-  PGApiReadStatus,
 } from './types';
 
 /**
@@ -22,10 +22,11 @@ export function mapAnnouncementSummary(
   api: PGApiAnnouncementSummary,
   ownership: PGOwnership,
 ): PGAnnouncement {
-  const status = api.status.toLowerCase() as PGStatus;
-  const readCount = Math.round(
-    api.readMetrics.readPerStudent * api.readMetrics.totalStudents,
-  );
+  const status = toPGStatus(api.status);
+  const totalCount = api.readMetrics?.totalStudents ?? 0;
+  const readCount = api.readMetrics
+    ? Math.round(api.readMetrics.readPerStudent * api.readMetrics.totalStudents)
+    : 0;
 
   return {
     id: String(api.postId),
@@ -36,7 +37,7 @@ export function mapAnnouncementSummary(
     ownership,
     recipients: [],
     stats: {
-      totalCount: api.readMetrics.totalStudents,
+      totalCount,
       readCount,
       responseCount: 0,
       yesCount: 0,
@@ -51,18 +52,15 @@ export function mapAnnouncementSummary(
 }
 
 /**
- * Map a detail-endpoint response + read-status response to a full PGAnnouncement.
+ * PG's detail embeds read status on `students[].isRead`; per-student `readAt`
+ * is not exposed by PG, so `respondedAt` is left undefined.
  */
 export function mapAnnouncementDetail(
   detail: PGApiAnnouncementDetail,
-  readStatus: PGApiReadStatus,
 ): PGAnnouncement {
-  const status = detail.status.toLowerCase() as PGStatus;
-
-  // Build a readAt lookup from the read-status endpoint
-  const readAtMap = new Map(
-    readStatus.students.map((s) => [s.studentId, s.readAt]),
-  );
+  const status = toPGStatus(detail.status);
+  const totalCount = detail.students.length;
+  const readCount = detail.students.filter((s) => s.isRead).length;
 
   const recipients: PGRecipient[] = detail.students.map((s) => ({
     studentId: String(s.studentId),
@@ -70,7 +68,7 @@ export function mapAnnouncementDetail(
     classId: s.className,
     parentName: '',
     readStatus: s.isRead ? ('read' as const) : ('unread' as const),
-    respondedAt: readAtMap.get(s.studentId) ?? undefined,
+    respondedAt: undefined,
     classLabel: s.className,
     indexNo: '',
     parentRelationship: '',
@@ -86,15 +84,15 @@ export function mapAnnouncementDetail(
     ownership: 'mine',
     recipients,
     stats: {
-      totalCount: readStatus.totalRecipients,
-      readCount: readStatus.totalRead,
+      totalCount,
+      readCount,
       responseCount: 0,
       yesCount: 0,
       noCount: 0,
     },
-    createdAt: detail.createdAt,
+    createdAt: detail.createdAt ?? undefined,
     createdBy: detail.staffName,
-    postedAt: detail.postedDate,
+    postedAt: detail.postedDate ?? undefined,
     scheduledAt: detail.scheduledSendAt ?? undefined,
     staffInCharge: detail.staffOwners[0]?.staffName,
     enquiryEmail: detail.enquiryEmailAddress,
@@ -134,32 +132,45 @@ function mapResponseType(apiType?: string): ResponseType {
   return RESPONSE_TYPE_MAP[apiType] ?? 'view-only';
 }
 
+const PG_STATUS_MAP: Record<PGApiAnnouncementStatus, PGStatus> = {
+  POSTED: 'posted',
+  SCHEDULED: 'scheduled',
+  POSTING: 'posting',
+  DRAFT: 'draft',
+};
+
+function toPGStatus(raw: PGApiAnnouncementStatus): PGStatus {
+  return PG_STATUS_MAP[raw] ?? 'draft';
+}
+
 /**
- * Extract plain text from a Tiptap JSON string.
- * Concatenates all text nodes, joining paragraphs with newlines.
+ * Extract plain text from a Tiptap doc.
+ * PG sends it as a parsed object; legacy fixtures may send a JSON string.
  */
-function extractTextFromTiptap(json: string): string {
-  try {
-    const doc = JSON.parse(json) as TiptapNode;
-    return extractText(doc).trim();
-  } catch {
-    return '';
+function extractTextFromTiptap(
+  rich: Record<string, unknown> | string | null | undefined,
+): string {
+  if (rich == null) return '';
+  if (typeof rich === 'string') {
+    try {
+      return extractText(JSON.parse(rich) as TiptapNode).trim();
+    } catch {
+      return rich.trim();
+    }
   }
+  return extractText(rich).trim();
 }
 
 interface TiptapNode {
-  type: string;
+  type?: string;
   content?: TiptapNode[];
   text?: string;
 }
 
 function extractText(node: TiptapNode): string {
-  if (node.text) return node.text;
-  if (!node.content) return '';
+  if (typeof node.text === 'string') return node.text;
+  if (!Array.isArray(node.content)) return '';
 
   const parts = node.content.map(extractText);
-
-  // Join paragraph-level nodes with newlines
-  if (node.type === 'doc') return parts.join('\n');
-  return parts.join('');
+  return node.type === 'doc' ? parts.join('\n') : parts.join('');
 }

@@ -12,6 +12,10 @@ const STATUS_CONFIG: Record<PGStatus, { label: string; className: string }> = {
     label: 'Scheduled',
     className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
   },
+  posting: {
+    label: 'Posting',
+    className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+  },
   draft: {
     label: 'Draft',
     className: 'bg-slate-100 text-slate-600 hover:bg-slate-100',

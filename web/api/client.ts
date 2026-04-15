@@ -1,7 +1,6 @@
 import type { PGAnnouncement } from '~/data/mock-pg-announcements';
 
 import detailFixture from '../../server/internal/pg/fixtures/announcement_detail.json';
-import readStatusFixture from '../../server/internal/pg/fixtures/announcement_read_status.json';
 import announcementsFixture from '../../server/internal/pg/fixtures/announcements.json';
 import sharedFixture from '../../server/internal/pg/fixtures/announcements_shared.json';
 import consentFormsFixture from '../../server/internal/pg/fixtures/consent_forms.json';
@@ -22,7 +21,6 @@ import type {
   PGApiCreateDraftPayload,
   PGApiDuplicatePayload,
   PGApiGroupsAssigned,
-  PGApiReadStatus,
   PGApiScheduleDraftPayload,
   PGApiSchoolGroups,
   PGApiSchoolStaffList,
@@ -111,13 +109,6 @@ function fetchAnnouncementDetail(postId: string) {
   );
 }
 
-function fetchAnnouncementReadStatus(postId: string) {
-  return fetchApiSafe<PGApiReadStatus>(
-    `/announcements/${postId}/readStatus`,
-    readStatusFixture as unknown as PGApiReadStatus,
-  );
-}
-
 // ─── Write ──────────────────────────────────────────────────────────────────
 
 /** Create and immediately send an announcement. */
@@ -172,11 +163,8 @@ export async function loadPostsList(): Promise<PGAnnouncement[]> {
 export async function loadPostDetail(
   postId: string,
 ): Promise<PGAnnouncement> {
-  const [detail, readStatus] = await Promise.all([
-    fetchAnnouncementDetail(postId),
-    fetchAnnouncementReadStatus(postId),
-  ]);
-  return mapAnnouncementDetail(detail, readStatus);
+  const detail = await fetchAnnouncementDetail(postId);
+  return mapAnnouncementDetail(detail);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

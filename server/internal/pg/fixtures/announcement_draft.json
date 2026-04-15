@@ -2,7 +2,13 @@
   "announcementDraftId": 201,
   "title": "Term 3 Letter to Parents (Draft)",
   "content": null,
-  "richTextContent": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Dear Parents,\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Please find attached information about Term 3 arrangements.\"}]}]}",
+  "richTextContent": {
+    "type": "doc",
+    "content": [
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Dear Parents," }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Please find attached information about Term 3 arrangements." }] }
+    ]
+  },
   "enquiryEmailAddress": "greenridge_sec@moe.edu.sg",
   "attachments": [],
   "images": [],

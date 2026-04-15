@@ -17,13 +17,10 @@ func (h *Handler) registerMock(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/web/2/staff/announcements", serveFixture("fixtures/announcements.json"))
 	mux.HandleFunc("GET /api/web/2/staff/announcements/shared", serveFixture("fixtures/announcements_shared.json"))
 	mux.HandleFunc("GET /api/web/2/staff/announcements/{postId}", serveFixture("fixtures/announcement_detail.json"))
-	// Dispatched: Go ServeMux panics on `drafts/{id}` vs `{postId}/readStatus`.
 	mux.HandleFunc("GET /api/web/2/staff/announcements/{first}/{second}", func(w http.ResponseWriter, r *http.Request) {
-		switch first, second := r.PathValue("first"), r.PathValue("second"); {
-		case first == "drafts", first == "prefilled":
+		switch first := r.PathValue("first"); first {
+		case "drafts", "prefilled":
 			serveFixture("fixtures/announcement_draft.json")(w, r)
-		case second == "readStatus":
-			serveFixture("fixtures/announcement_read_status.json")(w, r)
 		default:
 			http.NotFound(w, r)
 		}

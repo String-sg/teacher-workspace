@@ -1,7 +1,13 @@
 {
   "consentFormDraftId": 301,
   "title": "Consent Form for Field Trip (Draft)",
-  "richTextContent": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"Dear Parents,\"}]},{\"type\":\"paragraph\",\"attrs\":{\"textAlign\":\"left\"},\"content\":[{\"type\":\"text\",\"text\":\"We are organising a field trip and require your consent.\"}]}]}",
+  "richTextContent": {
+    "type": "doc",
+    "content": [
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Dear Parents," }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "We are organising a field trip and require your consent." }] }
+    ]
+  },
   "responseType": "YES_NO",
   "eventStartDate": "2026-05-15T01:00:00.000Z",
   "eventEndDate": "2026-05-15T09:00:00.000Z",
