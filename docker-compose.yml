@@ -86,7 +86,7 @@ services:
     environment:
       # Override DB hosts to use Docker network names instead of localhost
       DB_LOCAL_WRITER_CONNECTION_CONFIG: '{"username":"pg-local","password":"iloveida","host":"mysql-master","connectionEndpoint":"mysql-master","port":"3306"}'
-      DB_LOCAL_READER_CONNECTION_CONFIG: '{"username":"pg-local-read","password":"iloveidaread","host":"mysql-replica","connectionEndpoint":"mysql-replica","port":"3307"}'
+      DB_LOCAL_READER_CONNECTION_CONFIG: '{"username":"pg-local-read","password":"iloveidaread","host":"mysql-replica","connectionEndpoint":"mysql-replica","port":"3306"}'
       REDIS_URL: redis://redis:6379
     depends_on:
       mysql-master:
