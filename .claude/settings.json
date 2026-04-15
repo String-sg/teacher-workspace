@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(**/.env)",
+      "Edit(.env)",
+      "Edit(**/.env)",
+      "Bash(* .env)",
+      "Bash(* **/.env)",
+      "Grep(* .env)",
+      "Grep(* **/.env)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/protect-dotenv.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
