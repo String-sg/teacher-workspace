@@ -32,19 +32,32 @@ const API_BASE = '/api/web/2/staff';
 
 // ─── Fetch helpers ──────────────────────────────────────────────────────────
 
+// Real pgw-web wraps all responses as {body, resultCode, message, metadata};
+// mock fixtures are raw. Detect the envelope by requiring both `body` and a
+// numeric `resultCode` — no TW inner shape uses resultCode, so false positives
+// are effectively impossible.
+function unwrapEnvelope<T>(json: unknown): T {
+  if (
+    json !== null &&
+    typeof json === 'object' &&
+    'body' in json &&
+    'resultCode' in json &&
+    typeof (json as { resultCode: unknown }).resultCode === 'number'
+  ) {
+    return (json as { body: T }).body;
+  }
+  return json as T;
+}
+
 async function fetchApi<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) {
     throw new Response('API error', { status: res.status });
   }
-  return res.json() as Promise<T>;
+  return unwrapEnvelope<T>(await res.json());
 }
 
-async function mutateApi<T>(
-  method: 'POST' | 'PUT',
-  path: string,
-  body: unknown,
-): Promise<T> {
+async function mutateApi<T>(method: 'POST' | 'PUT', path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
@@ -57,7 +70,7 @@ async function mutateApi<T>(
   if (res.status === 204) return undefined as T;
   const text = await res.text();
   if (!text) return undefined as T;
-  return JSON.parse(text) as T;
+  return unwrapEnvelope<T>(JSON.parse(text));
 }
 
 async function deleteApi(path: string): Promise<void> {
@@ -149,20 +162,13 @@ export function deleteDraft(draftId: number) {
 // ─── Composed loaders ───────────────────────────────────────────────────────
 
 export async function loadPostsList(): Promise<PGAnnouncement[]> {
-  const [own, shared] = await Promise.all([
-    fetchAnnouncements(),
-    fetchSharedAnnouncements(),
-  ]);
-  const mappedOwn = own.posts.map((p) => mapAnnouncementSummary(p, 'mine'));
-  const mappedShared = shared.posts.map((p) =>
-    mapAnnouncementSummary(p, 'shared'),
-  );
+  const [own, shared] = await Promise.all([fetchAnnouncements(), fetchSharedAnnouncements()]);
+  const mappedOwn = own.map((p) => mapAnnouncementSummary(p, 'mine'));
+  const mappedShared = shared.map((p) => mapAnnouncementSummary(p, 'shared'));
   return mergeAndDedup(mappedOwn, mappedShared);
 }
 
-export async function loadPostDetail(
-  postId: string,
-): Promise<PGAnnouncement> {
+export async function loadPostDetail(postId: string): Promise<PGAnnouncement> {
   const detail = await fetchAnnouncementDetail(postId);
   return mapAnnouncementDetail(detail);
 }
@@ -222,10 +228,7 @@ export function deleteConsentFormDraft(draftId: number) {
 export type ConsentFormListItem = PGApiConsentFormSummary & { ownership: 'mine' | 'shared' };
 
 export async function loadConsentFormsList(): Promise<ConsentFormListItem[]> {
-  const [own, shared] = await Promise.all([
-    fetchConsentForms(),
-    fetchSharedConsentForms(),
-  ]);
+  const [own, shared] = await Promise.all([fetchConsentForms(), fetchSharedConsentForms()]);
   const mappedOwn = own.posts.map((p) => mapConsentFormSummary(p, 'mine'));
   const mappedShared = shared.posts.map((p) => mapConsentFormSummary(p, 'shared'));
   return mergeAndDedup(mappedOwn, mappedShared);

@@ -82,12 +82,7 @@ export interface PGApiConsentFormHistoryEntry {
 
 // ─── Announcements ──────────────────────────────────────────────────────────
 
-export interface PGApiAnnouncementList {
-  posts: PGApiAnnouncementSummary[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+export type PGApiAnnouncementList = PGApiAnnouncementSummary[];
 
 export interface PGApiAnnouncementSummary {
   id: string;
