@@ -11,6 +11,7 @@ import type {
   PGApiAnnouncementStatus,
   PGApiAnnouncementSummary,
   PGApiConsentFormSummary,
+  PGApiCreateAnnouncementPayload,
 } from './types';
 
 /**
@@ -55,9 +56,7 @@ export function mapAnnouncementSummary(
  * PG's detail embeds read status on `students[].isRead`; per-student `readAt`
  * is not exposed by PG, so `respondedAt` is left undefined.
  */
-export function mapAnnouncementDetail(
-  detail: PGApiAnnouncementDetail,
-): PGAnnouncement {
+export function mapAnnouncementDetail(detail: PGApiAnnouncementDetail): PGAnnouncement {
   const status = toPGStatus(detail.status);
   const totalCount = detail.students.length;
   const readCount = detail.students.filter((s) => s.isRead).length;
@@ -113,10 +112,7 @@ export function mapConsentFormSummary(
  * Merge own and shared announcements, deduplicating by ID.
  * Own posts take priority (ownership: 'mine').
  */
-export function mergeAndDedup<T extends { id: string }>(
-  own: T[],
-  shared: T[],
-): T[] {
+export function mergeAndDedup<T extends { id: string }>(own: T[], shared: T[]): T[] {
   const ownIds = new Set(own.map((a) => a.id));
   return [...own, ...shared.filter((a) => !ownIds.has(a.id))];
 }
@@ -147,9 +143,7 @@ function toPGStatus(raw: PGApiAnnouncementStatus): PGStatus {
  * Extract plain text from a Tiptap doc.
  * PG sends it as a parsed object; legacy fixtures may send a JSON string.
  */
-function extractTextFromTiptap(
-  rich: Record<string, unknown> | string | null | undefined,
-): string {
+function extractTextFromTiptap(rich: Record<string, unknown> | string | null | undefined): string {
   if (rich == null) return '';
   if (typeof rich === 'string') {
     try {
@@ -173,4 +167,40 @@ function extractText(node: TiptapNode): string {
 
   const parts = node.content.map(extractText);
   return node.type === 'doc' ? parts.join('\n') : parts.join('');
+}
+
+// ─── Outbound: FE payload → pgw-web schema ──────────────────────────────────
+// FE collects recipients grouped (classIds / customGroupIds / ccaIds / levelIds)
+// because that's what the form needs; pgw-web's API takes them as a flat
+// `targets` array. Other field renames mirror the read-side envelope fix.
+
+type PGTargetType = 'class' | 'group' | 'cca' | 'level';
+
+interface PGWritePayload {
+  title: string;
+  content: string;
+  enquiryEmailAddress: string;
+  targets: { targetType: PGTargetType; targetId: number }[];
+  staffInCharge?: number[];
+  webLinkList?: { webLink: string; linkDescription: string }[];
+}
+
+export function toPGCreatePayload(p: PGApiCreateAnnouncementPayload): PGWritePayload {
+  if (!p.enquiryEmailAddress) {
+    throw new Error('enquiryEmailAddress is required');
+  }
+  const targets: PGWritePayload['targets'] = [
+    ...p.recipients.classIds.map((targetId) => ({ targetType: 'class' as const, targetId })),
+    ...p.recipients.customGroupIds.map((targetId) => ({ targetType: 'group' as const, targetId })),
+    ...p.recipients.ccaIds.map((targetId) => ({ targetType: 'cca' as const, targetId })),
+    ...p.recipients.levelIds.map((targetId) => ({ targetType: 'level' as const, targetId })),
+  ];
+  return {
+    title: p.title,
+    content: p.richTextContent,
+    enquiryEmailAddress: p.enquiryEmailAddress,
+    targets,
+    staffInCharge: p.staffOwnerIds,
+    webLinkList: p.websiteLinks?.map((l) => ({ webLink: l.url, linkDescription: l.title })),
+  };
 }

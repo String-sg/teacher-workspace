@@ -229,14 +229,32 @@ export interface PGApiConsentFormDetail {
 
 export interface PGApiSchoolStaff {
   staffId: number;
-  staffName: string;
+  name: string;
   email: string;
-  schoolEmail?: string;
-  assignedClass: string | null;
+  className?: string | null;
 }
 
-export interface PGApiSchoolStaffList {
-  staff: PGApiSchoolStaff[];
+export type PGApiSchoolStaffList = PGApiSchoolStaff[];
+
+export interface PGApiSchoolClass {
+  type: 'class';
+  label: string;
+  labelDescription: string;
+  value: number;
+  acadYear: string;
+  schoolId: number;
+}
+
+export interface PGApiSchoolStudent {
+  studentId: number;
+  studentName: string;
+  uinFinNo: string;
+  classSerialNo: string;
+  classCode: string;
+  className: string;
+  levelCode: string;
+  levelDescription: string;
+  cca: unknown[];
 }
 
 export interface PGApiSchoolGroups {

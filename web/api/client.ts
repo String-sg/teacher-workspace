@@ -9,6 +9,7 @@ import {
   mapAnnouncementSummary,
   mapConsentFormSummary,
   mergeAndDedup,
+  toPGCreatePayload,
 } from './mappers';
 import type {
   PGApiAnnouncementDetail,
@@ -22,8 +23,10 @@ import type {
   PGApiDuplicatePayload,
   PGApiGroupsAssigned,
   PGApiScheduleDraftPayload,
+  PGApiSchoolClass,
   PGApiSchoolGroups,
   PGApiSchoolStaffList,
+  PGApiSchoolStudent,
   PGApiSession,
   PGApiUserProfile,
 } from './types';
@@ -115,23 +118,27 @@ function fetchSharedAnnouncements() {
   );
 }
 
-function fetchAnnouncementDetail(postId: string) {
-  return fetchApiSafe<PGApiAnnouncementDetail>(
+async function fetchAnnouncementDetail(postId: string): Promise<PGApiAnnouncementDetail> {
+  // pgw-web wraps single-detail responses as `body: [<detail>]`; unwrap the array.
+  // Fixture mirrors that shape so mock mode stays in lockstep.
+  const arr = await fetchApiSafe<PGApiAnnouncementDetail[]>(
     `/announcements/${postId}`,
-    detailFixture as unknown as PGApiAnnouncementDetail,
+    detailFixture as unknown as PGApiAnnouncementDetail[],
   );
+  return arr[0];
 }
 
 // ─── Write ──────────────────────────────────────────────────────────────────
 
 /** Create and immediately send an announcement. */
 export function createAnnouncement(payload: PGApiCreateAnnouncementPayload) {
-  return mutateApi<{ postId: number }>('POST', '/announcements', payload);
+  return mutateApi<{ postId: number }>('POST', '/announcements', toPGCreatePayload(payload));
 }
 
 /** Save an announcement as draft. */
 export function createDraft(payload: PGApiCreateDraftPayload) {
-  return mutateApi<{ announcementDraftId: number }>('POST', '/announcements/drafts', payload);
+  const body = { ...toPGCreatePayload(payload), scheduledSendAt: payload.scheduledSendAt };
+  return mutateApi<{ announcementDraftId: number }>('POST', '/announcements/drafts', body);
 }
 
 /** Schedule a draft for future sending. */
@@ -141,7 +148,8 @@ export function scheduleDraft(payload: PGApiScheduleDraftPayload) {
 
 /** Update an existing draft. */
 export function updateDraft(draftId: number, payload: PGApiCreateDraftPayload) {
-  return mutateApi<void>('PUT', `/announcements/drafts/${draftId}`, payload);
+  const body = { ...toPGCreatePayload(payload), scheduledSendAt: payload.scheduledSendAt };
+  return mutateApi<void>('PUT', `/announcements/drafts/${draftId}`, body);
 }
 
 /** Duplicate an existing announcement. */
@@ -238,13 +246,23 @@ export async function loadConsentFormsList(): Promise<ConsentFormListItem[]> {
 // SCHOOL DATA (for selectors and forms)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export async function fetchSchoolStaff() {
-  const data = await fetchApi<PGApiSchoolStaffList>('/school/staff');
-  return data.staff;
+export function fetchSchoolStaff() {
+  return fetchApi<PGApiSchoolStaffList>('/school/staff');
 }
 
 export function fetchSchoolGroups() {
   return fetchApi<PGApiSchoolGroups>('/school/groups');
+}
+
+// Real pgw-web returns `body.class` (singular) as an array of PGApiSchoolClass.
+// Use this helper when a UI needs just the classes for a selector.
+export async function fetchSchoolClasses() {
+  const data = await fetchApi<{ class: PGApiSchoolClass[] }>('/school/groups');
+  return data.class ?? [];
+}
+
+export function fetchSchoolStudents() {
+  return fetchApi<PGApiSchoolStudent[]>('/school/students');
 }
 
 export function fetchGroupsAssigned() {
