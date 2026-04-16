@@ -464,8 +464,10 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
                   Select the preferred email address to receive enquiries from parents.
                 </Typography>
                 <Select
-                  value={state.enquiryEmail}
-                  onValueChange={(value) => dispatch({ type: 'SET_EMAIL', payload: value })}
+                  value={state.enquiryEmail ?? ''}
+                  onValueChange={(value) =>
+                    dispatch({ type: 'SET_EMAIL', payload: value as string })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select enquiry email" />

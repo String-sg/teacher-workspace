@@ -2,13 +2,7 @@ import { Typography } from '@flow/core';
 import { ArrowLeft } from '@flow/icons';
 import React, { useMemo } from 'react';
 import type { LoaderFunctionArgs } from 'react-router';
-import {
-  isRouteErrorResponse,
-  Link,
-  useLoaderData,
-  useParams,
-  useRouteError,
-} from 'react-router';
+import { isRouteErrorResponse, Link, useLoaderData, useParams, useRouteError } from 'react-router';
 
 import { loadPostDetail } from '~/api/client';
 import { AnnouncementCard } from '~/components/posts/AnnouncementCard';
@@ -44,8 +38,8 @@ export function ErrorBoundary() {
           ? 'This post may have been deleted.'
           : 'The server may be unavailable. Please try again.'}
       </Typography>
-      <Button variant="outline" size="sm" asChild>
-        <Link to="/posts">Back to Posts</Link>
+      <Button variant="outline" size="sm" render={<Link to="/posts" />} nativeButton={false}>
+        Back to Posts
       </Button>
     </div>
   );
@@ -68,7 +62,7 @@ const PostDetailView: React.FC = () => {
   );
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div className="space-y-6 px-6 py-6">
       {/* Header: Back + Edit */}
       <div className="flex items-center justify-between">
         <Link
@@ -79,8 +73,13 @@ const PostDetailView: React.FC = () => {
           Back to Posts
         </Link>
 
-        <Button variant="outline" size="sm" asChild>
-          <Link to={`/posts/${id}/edit`}>Edit</Link>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link to={`/posts/${id}/edit`} />}
+          nativeButton={false}
+        >
+          Edit
         </Button>
       </div>
 
@@ -94,26 +93,21 @@ const PostDetailView: React.FC = () => {
         </div>
 
         <Typography variant="body-sm" className="text-muted-foreground" asChild>
-          <p>
-            Posted on:{' '}
-            {formatDate(announcement.postedAt ?? announcement.createdAt)}
-          </p>
+          <p>Posted on: {formatDate(announcement.postedAt ?? announcement.createdAt)}</p>
         </Typography>
       </div>
 
       {/* Two-column grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column (2/3) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           {/* Read tracking cards */}
           <div className="space-y-3">
             <Typography
               variant="label-sm"
-              className="text-muted-foreground uppercase tracking-widest"
+              className="tracking-widest text-muted-foreground uppercase"
             >
-              {announcement.responseType === 'view-only'
-                ? 'READ STATUS'
-                : 'RESPONSES RECEIVED'}
+              {announcement.responseType === 'view-only' ? 'READ STATUS' : 'RESPONSES RECEIVED'}
             </Typography>
             <ReadTrackingCards
               responseType={announcement.responseType}
@@ -125,7 +119,7 @@ const PostDetailView: React.FC = () => {
           <div className="space-y-3">
             <Typography
               variant="label-sm"
-              className="text-muted-foreground uppercase tracking-widest"
+              className="tracking-widest text-muted-foreground uppercase"
             >
               RESPONSE STATUS
             </Typography>

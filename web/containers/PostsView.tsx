@@ -1,21 +1,9 @@
 import { Typography } from '@flow/core';
-import {
-  AlertTriangle,
-  Copy,
-  MoreHorizontal,
-  Plus,
-  Search,
-  Trash2,
-  Users,
-} from '@flow/icons';
+import { AlertTriangle, Copy, MoreHorizontal, Plus, Search, Trash2, Users } from '@flow/icons';
 import React, { useMemo, useState } from 'react';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router';
 
-import {
-  deleteAnnouncement,
-  duplicateAnnouncement,
-  loadPostsList,
-} from '~/api/client';
+import { deleteAnnouncement, duplicateAnnouncement, loadPostsList } from '~/api/client';
 import { ReadRate } from '~/components/posts/ReadRate';
 import { StatusBadge } from '~/components/posts/StatusBadge';
 import {
@@ -60,10 +48,8 @@ const PostsView: React.FC = () => {
   const filtered = useMemo(() => {
     return announcements
       .filter((a) => {
-        if (tab === 'view-only' && requiresResponse(a.responseType))
-          return false;
-        if (tab === 'with-responses' && !requiresResponse(a.responseType))
-          return false;
+        if (tab === 'view-only' && requiresResponse(a.responseType)) return false;
+        if (tab === 'with-responses' && !requiresResponse(a.responseType)) return false;
 
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
@@ -71,7 +57,11 @@ const PostsView: React.FC = () => {
         }
         return true;
       })
-      .map((a) => ({ ...a, _date: getRelevantDate(a), _dateTs: new Date(getRelevantDate(a) ?? 0).getTime() }))
+      .map((a) => ({
+        ...a,
+        _date: getRelevantDate(a),
+        _dateTs: new Date(getRelevantDate(a) ?? 0).getTime(),
+      }))
       .sort((a, b) => b._dateTs - a._dateTs);
   }, [announcements, searchQuery, tab]);
 
@@ -83,11 +73,14 @@ const PostsView: React.FC = () => {
           <Typography variant="title-lg" asChild>
             <h1>Posts</h1>
           </Typography>
-          <Button variant="default" size="sm" asChild>
-            <Link to="/posts/new">
-              <Plus className="h-4 w-4" />
-              Create
-            </Link>
+          <Button
+            variant="default"
+            size="sm"
+            render={<Link to="/posts/new" />}
+            nativeButton={false}
+          >
+            <Plus className="h-4 w-4" />
+            Create
           </Button>
         </div>
         <Typography
@@ -96,8 +89,7 @@ const PostsView: React.FC = () => {
           asChild
         >
           <p>
-            Send posts to parents via Parents Gateway. Send a view-only post or
-            collect responses.
+            Send posts to parents via Parents Gateway. Send a view-only post or collect responses.
           </p>
         </Typography>
       </div>
@@ -105,15 +97,10 @@ const PostsView: React.FC = () => {
       {/* Toolbar: tabs + search */}
       <div className="mt-4 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4 px-6">
-          <Tabs
-            value={tab}
-            onValueChange={(v) => setTab(v as PostTab)}
-          >
+          <Tabs value={tab} onValueChange={(v) => setTab(v as PostTab)}>
             <TabsList>
               <TabsTrigger value="view-only">Posts</TabsTrigger>
-              <TabsTrigger value="with-responses">
-                Posts with responses
-              </TabsTrigger>
+              <TabsTrigger value="with-responses">Posts with responses</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -124,7 +111,7 @@ const PostsView: React.FC = () => {
               placeholder="Search posts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full min-w-[180px] max-w-[240px] pl-9"
+              className="w-full max-w-[240px] min-w-[180px] pl-9"
               aria-label="Search posts"
             />
           </div>
@@ -139,10 +126,7 @@ const PostsView: React.FC = () => {
                   <Typography variant="body-md" className="text-foreground">
                     No posts match your search.
                   </Typography>
-                  <Typography
-                    variant="body-sm"
-                    className="mt-1 text-muted-foreground"
-                  >
+                  <Typography variant="body-sm" className="mt-1 text-muted-foreground">
                     Try adjusting your search terms.
                   </Typography>
                 </>
@@ -151,17 +135,18 @@ const PostsView: React.FC = () => {
                   <Typography variant="body-md" className="text-foreground">
                     No posts yet.
                   </Typography>
-                  <Typography
-                    variant="body-sm"
-                    className="mt-1 text-muted-foreground"
-                  >
+                  <Typography variant="body-sm" className="mt-1 text-muted-foreground">
                     Create your first post to get started.
                   </Typography>
-                  <Button variant="default" size="sm" className="mt-4" asChild>
-                    <Link to="/posts/new">
-                      <Plus className="h-4 w-4" />
-                      Create
-                    </Link>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="mt-4"
+                    render={<Link to="/posts/new" />}
+                    nativeButton={false}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create
                   </Button>
                 </>
               )}
@@ -183,11 +168,7 @@ const PostsView: React.FC = () => {
               <TableBody>
                 {filtered.map((announcement) => {
                   const { totalCount, readCount } = announcement.stats;
-                  const showLowRead = isLowReadRate(
-                    announcement.postedAt,
-                    readCount,
-                    totalCount,
-                  );
+                  const showLowRead = isLowReadRate(announcement.postedAt, readCount, totalCount);
                   const relevantDate = announcement._date;
                   const isShared = announcement.ownership === 'shared';
 
@@ -201,9 +182,7 @@ const PostsView: React.FC = () => {
                       <TableCell className="overflow-hidden pl-6 whitespace-normal">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="truncate font-medium">
-                              {announcement.title}
-                            </span>
+                            <span className="truncate font-medium">{announcement.title}</span>
                             {showLowRead && (
                               <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                             )}
@@ -215,9 +194,7 @@ const PostsView: React.FC = () => {
                       <TableCell className="text-sm text-muted-foreground">
                         <span
                           className={
-                            announcement.status === 'scheduled'
-                              ? 'text-amber-600'
-                              : undefined
+                            announcement.status === 'scheduled' ? 'text-amber-600' : undefined
                           }
                         >
                           {formatDate(relevantDate)}
@@ -246,30 +223,27 @@ const PostsView: React.FC = () => {
                       {/* Read */}
                       <TableCell className="pr-6">
                         {announcement.status !== 'posted' ? (
-                          <span className="text-sm text-muted-foreground">
-                            {'\u2014'}
-                          </span>
+                          <span className="text-sm text-muted-foreground">{'\u2014'}</span>
                         ) : (
-                          <ReadRate
-                            readCount={readCount}
-                            totalCount={totalCount}
-                          />
+                          <ReadRate readCount={readCount} totalCount={totalCount} />
                         )}
                       </TableCell>
 
                       {/* Actions */}
                       <TableCell className="w-[48px] pr-2 text-right">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                              aria-label="More actions"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                aria-label="More actions"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            }
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
@@ -277,11 +251,13 @@ const PostsView: React.FC = () => {
                                 e.stopPropagation();
                                 duplicateAnnouncement({
                                   postId: Number(announcement.id),
-                                }).then(() => {
-                                  revalidator.revalidate();
-                                }).catch(() => {
-                                  alert('Failed to duplicate post.');
-                                });
+                                })
+                                  .then(() => {
+                                    revalidator.revalidate();
+                                  })
+                                  .catch(() => {
+                                    alert('Failed to duplicate post.');
+                                  });
                               }}
                             >
                               <Copy className="mr-2 h-4 w-4" />

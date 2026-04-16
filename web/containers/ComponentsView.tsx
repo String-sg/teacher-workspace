@@ -46,13 +46,7 @@ const DEMO_STATS = {
   noCount: 4,
 };
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-6">
       <Typography variant="title-lg" asChild>
@@ -63,13 +57,7 @@ function Section({
   );
 }
 
-function Subsection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Subsection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
       <Typography variant="label-md" className="text-muted-foreground">
@@ -83,9 +71,7 @@ function Subsection({
 const ComponentsView: React.FC = () => {
   const [defaultTab, setDefaultTab] = useState('account');
   const [lineTab, setLineTab] = useState('overview');
-  const [pickedType, setPickedType] = useState<
-    'post' | 'post-with-response' | null
-  >(null);
+  const [pickedType, setPickedType] = useState<'post' | 'post-with-response' | null>(null);
   const [selectedClasses, setSelectedClasses] = useState<string[]>(['4a']);
   const [responseType, setResponseType] = useState<ResponseType>('acknowledge');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -100,7 +86,7 @@ const ComponentsView: React.FC = () => {
             <Button variant="outline">outline</Button>
             <Button variant="outline">secondary</Button>
             <Button variant="ghost">ghost</Button>
-            <Button variant="critical">destructive</Button>
+            <Button variant="destructive">destructive</Button>
             <Button variant="link">link</Button>
           </div>
         </Subsection>
@@ -160,7 +146,7 @@ const ComponentsView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="default">default</Badge>
             <Badge variant="secondary">secondary</Badge>
-            <Badge variant="critical">destructive</Badge>
+            <Badge variant="destructive">destructive</Badge>
             <Badge variant="outline">outline</Badge>
           </div>
         </Subsection>
@@ -172,14 +158,10 @@ const ComponentsView: React.FC = () => {
           <Card className="w-80">
             <CardHeader>
               <CardTitle>Default Card</CardTitle>
-              <CardDescription>
-                Card with default size and padding.
-              </CardDescription>
+              <CardDescription>Card with default size and padding.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Typography variant="body-sm">
-                Card content goes here.
-              </Typography>
+              <Typography variant="body-sm">Card content goes here.</Typography>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline">Cancel</Button>
@@ -190,14 +172,10 @@ const ComponentsView: React.FC = () => {
           <Card className="w-64">
             <CardHeader>
               <CardTitle>Small Card</CardTitle>
-              <CardDescription>
-                Compact card with size=&quot;sm&quot;.
-              </CardDescription>
+              <CardDescription>Compact card with size=&quot;sm&quot;.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Typography variant="body-sm">
-                Smaller padding and gaps.
-              </Typography>
+              <Typography variant="body-sm">Smaller padding and gaps.</Typography>
             </CardContent>
             <CardFooter>
               <Button size="sm">Action</Button>
@@ -252,7 +230,7 @@ const ComponentsView: React.FC = () => {
               <Label htmlFor="checked">Checked</Label>
             </div>
             <div className="flex items-center gap-2">
-              <Checkbox id="indeterminate" checked="indeterminate" />
+              <Checkbox id="indeterminate" indeterminate />
               <Label htmlFor="indeterminate">Indeterminate</Label>
             </div>
           </div>
@@ -286,19 +264,13 @@ const ComponentsView: React.FC = () => {
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
             </TabsList>
             <TabsContent value="account" className="mt-4">
-              <Typography variant="body-sm">
-                Account settings content.
-              </Typography>
+              <Typography variant="body-sm">Account settings content.</Typography>
             </TabsContent>
             <TabsContent value="security" className="mt-4">
-              <Typography variant="body-sm">
-                Security settings content.
-              </Typography>
+              <Typography variant="body-sm">Security settings content.</Typography>
             </TabsContent>
             <TabsContent value="notifications" className="mt-4">
-              <Typography variant="body-sm">
-                Notification preferences content.
-              </Typography>
+              <Typography variant="body-sm">Notification preferences content.</Typography>
             </TabsContent>
           </Tabs>
         </Subsection>
@@ -373,10 +345,7 @@ const ComponentsView: React.FC = () => {
               onPost={() => window.alert('Post clicked')}
               onSchedule={() => window.alert('Schedule clicked')}
             />
-            <SplitPostButton
-              disabled
-              onPost={() => window.alert('Post clicked')}
-            />
+            <SplitPostButton disabled onPost={() => window.alert('Post clicked')} />
           </div>
         </Subsection>
 
@@ -400,19 +369,14 @@ const ComponentsView: React.FC = () => {
             selectedClasses={selectedClasses}
             onToggleClass={(id) =>
               setSelectedClasses((prev) =>
-                prev.includes(id)
-                  ? prev.filter((x) => x !== id)
-                  : [...prev, id],
+                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
               )
             }
           />
         </Subsection>
 
         <Subsection label="ResponseTypeSelector">
-          <ResponseTypeSelector
-            value={responseType}
-            onChange={setResponseType}
-          />
+          <ResponseTypeSelector value={responseType} onChange={setResponseType} />
         </Subsection>
 
         <Subsection label="ReadTrackingCards">

@@ -38,31 +38,33 @@ function SplitPostButton({ disabled, onPost, onSchedule }: SplitPostButtonProps)
         className="rounded-r-none"
       >
         {action === 'schedule' ? (
-          <CalendarClock className="h-4 w-4 mr-1.5" />
+          <CalendarClock className="mr-1.5 h-4 w-4" />
         ) : (
-          <Send className="h-4 w-4 mr-1.5" />
+          <Send className="mr-1.5 h-4 w-4" />
         )}
         {action === 'schedule' ? 'Schedule' : 'Post'}
       </Button>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="default"
-            size="sm"
-            disabled={disabled}
-            className="rounded-l-none border-l border-white/20 px-2"
-          >
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="default"
+              size="sm"
+              disabled={disabled}
+              className="rounded-l-none border-l border-white/20 px-2"
+            />
+          }
+        >
+          <ChevronDown className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setAction('post')}>
-            <Send className="h-4 w-4 mr-2" />
+            <Send className="mr-2 h-4 w-4" />
             Post now
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setAction('schedule')}>
-            <CalendarClock className="h-4 w-4 mr-2" />
+            <CalendarClock className="mr-2 h-4 w-4" />
             Schedule for later
           </DropdownMenuItem>
         </DropdownMenuContent>
