@@ -143,25 +143,38 @@
 }
 
 /* ── G. Shadcn/UI semantic tokens ─────────────────────────────────── */
+/* Direct hex values — no Flow DS references. These drive the shadcn +
+ * Base UI components in web/components/ui/*. Keep in sync with palette
+ * owner(s) via whatever visual source of truth we pick. */
 :root {
-  --background: var(--color-slate-1);
-  --foreground: var(--color-slate-12);
-  --card: var(--color-white-default, #fff);
-  --card-foreground: var(--color-olive-12);
-  --popover: var(--color-white-default, #fff);
-  --popover-foreground: var(--color-slate-12);
-  --primary: var(--color-blue-9);
+  /* Neutral surfaces */
+  --background: #fcfcfd;
+  --foreground: #1c2024;
+  --card: #ffffff;
+  --card-foreground: #1d211c;
+  --popover: #ffffff;
+  --popover-foreground: #1c2024;
+
+  /* Brand */
+  --primary: #0064ff;
   --primary-foreground: #ffffff;
-  --secondary: var(--color-slate-4);
-  --secondary-foreground: var(--color-slate-12);
-  --muted: var(--color-slate-2);
-  --muted-foreground: var(--color-olive-11);
-  --accent: var(--color-slate-4);
-  --accent-foreground: var(--color-slate-12);
-  --destructive: oklch(0.577 0.245 27.325);
+
+  /* Secondary / muted / accent */
+  --secondary: #e8e8ec;
+  --secondary-foreground: #1c2024;
+  --muted: #f9f9fb;
+  --muted-foreground: #60655f;
+  --accent: #e8e8ec;
+  --accent-foreground: #1c2024;
+
+  /* Destructive */
+  --destructive: #e5484d;
   --destructive-foreground: #ffffff;
-  --border: var(--color-slate-6);
-  --input: var(--color-slate-6);
-  --ring: var(--color-blue-9);
+
+  /* Borders + focus ring */
+  --border: #d9d9e0;
+  --input: #d9d9e0;
+  --ring: #0064ff;
+
   --radius: 0.5rem;
 }
