@@ -1,9 +1,10 @@
 @import 'tailwindcss';
 @import '@flow/core/tailwind.no-reset.css';
-@import './flow-teacher-ds.css';
+@import './shadcn-theme.css';
 @import 'tw-animate-css';
 
 @theme inline {
+  /* Shadcn semantic tokens — utility class targets */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -23,6 +24,49 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Brand scale exposed as utilities (bg-twblue-9, etc.) */
+  --color-twblue-1: var(--twblue-1);
+  --color-twblue-2: var(--twblue-2);
+  --color-twblue-3: var(--twblue-3);
+  --color-twblue-4: var(--twblue-4);
+  --color-twblue-5: var(--twblue-5);
+  --color-twblue-6: var(--twblue-6);
+  --color-twblue-7: var(--twblue-7);
+  --color-twblue-8: var(--twblue-8);
+  --color-twblue-9: var(--twblue-9);
+  --color-twblue-10: var(--twblue-10);
+  --color-twblue-11: var(--twblue-11);
+  --color-twblue-12: var(--twblue-12);
+  --color-twblue-a1: var(--twblue-a1);
+  --color-twblue-a2: var(--twblue-a2);
+  --color-twblue-a3: var(--twblue-a3);
+  --color-twblue-a4: var(--twblue-a4);
+  --color-twblue-a5: var(--twblue-a5);
+  --color-twblue-a6: var(--twblue-a6);
+  --color-twblue-a7: var(--twblue-a7);
+  --color-twblue-a8: var(--twblue-a8);
+  --color-twblue-a9: var(--twblue-a9);
+  --color-twblue-a10: var(--twblue-a10);
+  --color-twblue-a11: var(--twblue-a11);
+  --color-twblue-a12: var(--twblue-a12);
+
+  /* Radix slate exposed for arbitrary-value usage in disabled states */
+  --color-slate-1: var(--slate-1);
+  --color-slate-2: var(--slate-2);
+  --color-slate-3: var(--slate-3);
+  --color-slate-4: var(--slate-4);
+  --color-slate-5: var(--slate-5);
+  --color-slate-6: var(--slate-6);
+  --color-slate-7: var(--slate-7);
+  --color-slate-8: var(--slate-8);
+  --color-slate-9: var(--slate-9);
+  --color-slate-10: var(--slate-10);
+  --color-slate-11: var(--slate-11);
+  --color-slate-12: var(--slate-12);
+
+  /* Crimson — only the destructive shade is exposed */
+  --color-crimson-9: var(--crimson-9);
 }
 
 @layer base {

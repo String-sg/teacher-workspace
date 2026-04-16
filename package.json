@@ -16,6 +16,7 @@
     "@base-ui/react": "^1.4.0",
     "@flow/core": "^0.1.17",
     "@flow/icons": "^0.1.0",
+    "@radix-ui/colors": "^3.0.0",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^1.8.0",
     "motion": "^12.27.1",
