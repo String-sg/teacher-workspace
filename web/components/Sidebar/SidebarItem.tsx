@@ -91,12 +91,16 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   };
 
   const itemClassName = cn(
-    // `overflow-hidden` clips the label's exit animation so it never leaks
-    // past the nav's right edge into the main content during collapse.
-    'flex h-10 cursor-pointer items-center overflow-hidden rounded-lg focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
-    // Expanded: icon + label inside a left-padded pill.
-    // Collapsed: icon-only, centered in the 40px inner rail.
-    isExpanded ? 'justify-start gap-x-2 px-3' : 'justify-center px-0',
+    // Static layout: the item always uses left-aligned icon + gap + label.
+    // When the label exits via AnimatePresence in the collapsed state, the
+    // icon is naturally centered in the 64px rail (SidebarContent `px-3` plus
+    // item `px-3` puts the icon center at x=32). Toggling flex classes here
+    // instead causes the icon to jump layout mid-animation → flicker.
+    //
+    // `overflow-hidden` clips the label's exit slide so it never leaks past
+    // the nav's right edge into the main content while the nav width
+    // transitions from 240 → 64.
+    'flex h-10 cursor-pointer items-center justify-start gap-x-2 overflow-hidden rounded-lg px-3 focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
     'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
     props.className,
   );
