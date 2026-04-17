@@ -12,6 +12,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router';
 
 import { deleteAnnouncement, duplicateAnnouncement, loadPostsList } from '~/api/client';
+import { PGError } from '~/api/errors';
 import { ReadRate } from '~/components/posts/ReadRate';
 import { StatusBadge } from '~/components/posts/StatusBadge';
 import {
@@ -269,8 +270,12 @@ const PostsView: React.FC = () => {
                                     revalidator.revalidate();
                                     notify.success('Post duplicated.');
                                   })
-                                  .catch(() => {
-                                    notify.error('Failed to duplicate post.');
+                                  .catch((err: unknown) => {
+                                    // Known PG errors are toasted globally;
+                                    // only fall back for unknown/network failures.
+                                    if (!(err instanceof PGError)) {
+                                      notify.error('Failed to duplicate post.');
+                                    }
                                   });
                               }}
                             >
@@ -289,8 +294,10 @@ const PostsView: React.FC = () => {
                                       await deleteAnnouncement(announcement.id);
                                       revalidator.revalidate();
                                       notify.success('Post deleted.');
-                                    } catch {
-                                      notify.error('Failed to delete post.');
+                                    } catch (err) {
+                                      if (!(err instanceof PGError)) {
+                                        notify.error('Failed to delete post.');
+                                      }
                                     }
                                   }}
                                 >

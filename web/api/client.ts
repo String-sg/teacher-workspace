@@ -1,9 +1,11 @@
 import type { PGAnnouncement } from '~/data/mock-pg-announcements';
+import { notify } from '~/lib/notify';
 
 import detailFixture from '../../server/internal/pg/fixtures/announcement_detail.json';
 import announcementsFixture from '../../server/internal/pg/fixtures/announcements.json';
 import sharedFixture from '../../server/internal/pg/fixtures/announcements_shared.json';
 import consentFormsFixture from '../../server/internal/pg/fixtures/consent_forms.json';
+import { PGError, PGNotFoundError, PGSessionExpiredError, PGValidationError } from './errors';
 import {
   mapAnnouncementDetail,
   mapAnnouncementSummary,
@@ -52,11 +54,54 @@ function unwrapEnvelope<T>(json: unknown): T {
   return json as T;
 }
 
+// Translates pgw's error envelope into a typed `PGError` subclass and applies
+// side-effects (redirect for session loss, toast for generic failures) before
+// rethrowing. Validation errors are thrown silently so containers can render
+// them inline rather than as toasts.
+async function handleErrorResponse(res: Response): Promise<never> {
+  let resultCode: number | undefined;
+  let errorReason: string | undefined;
+  try {
+    const body = (await res.clone().json()) as {
+      resultCode?: number;
+      message?: string;
+      error?: { errorReason?: string };
+    };
+    resultCode = body.resultCode;
+    errorReason = body.error?.errorReason ?? body.message;
+  } catch {
+    // Non-JSON body (e.g. HTML error page) — fall through with undefined fields.
+  }
+
+  const message = errorReason ?? `Request failed (${res.status}).`;
+  const code = resultCode ?? res.status;
+
+  switch (resultCode) {
+    case -401:
+    case -4012:
+      if (typeof window !== 'undefined' && window.location.pathname !== '/session-expired') {
+        window.location.href = '/session-expired';
+      }
+      throw new PGSessionExpiredError(message, code, res.status);
+    case -404:
+      throw new PGNotFoundError(message, code, res.status);
+    case -400:
+    case -4001:
+    case -4003:
+    case -4004:
+      throw new PGValidationError(message, code, res.status);
+    case -429:
+      notify.error('Too many requests. Please slow down and try again.');
+      throw new PGError(message, code, res.status);
+    default:
+      notify.error(message);
+      throw new PGError(message, code, res.status);
+  }
+}
+
 async function fetchApi<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) {
-    throw new Response('API error', { status: res.status });
-  }
+  if (!res.ok) await handleErrorResponse(res);
   return unwrapEnvelope<T>(await res.json());
 }
 
@@ -66,9 +111,7 @@ async function mutateApi<T>(method: 'POST' | 'PUT', path: string, body: unknown)
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    throw new Response('API error', { status: res.status });
-  }
+  if (!res.ok) await handleErrorResponse(res);
   // Handle empty responses (204 No Content or empty body)
   if (res.status === 204) return undefined as T;
   const text = await res.text();
@@ -78,9 +121,7 @@ async function mutateApi<T>(method: 'POST' | 'PUT', path: string, body: unknown)
 
 async function deleteApi(path: string): Promise<void> {
   const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
-  if (!res.ok) {
-    throw new Response('API error', { status: res.status });
-  }
+  if (!res.ok) await handleErrorResponse(res);
 }
 
 /** Returns fallback on network errors; re-throws HTTP and abort errors. */
@@ -90,8 +131,8 @@ async function fetchApiSafe<T>(path: string, fallback: T): Promise<T> {
   } catch (err) {
     // Re-throw AbortError so React Router's navigation cancellation works
     if (err instanceof DOMException && err.name === 'AbortError') throw err;
-    // Re-throw HTTP errors so they surface to error boundaries
-    if (err instanceof Response) throw err;
+    // Re-throw HTTP errors so they surface to error boundaries / containers
+    if (err instanceof PGError) throw err;
     // Only fall back for network-level failures (server unreachable)
     console.warn(`[PG API] Network error fetching ${path}, using fixture fallback`);
     return fallback;

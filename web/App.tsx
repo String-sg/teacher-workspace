@@ -38,6 +38,10 @@ const router = createBrowserRouter([
         path: 'components',
         lazy: () => import('./containers/ComponentsView'),
       },
+      {
+        path: 'session-expired',
+        lazy: () => import('./containers/SessionExpiredView'),
+      },
     ],
   },
 ]);

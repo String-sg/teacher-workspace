@@ -13,6 +13,7 @@ import {
   loadPostDetail,
   updateDraft,
 } from '~/api/client';
+import { PGError, PGValidationError } from '~/api/errors';
 import type {
   PGApiSchoolClass,
   PGApiSchoolStaff,
@@ -344,8 +345,15 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
       }
       notify.success('Draft saved.');
       navigate('/posts');
-    } catch {
-      notify.error('Failed to save draft. Please try again.');
+    } catch (err) {
+      // Validation errors carry pgw's user-facing reason; surface it verbatim.
+      // Other `PGError`s were already toasted by the global handler.
+      // Anything else (network, unknown) needs a generic fallback toast.
+      if (err instanceof PGValidationError) {
+        notify.error(err.message);
+      } else if (!(err instanceof PGError)) {
+        notify.error('Failed to save draft. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -360,8 +368,12 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
       notify.success('Post sent.');
       // Keep isSaving=true until navigation completes to prevent double-submit
       setTimeout(() => navigate('/posts'), 150);
-    } catch {
-      notify.error('Failed to send post. Please try again.');
+    } catch (err) {
+      if (err instanceof PGValidationError) {
+        notify.error(err.message);
+      } else if (!(err instanceof PGError)) {
+        notify.error('Failed to send post. Please try again.');
+      }
       setIsSaving(false);
     }
   }
