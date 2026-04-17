@@ -91,7 +91,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   };
 
   const itemClassName = cn(
-    'flex h-10 cursor-pointer items-center justify-start gap-x-2 rounded-lg px-3 focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+    // `overflow-hidden` clips the label's exit animation so it never leaks
+    // past the nav's right edge into the main content during collapse.
+    'flex h-10 cursor-pointer items-center overflow-hidden rounded-lg focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+    // Expanded: icon + label inside a left-padded pill.
+    // Collapsed: icon-only, centered in the 40px inner rail.
+    isExpanded ? 'justify-start gap-x-2 px-3' : 'justify-center px-0',
     'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
     props.className,
   );

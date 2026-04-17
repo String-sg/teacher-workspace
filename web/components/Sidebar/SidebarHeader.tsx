@@ -16,9 +16,10 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
     <div
       className={cn(
         'flex items-center p-3',
-        // Keep the toggle pinned to the right whether the workspace label is
-        // rendered or not.
-        isExpanded ? 'justify-between' : 'justify-end',
+        // Expanded: label on the left, toggle pinned to the right.
+        // Collapsed: toggle is the only child — center it on the 64px rail
+        // so it aligns with the nav icons below.
+        isExpanded ? 'justify-between' : 'justify-center',
         className,
       )}
       {...props}
