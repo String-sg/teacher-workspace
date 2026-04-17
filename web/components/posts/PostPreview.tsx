@@ -25,7 +25,7 @@ const PostPreview = React.memo(function PostPreview({
   const enquiryContact = enquiryEmail || defaultEnquiryEmail;
 
   return (
-    <div className="overflow-hidden rounded-3xl border-2 border-slate-900 bg-white">
+    <div className="overflow-hidden rounded-3xl border-2 border-slate-12 bg-white">
       {/* Mobile chrome */}
       <div className="flex items-center justify-between px-4 py-3">
         <ChevronLeft className="h-4 w-4 text-foreground" strokeWidth={2} />

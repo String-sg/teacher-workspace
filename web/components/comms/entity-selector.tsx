@@ -33,8 +33,8 @@ export interface EntityItem {
   badge?: string; // right-aligned label on the name row (e.g. NRIC for students)
   type: 'group' | 'individual';
   count?: number;
-  memberNames?: Array<string>; // plain names for chip tooltips
-  memberDetails?: Array<MemberDetail>; // richer per-member info for expanded list
+  memberNames?: string[]; // plain names for chip tooltips
+  memberDetails?: MemberDetail[]; // richer per-member info for expanded list
   groupType?: GroupType;
 }
 
@@ -44,33 +44,33 @@ export interface SelectedEntity {
   type: 'group' | 'individual';
   count: number;
   groupType?: GroupType;
-  memberNames?: Array<string>;
-  excludedMemberNames?: Array<string>;
+  memberNames?: string[];
+  excludedMemberNames?: string[];
 }
 
 export interface ScopeSection {
   label: string;
-  items: Array<EntityItem>;
+  items: EntityItem[];
 }
 
 export interface EntityScope {
   id: string;
   label: string;
-  items: Array<EntityItem>;
-  sections?: Array<ScopeSection>;
+  items: EntityItem[];
+  sections?: ScopeSection[];
   createHref?: string;
   createLabel?: string;
 }
 
 export interface SearchResults {
-  groups: Array<EntityItem>;
-  individuals: Array<EntityItem>;
+  groups: EntityItem[];
+  individuals: EntityItem[];
 }
 
 export interface EntitySelectorProps {
-  value: Array<SelectedEntity>;
-  onChange: (entities: Array<SelectedEntity>) => void;
-  scopes?: Array<EntityScope>;
+  value: SelectedEntity[];
+  onChange: (entities: SelectedEntity[]) => void;
+  scopes?: EntityScope[];
   searchFn: (query: string) => SearchResults;
   multiSelect?: boolean;
   placeholder?: string;
@@ -87,7 +87,7 @@ export interface EntitySelectorProps {
 // Returns the unit label for a group's member count.
 // Student-oriented groups use "student(s)"; staff/generic groups use "member(s)".
 function getCountUnit(groupType: GroupType | undefined, count: number): string {
-  const studentTypes: Array<GroupType> = ['class', 'level', 'school', 'cca', 'teaching', 'custom'];
+  const studentTypes: GroupType[] = ['class', 'level', 'school', 'cca', 'teaching', 'custom'];
   if (groupType && studentTypes.includes(groupType)) {
     return count === 1 ? 'student' : 'students';
   }
@@ -95,7 +95,7 @@ function getCountUnit(groupType: GroupType | undefined, count: number): string {
 }
 
 export function computeSummary(
-  entities: Array<SelectedEntity>,
+  entities: SelectedEntity[],
   summaryLabel: string,
   summaryLabelPlural: string,
 ): string {
@@ -112,7 +112,7 @@ export function computeSummary(
     byType.set(key, (byType.get(key) ?? 0) + 1);
   }
 
-  const typeOrder: Array<GroupType> = [
+  const typeOrder: GroupType[] = [
     'school',
     'level',
     'class',
@@ -133,7 +133,7 @@ export function computeSummary(
     'staff-group': ['group', 'groups'],
   };
 
-  const parts: Array<string> = [];
+  const parts: string[] = [];
 
   for (const type of typeOrder) {
     const count = byType.get(type) ?? 0;
@@ -151,11 +151,11 @@ export function computeSummary(
 }
 
 export function detectOverlaps(
-  entities: Array<SelectedEntity>,
-  overlapMap: Record<string, Array<string>>,
-): Array<{ childLabel: string; parentLabel: string }> {
+  entities: SelectedEntity[],
+  overlapMap: Record<string, string[]>,
+): { childLabel: string; parentLabel: string }[] {
   const selectedIds = new Set(entities.map((e) => e.id));
-  const warnings: Array<{ childLabel: string; parentLabel: string }> = [];
+  const warnings: { childLabel: string; parentLabel: string }[] = [];
 
   for (const [parentId, childIds] of Object.entries(overlapMap)) {
     if (!selectedIds.has(parentId)) continue;
@@ -218,7 +218,7 @@ function ResultRow({
       <div
         className={cn(
           'flex w-full transition-colors',
-          isSelected ? 'bg-twblue-1' : 'hover:bg-slate-50',
+          isSelected ? 'bg-twblue-1' : 'hover:bg-slate-2',
         )}
       >
         {/* Selection toggle — takes all available space */}
@@ -233,7 +233,7 @@ function ResultRow({
           <span
             className={cn(
               'flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-2 transition-colors',
-              isSelected ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white',
+              isSelected ? 'border-primary bg-primary text-white' : 'border-slate-6 bg-white',
             )}
           >
             {isSelected && excludedMemberNames.size === 0 && <Check className="h-3 w-3" />}
@@ -265,7 +265,7 @@ function ResultRow({
             onClick={() => onToggleExpand?.()}
             className={cn(
               'flex shrink-0 items-center px-2 transition-colors',
-              isSelected ? 'hover:bg-twblue-3' : 'hover:bg-slate-100',
+              isSelected ? 'hover:bg-twblue-3' : 'hover:bg-slate-3',
             )}
           >
             <ChevronDown
@@ -280,7 +280,7 @@ function ResultRow({
 
       {/* Expanded member list */}
       {isExpanded && hasMembers && (
-        <div className="border-b border-slate-100 bg-slate-50/60 px-4 pt-2.5 pb-3">
+        <div className="border-b border-slate-3 bg-slate-2/60 px-4 pt-2.5 pb-3">
           {/* Header: member count */}
           {(() => {
             const total = item.memberDetails?.length ?? item.memberNames!.length;
@@ -307,10 +307,10 @@ function ResultRow({
                     onClick={() => isSelected && onMemberToggle?.(detail.name)}
                     className={cn(
                       'flex w-full items-center gap-2 rounded px-1.5 py-1 text-xs',
-                      isSelected ? 'cursor-pointer hover:bg-slate-100' : 'cursor-default',
+                      isSelected ? 'cursor-pointer hover:bg-slate-3' : 'cursor-default',
                     )}
                   >
-                    <span className="w-5 shrink-0 text-right text-[10px] text-slate-400 tabular-nums">
+                    <span className="w-5 shrink-0 text-right text-[10px] text-slate-9 tabular-nums">
                       #{index + 1}
                     </span>
                     <span
@@ -318,7 +318,7 @@ function ResultRow({
                         'flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-2 transition-colors',
                         isMemberIncluded
                           ? 'border-primary bg-primary text-white'
-                          : 'border-slate-300 bg-white',
+                          : 'border-slate-6 bg-white',
                       )}
                     >
                       {isMemberIncluded && <Check className="h-3 w-3" />}
@@ -327,7 +327,7 @@ function ResultRow({
                       <span
                         className={cn(
                           'font-medium',
-                          isMemberIncluded ? 'text-slate-700' : 'text-slate-400',
+                          isMemberIncluded ? 'text-slate-12' : 'text-slate-9',
                         )}
                       >
                         {detail.name}
@@ -339,7 +339,7 @@ function ResultRow({
                       )}
                     </span>
                     {detail.badge && (
-                      <span className="shrink-0 font-mono text-[10px] text-slate-400">
+                      <span className="shrink-0 font-mono text-[10px] text-slate-9">
                         {detail.badge}
                       </span>
                     )}
@@ -380,7 +380,7 @@ function EntityChip({ entity, onRemove }: { entity: SelectedEntity; onRemove: ()
   return (
     <span
       title={tooltipTitle}
-      className="bg-twblue-2 text-twblue-9 inline-flex max-w-[180px] shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium"
+      className="inline-flex max-w-[180px] shrink-0 items-center gap-1 rounded-md bg-twblue-2 px-2 py-0.5 text-xs font-medium text-twblue-9"
     >
       {entity.type === 'group' ? (
         <Users className="h-3 w-3 shrink-0" />
@@ -394,7 +394,7 @@ function EntityChip({ entity, onRemove }: { entity: SelectedEntity; onRemove: ()
         aria-label={`Remove ${entity.label}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={onRemove}
-        className="hover:bg-twblue-4 hover:text-twblue-9 ml-0.5 shrink-0 rounded-full p-0.5"
+        className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-twblue-4 hover:text-twblue-9"
       >
         <X className="h-2.5 w-2.5" />
       </button>
@@ -528,7 +528,7 @@ export function EntitySelector({
     const scope = scopes?.find((s) => s.id === activeScope);
     if (!scope) return null;
 
-    const renderItems = (items: Array<EntityItem>) =>
+    const renderItems = (items: EntityItem[]) =>
       items.map((item) => (
         <ResultRow
           key={item.id}
@@ -557,7 +557,7 @@ export function EntitySelector({
     const createLink = scope.createHref && (
       <Link
         to={scope.createHref}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-slate-50"
+        className="flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-slate-2"
       >
         <Plus className="h-4 w-4" />
         {scope.createLabel ?? 'Create'}
@@ -648,7 +648,7 @@ export function EntitySelector({
             'rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
             activeScope === scope.id
               ? 'bg-twblue-2 text-twblue-9'
-              : 'text-muted-foreground hover:bg-slate-100 hover:text-foreground',
+              : 'text-muted-foreground hover:bg-slate-3 hover:text-foreground',
           )}
         >
           {scope.label}
@@ -731,7 +731,7 @@ export function EntitySelector({
           type="button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onChange([])}
-          className="ml-auto shrink-0 text-xs text-muted-foreground transition-colors hover:text-rose-500"
+          className="ml-auto shrink-0 text-xs text-muted-foreground transition-colors hover:text-red-9"
         >
           Clear all
         </button>
@@ -778,13 +778,13 @@ export function EntitySelector({
             {/* Drag handle + title bar */}
             <div className="flex items-center justify-between border-b px-4 py-3">
               <div className="flex flex-col gap-1">
-                <div className="mx-auto h-1 w-12 rounded-full bg-slate-200" />
+                <div className="mx-auto h-1 w-12 rounded-full bg-slate-4" />
               </div>
               <span className="text-sm font-medium text-muted-foreground">{placeholder}</span>
               <button
                 type="button"
                 onClick={closePanel}
-                className="rounded-md p-1 hover:bg-slate-100"
+                className="rounded-md p-1 hover:bg-slate-3"
               >
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -812,7 +812,7 @@ export function EntitySelector({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setQuery('')}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded p-0.5 hover:bg-slate-100"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded p-0.5 hover:bg-slate-3"
                 >
                   <X className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>

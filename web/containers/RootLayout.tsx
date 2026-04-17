@@ -1,4 +1,5 @@
-import { HelpCircle, Home, Mail, UsersRound } from 'lucide-react';
+import { TooltipProvider } from '@flow/core';
+import { HelpCircle, Home, Mail, UsersRound } from '@flow/icons';
 import React, { useMemo, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
@@ -12,7 +13,6 @@ import {
   SidebarTrigger,
 } from '~/components/Sidebar';
 import SidebarFooter from '~/components/Sidebar/SidebarFooter';
-import { TooltipProvider } from '~/components/ui';
 import { useIsWithinViewport } from '~/hooks/useIsWithinViewport';
 import { cn } from '~/lib/utils';
 
@@ -34,7 +34,7 @@ const RootLayout: React.FC = () => {
   }, [segment]);
 
   return (
-    <TooltipProvider delay={600}>
+    <TooltipProvider delayDuration={600}>
       <div className="flex h-svh">
         <SidebarProvider>
           <Sidebar>

@@ -86,12 +86,12 @@ export function RecipientReadTable({ recipients, responseType }: RecipientReadTa
                 <TableCell className="text-muted-foreground">{recipient.classLabel}</TableCell>
                 <TableCell>
                   {recipient.readStatus === 'read' ? (
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-10">
                       <Check className="h-4 w-4" strokeWidth={2.25} />
                       Read
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-600">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-10">
                       <Clock className="h-4 w-4" strokeWidth={2.25} />
                       Unread
                     </span>
@@ -104,9 +104,9 @@ export function RecipientReadTable({ recipients, responseType }: RecipientReadTa
                   <>
                     <TableCell>
                       {recipient.acknowledgedAt ? (
-                        <Check className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-green-10" />
                       ) : (
-                        <X className="h-4 w-4 text-red-500" />
+                        <X className="h-4 w-4 text-red-9" />
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -118,11 +118,9 @@ export function RecipientReadTable({ recipients, responseType }: RecipientReadTa
                   <>
                     <TableCell>
                       {recipient.formResponse === 'yes' ? (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                          Yes
-                        </Badge>
+                        <Badge className="bg-green-3 text-green-11 hover:bg-green-3">Yes</Badge>
                       ) : recipient.formResponse === 'no' ? (
-                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">No</Badge>
+                        <Badge className="bg-red-3 text-red-11 hover:bg-red-3">No</Badge>
                       ) : (
                         <span className="text-muted-foreground">{'\u2014'}</span>
                       )}

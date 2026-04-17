@@ -1,12 +1,11 @@
+import { cn } from '@flow/core';
 import React from 'react';
-
-import { cn } from '~/lib/utils';
 
 export type SidebarContentProps = React.ComponentPropsWithoutRef<'div'>;
 
 const SidebarContent: React.FC<SidebarContentProps> = ({ children, className, ...props }) => {
   return (
-    <div className={cn('flex flex-1 flex-col gap-y-1.5 px-2', className)} {...props}>
+    <div className={cn('flex flex-1 flex-col gap-y-xs px-sm', className)} {...props}>
       {children}
     </div>
   );

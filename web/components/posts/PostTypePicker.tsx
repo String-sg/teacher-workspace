@@ -13,14 +13,14 @@ function PostTypePicker({ onSelect }: PostTypePickerProps) {
       <div className="mt-8 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
         <button
           type="button"
-          className="cursor-pointer rounded-xl border p-6 text-left transition-colors hover:border-blue-300 hover:bg-blue-50/50"
+          className="cursor-pointer rounded-xl border p-6 text-left transition-colors hover:border-blue-6 hover:bg-blue-2/50"
           onClick={() => onSelect('post')}
         >
           <div className="h-[100px] space-y-2.5">
-            <div className="h-2 w-3/4 rounded bg-slate-200" />
-            <div className="h-2 w-full rounded bg-slate-200" />
-            <div className="h-2 w-5/6 rounded bg-slate-200" />
-            <div className="h-2 w-2/3 rounded bg-slate-200" />
+            <div className="h-2 w-3/4 rounded bg-slate-4" />
+            <div className="h-2 w-full rounded bg-slate-4" />
+            <div className="h-2 w-5/6 rounded bg-slate-4" />
+            <div className="h-2 w-2/3 rounded bg-slate-4" />
           </div>
 
           <p className="mt-4 font-medium">Post</p>
@@ -31,14 +31,14 @@ function PostTypePicker({ onSelect }: PostTypePickerProps) {
 
         <button
           type="button"
-          className="cursor-pointer rounded-xl border p-6 text-left transition-colors hover:border-blue-300 hover:bg-blue-50/50"
+          className="cursor-pointer rounded-xl border p-6 text-left transition-colors hover:border-blue-6 hover:bg-blue-2/50"
           onClick={() => onSelect('post-with-response')}
         >
           <div className="h-[100px] space-y-2.5">
-            <div className="h-2 w-3/4 rounded bg-slate-200" />
-            <div className="h-2 w-full rounded bg-slate-200" />
-            <div className="mt-3 h-2.5 w-1/2 rounded bg-blue-300" />
-            <div className="h-2 w-2/3 rounded bg-slate-200" />
+            <div className="h-2 w-3/4 rounded bg-slate-4" />
+            <div className="h-2 w-full rounded bg-slate-4" />
+            <div className="mt-3 h-2.5 w-1/2 rounded bg-blue-6" />
+            <div className="h-2 w-2/3 rounded bg-slate-4" />
           </div>
 
           <p className="mt-4 font-medium">Post with Response</p>

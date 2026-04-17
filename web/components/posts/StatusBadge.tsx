@@ -5,19 +5,19 @@ import { cn } from '~/lib/utils';
 const STATUS_CONFIG: Record<PGStatus, { label: string; className: string }> = {
   posted: {
     label: 'Posted',
-    className: 'bg-green-100 text-green-700 hover:bg-green-100',
+    className: 'bg-green-3 text-green-11 hover:bg-green-3',
   },
   scheduled: {
     label: 'Scheduled',
-    className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+    className: 'bg-blue-3 text-blue-11 hover:bg-blue-3',
   },
   posting: {
     label: 'Posting',
-    className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
+    className: 'bg-blue-3 text-blue-11 hover:bg-blue-3',
   },
   draft: {
     label: 'Draft',
-    className: 'bg-slate-100 text-slate-600 hover:bg-slate-100',
+    className: 'bg-slate-3 text-slate-11 hover:bg-slate-3',
   },
 };
 

@@ -427,7 +427,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
               {/* Students field */}
               <div className="space-y-1.5">
                 <Label>
-                  Students <span className="text-red-500">*</span>
+                  Students <span className="text-red-9">*</span>
                 </Label>
                 <p className="text-sm text-muted-foreground">
                   Parents of the selected students will receive this post via Parents Gateway.
@@ -493,7 +493,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="post-title">
-                    Title <span className="text-red-500">*</span>
+                    Title <span className="text-red-9">*</span>
                   </Label>
                   <span className="text-xs text-muted-foreground tabular-nums">
                     {state.title.length}/120

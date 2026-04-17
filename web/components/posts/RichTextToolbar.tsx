@@ -25,17 +25,17 @@ interface RichTextToolbarProps {
 }
 
 const btnClass =
-  'h-7 w-7 flex items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors';
+  'h-7 w-7 flex items-center justify-center rounded text-slate-11 hover:bg-slate-3 hover:text-slate-12 transition-colors';
 
 function Divider() {
-  return <div className="mx-1 h-4 w-px bg-slate-200" />;
+  return <div className="mx-1 h-4 w-px bg-slate-4" />;
 }
 
 function RichTextToolbar({ className }: RichTextToolbarProps) {
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center gap-0.5 rounded-t-xl border bg-slate-50 px-2 py-1.5',
+        'flex flex-wrap items-center gap-0.5 rounded-t-xl border bg-slate-2 px-2 py-1.5',
         className,
       )}
     >

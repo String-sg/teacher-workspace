@@ -57,7 +57,7 @@ export function ReadTrackingCards({ responseType, stats }: ReadTrackingCardsProp
 
   const readSubline =
     unreadCount > 0 ? (
-      <span className="text-sm font-medium text-amber-600">{unreadCount} unread</span>
+      <span className="text-sm font-medium text-amber-10">{unreadCount} unread</span>
     ) : null;
 
   const readCard = (

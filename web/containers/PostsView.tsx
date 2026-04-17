@@ -191,7 +191,7 @@ const PostsView: React.FC = () => {
                           <div className="flex items-center gap-1.5">
                             <span className="truncate font-medium">{announcement.title}</span>
                             {showLowRead && (
-                              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-9" />
                             )}
                           </div>
                           {announcement.description && (
@@ -206,7 +206,7 @@ const PostsView: React.FC = () => {
                       <TableCell className="text-sm text-muted-foreground">
                         <span
                           className={
-                            announcement.status === 'scheduled' ? 'text-amber-600' : undefined
+                            announcement.status === 'scheduled' ? 'text-amber-10' : undefined
                           }
                         >
                           {formatDate(relevantDate)}
