@@ -1,8 +1,7 @@
-import { Typography } from '@flow/core';
-import { ArrowLeft } from '@flow/icons';
+import { ArrowLeft } from 'lucide-react';
 import React, { useMemo } from 'react';
 import type { LoaderFunctionArgs } from 'react-router';
-import { isRouteErrorResponse, Link, useLoaderData, useParams, useRouteError } from 'react-router';
+import { isRouteErrorResponse, Link, useLoaderData, useRouteError } from 'react-router';
 
 import { loadPostDetail } from '~/api/client';
 import { AnnouncementCard } from '~/components/posts/AnnouncementCard';
@@ -11,7 +10,7 @@ import { RecipientReadTable } from '~/components/posts/RecipientReadTable';
 import { StatusBadge } from '~/components/posts/StatusBadge';
 import { Button } from '~/components/ui';
 import type { PGAnnouncement } from '~/data/mock-pg-announcements';
-import { formatDate } from '~/helpers/dateTime';
+import { formatDate, formatDateTime } from '~/helpers/dateTime';
 
 // ─── Route loader ───────────────────────────────────────────────────────────
 
@@ -28,16 +27,16 @@ export function ErrorBoundary() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 px-6 py-16">
-      <Typography variant="title-md">
+      <h2 className="text-xl font-semibold tracking-tight">
         {isRouteErrorResponse(error) && error.status === 404
           ? 'Post not found'
           : 'Could not load post'}
-      </Typography>
-      <Typography variant="body-sm" className="text-muted-foreground">
+      </h2>
+      <p className="text-sm text-muted-foreground">
         {isRouteErrorResponse(error) && error.status === 404
           ? 'This post may have been deleted.'
           : 'The server may be unavailable. Please try again.'}
-      </Typography>
+      </p>
       <Button variant="outline" size="sm" render={<Link to="/posts" />} nativeButton={false}>
         Back to Posts
       </Button>
@@ -48,7 +47,6 @@ export function ErrorBoundary() {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 const PostDetailView: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const announcement = useLoaderData<PGAnnouncement>();
 
   const sortedRecipients = useMemo(
@@ -61,77 +59,61 @@ const PostDetailView: React.FC = () => {
     [announcement],
   );
 
+  const iso = announcement.postedAt ?? announcement.createdAt;
+  const postedDate = formatDateTime(iso) ?? formatDate(iso);
+
   return (
     <div className="space-y-6 px-6 py-6">
-      {/* Header: Back + Edit */}
-      <div className="flex items-center justify-between">
-        <Link
-          to="/posts"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Posts
-        </Link>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            render={<Link to="/posts" />}
+            nativeButton={false}
+            aria-label="Back to Posts"
+            className="mt-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-semibold tracking-tight">{announcement.title}</h1>
+              <StatusBadge status={announcement.status} />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Posted {postedDate}
+              {announcement.createdBy ? ` · ${announcement.createdBy}` : ''}
+            </p>
+          </div>
+        </div>
 
         <Button
           variant="outline"
           size="sm"
-          render={<Link to={`/posts/${id}/edit`} />}
+          render={<Link to={`/posts/${announcement.id}/edit`} />}
           nativeButton={false}
         >
           Edit
         </Button>
       </div>
 
-      {/* Post title + status + date */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <StatusBadge status={announcement.status} />
-          <Typography variant="title-lg" asChild>
-            <h1>{announcement.title}</h1>
-          </Typography>
-        </div>
-
-        <Typography variant="body-sm" className="text-muted-foreground" asChild>
-          <p>Posted on: {formatDate(announcement.postedAt ?? announcement.createdAt)}</p>
-        </Typography>
-      </div>
-
       {/* Two-column grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column (2/3) */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Read tracking cards */}
-          <div className="space-y-3">
-            <Typography
-              variant="label-sm"
-              className="tracking-widest text-muted-foreground uppercase"
-            >
-              {announcement.responseType === 'view-only' ? 'READ STATUS' : 'RESPONSES RECEIVED'}
-            </Typography>
-            <ReadTrackingCards
-              responseType={announcement.responseType}
-              stats={announcement.stats}
-            />
-          </div>
+          <ReadTrackingCards responseType={announcement.responseType} stats={announcement.stats} />
 
-          {/* Recipients table */}
-          <div className="space-y-3">
-            <Typography
-              variant="label-sm"
-              className="tracking-widest text-muted-foreground uppercase"
-            >
-              RESPONSE STATUS
-            </Typography>
-            <RecipientReadTable
-              recipients={sortedRecipients}
-              responseType={announcement.responseType}
-            />
-          </div>
+          <RecipientReadTable
+            recipients={sortedRecipients}
+            responseType={announcement.responseType}
+          />
         </div>
 
         {/* Right column (1/3) */}
-        <div>
+        <div className="lg:sticky lg:top-6 lg:self-start">
           <AnnouncementCard
             title={announcement.title}
             description={announcement.description}

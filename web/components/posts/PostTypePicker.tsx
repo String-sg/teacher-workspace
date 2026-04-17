@@ -1,56 +1,48 @@
-import { Typography } from '@flow/core';
+export type PostKind = 'post' | 'post-with-response';
 
 interface PostTypePickerProps {
-  onSelect: (type: 'post' | 'post-with-response') => void;
+  onSelect: (type: PostKind) => void;
 }
 
 function PostTypePicker({ onSelect }: PostTypePickerProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      <Typography variant="title-lg" asChild>
-        <h1>What would you like to create?</h1>
-      </Typography>
-      <Typography variant="body-sm" className="text-muted-foreground mt-1">
-        Choose a type to get started.
-      </Typography>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center">
+      <h1 className="text-2xl font-semibold tracking-tight">What would you like to create?</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Choose a type to get started.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mt-8">
-        {/* Post card */}
+      <div className="mt-8 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2">
         <button
           type="button"
-          className="border rounded-xl p-6 cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
+          className="cursor-pointer rounded-xl border p-6 text-left transition-colors hover:border-blue-300 hover:bg-blue-50/50"
           onClick={() => onSelect('post')}
         >
-          {/* Mockup area */}
           <div className="h-[100px] space-y-2.5">
-            <div className="bg-slate-200 rounded h-2 w-3/4" />
-            <div className="bg-slate-200 rounded h-2 w-full" />
-            <div className="bg-slate-200 rounded h-2 w-5/6" />
-            <div className="bg-slate-200 rounded h-2 w-2/3" />
+            <div className="h-2 w-3/4 rounded bg-slate-200" />
+            <div className="h-2 w-full rounded bg-slate-200" />
+            <div className="h-2 w-5/6 rounded bg-slate-200" />
+            <div className="h-2 w-2/3 rounded bg-slate-200" />
           </div>
 
-          <p className="font-medium mt-4">Post</p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-4 font-medium">Post</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Send a post to parents. They can read it on Parents Gateway.
           </p>
         </button>
 
-        {/* Post with Response card */}
         <button
           type="button"
-          className="border rounded-xl p-6 cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
+          className="cursor-pointer rounded-xl border p-6 text-left transition-colors hover:border-blue-300 hover:bg-blue-50/50"
           onClick={() => onSelect('post-with-response')}
         >
-          {/* Mockup area with blue bar */}
           <div className="h-[100px] space-y-2.5">
-            <div className="bg-slate-200 rounded h-2 w-3/4" />
-            <div className="bg-slate-200 rounded h-2 w-full" />
-            <div className="bg-blue-300 rounded h-2.5 w-1/2 mt-3" />
-            <div className="bg-slate-200 rounded h-2 w-2/3" />
+            <div className="h-2 w-3/4 rounded bg-slate-200" />
+            <div className="h-2 w-full rounded bg-slate-200" />
+            <div className="mt-3 h-2.5 w-1/2 rounded bg-blue-300" />
+            <div className="h-2 w-2/3 rounded bg-slate-200" />
           </div>
 
-          <p className="font-medium mt-4">Post with Response</p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-4 font-medium">Post with Response</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Send a post and collect responses from parents.
           </p>
         </button>

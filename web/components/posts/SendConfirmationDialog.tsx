@@ -1,5 +1,3 @@
-import { Typography } from '@flow/core';
-
 import {
   Button,
   Dialog,
@@ -34,35 +32,24 @@ function SendConfirmationDialog({
         <DialogHeader>
           <DialogTitle>Send Post</DialogTitle>
           <DialogDescription>
-            Are you sure you want to send this post? This action cannot be
-            undone.
+            Are you sure you want to send this post? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="flex justify-between">
-            <Typography variant="body-sm" className="text-muted-foreground">
-              Title
-            </Typography>
-            <Typography variant="body-sm" className="font-medium text-right max-w-[240px] truncate">
+            <p className="text-sm text-muted-foreground">Title</p>
+            <p className="max-w-[240px] truncate text-right text-sm font-medium">
               {title || 'Untitled'}
-            </Typography>
+            </p>
           </div>
           <div className="flex justify-between">
-            <Typography variant="body-sm" className="text-muted-foreground">
-              Recipients
-            </Typography>
-            <Typography variant="body-sm" className="font-medium">
-              {recipientCount} students
-            </Typography>
+            <p className="text-sm text-muted-foreground">Recipients</p>
+            <p className="text-sm font-medium">{recipientCount} students</p>
           </div>
           <div className="flex justify-between">
-            <Typography variant="body-sm" className="text-muted-foreground">
-              Response Type
-            </Typography>
-            <Typography variant="body-sm" className="font-medium">
-              {RESPONSE_TYPE_META[responseType].label}
-            </Typography>
+            <p className="text-sm text-muted-foreground">Response Type</p>
+            <p className="text-sm font-medium">{RESPONSE_TYPE_META[responseType].label}</p>
           </div>
         </div>
 

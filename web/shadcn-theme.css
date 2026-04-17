@@ -1,17 +1,40 @@
 /**
- * Shadcn theme — direct map onto Radix Colors + a small brand scale.
+ * Project theme — default shadcn tokens + brand-blue overrides.
  *
- * Layout:
- *   1. Radix scales (slate for neutral, crimson for destructive)
- *   2. --twblue-* brand scale (12 steps + 12 alpha)
- *   3. Shadcn semantic tokens — all references, no hex inlining
+ * Structure:
+ *   1. Default shadcn oklch tokens (baseColor=slate), copied from
+ *      `pnpm dlx shadcn@latest init --base-color=slate`.
+ *   2. Project brand scale (`--twblue-*`).
+ *   3. Project overrides applied on top of step 1 (only --primary,
+ *      --primary-foreground, --ring).
+ *
+ * Dark mode is intentionally not defined yet.
  */
 
-@import '@radix-ui/colors/slate.css';
-@import '@radix-ui/colors/crimson.css';
-
 :root {
-  /* Brand scale: twblue */
+  /* 1. Shadcn default tokens (slate) */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+  --radius: 0.625rem;
+
+  /* 2. Brand scale (twblue) */
   --twblue-1: #fcfdff;
   --twblue-2: #f5f9ff;
   --twblue-3: #eaf3ff;
@@ -37,27 +60,11 @@
   --twblue-a11: #005bebfe;
   --twblue-a12: #002464f4;
 
-  /* Shadcn semantic tokens — references only */
-  --background: var(--slate-1);
-  --foreground: var(--slate-12);
-  --card: white;
-  --card-foreground: var(--slate-12);
-  --popover: white;
-  --popover-foreground: var(--slate-12);
+  /* 3. Project overrides (last wins) */
   --primary: var(--twblue-9);
-  --primary-foreground: white;
-  --secondary: var(--slate-3);
-  --secondary-foreground: var(--slate-12);
-  --muted: var(--slate-3);
-  --muted-foreground: var(--slate-11);
-  --accent: var(--slate-3);
-  --accent-foreground: var(--slate-12);
-  --destructive: var(--crimson-9);
-  --destructive-foreground: white;
-  --border: var(--slate-6);
-  --input: var(--slate-6);
+  --primary-foreground: oklch(1 0 0);
   --ring: var(--twblue-8);
 
-  --radius: 0.5rem;
+  /* Project-custom (unchanged) */
   --radius-input: 14px;
 }

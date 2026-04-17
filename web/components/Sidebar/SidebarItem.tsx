@@ -1,16 +1,10 @@
-import {
-  Button,
-  type ButtonProps,
-  cn,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  Typography,
-} from '@flow/core';
-import { type Icon as FlowIcon } from '@flow/icons';
+import { type LucideIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
 import { Link, type LinkProps } from 'react-router';
+
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui';
+import { cn } from '~/lib/utils';
 
 import { useSidebarContext } from './context';
 
@@ -18,7 +12,7 @@ interface SidebarItemBaseProps {
   /**
    * The icon to display in the sidebar item.
    */
-  icon: FlowIcon;
+  icon: LucideIcon;
   /**
    * The label to display in the sidebar item.
    */
@@ -53,7 +47,7 @@ interface SidebarItemLinkProps extends SidebarItemBaseProps, Omit<LinkProps, 'to
 }
 
 interface SidebarItemButtonProps
-  extends SidebarItemBaseProps, Omit<ButtonProps, 'variant' | 'size' | 'children'> {
+  extends SidebarItemBaseProps, Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> {
   /**
    * If provided without `href` or `to`, the item will be rendered as a button element.
    */
@@ -91,102 +85,106 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   };
 
   const itemClassName = cn(
-    'flex cursor-pointer justify-start gap-x-xs rounded-lg p-sm focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
-    'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
+    'flex cursor-pointer justify-start gap-x-1.5 rounded-lg p-2 outline-offset-0 transition-[background-color,outline]',
+    'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
+    'hover:bg-accent active:bg-accent/80 active:opacity-100',
+    'data-[selected=true]:bg-accent data-[selected=true]:hover:bg-accent',
     props.className,
   );
 
   const itemContent = (
     <>
-      <Icon className="flex h-4 w-4 shrink-0 text-slate-11" />
+      <Icon className="flex h-4 w-4 shrink-0 text-muted-foreground" />
 
       <AnimatePresence initial={false}>
         {isExpanded && (
-          <Typography asChild variant="label-md" className="text-slate-12">
-            <motion.p
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{
-                duration: 0.15,
-                ease: [0.22, 0.61, 0.36, 1],
-              }}
-            >
-              {label}
-            </motion.p>
-          </Typography>
+          <motion.span
+            className="text-sm font-medium text-foreground"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{
+              duration: 0.15,
+              ease: [0.22, 0.61, 0.36, 1],
+            }}
+          >
+            {label}
+          </motion.span>
         )}
       </AnimatePresence>
     </>
   );
 
   const tooltipContent = (
-    <TooltipContent showArrow={false} side="right" sideOffset={4}>
-      <Typography variant="body-sm">{tooltip}</Typography>
+    <TooltipContent side="right" sideOffset={4} className="z-50">
+      {tooltip}
     </TooltipContent>
   );
 
   if ('href' in props && props.href !== undefined) {
-    const { onPointerMove, ...anchorProps } = props;
+    const { onPointerMove, className: _className, ...anchorProps } = props;
 
     return (
-      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
-        <TooltipTrigger asChild>
-          <a
-            className={itemClassName}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-selected={!!selected}
-            onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
-            {...anchorProps}
-          >
-            {itemContent}
-          </a>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <a
+              className={itemClassName}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-selected={!!selected}
+              onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
+              {...anchorProps}
+            />
+          }
+        >
+          {itemContent}
         </TooltipTrigger>
-
         {tooltipContent}
       </Tooltip>
     );
   }
 
   if ('to' in props && props.to !== undefined) {
-    const { onPointerMove, ...linkProps } = props;
+    const { onPointerMove, className: _className, ...linkProps } = props;
 
     return (
-      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
-        <TooltipTrigger asChild>
-          <Link
-            className={itemClassName}
-            data-selected={!!selected}
-            onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
-            {...linkProps}
-          >
-            {itemContent}
-          </Link>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Link
+              className={itemClassName}
+              data-selected={!!selected}
+              onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
+              {...linkProps}
+            />
+          }
+        >
+          {itemContent}
         </TooltipTrigger>
-
         {tooltipContent}
       </Tooltip>
     );
   }
 
-  const { onPointerMove, ...buttonProps } = props;
+  const { onPointerMove, className: _className, ...buttonProps } = props;
 
   return (
-    <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={itemClassName}
-          onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
-          data-selected={!!selected}
-          {...buttonProps}
-        >
-          {itemContent}
-        </Button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className={itemClassName}
+            onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
+            data-selected={!!selected}
+            {...buttonProps}
+          />
+        }
+      >
+        {itemContent}
       </TooltipTrigger>
-
       {tooltipContent}
     </Tooltip>
   );

@@ -1,10 +1,9 @@
-import { Typography } from '@flow/core';
-import { Mail, Plus, Upload } from '@flow/icons';
+import { Mail, Plus, Upload } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { AnnouncementCard } from '~/components/posts/AnnouncementCard';
 import { AttachmentSection } from '~/components/posts/AttachmentSection';
-import { PostTypePicker } from '~/components/posts/PostTypePicker';
+import { PostTypePicker, type PostKind } from '~/components/posts/PostTypePicker';
 import { ReadRate } from '~/components/posts/ReadRate';
 import { ReadTrackingCards } from '~/components/posts/ReadTrackingCards';
 import { RecipientSelector } from '~/components/posts/RecipientSelector';
@@ -49,9 +48,7 @@ const DEMO_STATS = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-6">
-      <Typography variant="title-lg" asChild>
-        <h2>{title}</h2>
-      </Typography>
+      <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
       {children}
     </section>
   );
@@ -60,9 +57,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Subsection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <Typography variant="label-md" className="text-muted-foreground">
-        {label}
-      </Typography>
+      <span className="text-sm font-medium text-muted-foreground">{label}</span>
       {children}
     </div>
   );
@@ -71,7 +66,7 @@ function Subsection({ label, children }: { label: string; children: React.ReactN
 const ComponentsView: React.FC = () => {
   const [defaultTab, setDefaultTab] = useState('account');
   const [lineTab, setLineTab] = useState('overview');
-  const [pickedType, setPickedType] = useState<'post' | 'post-with-response' | null>(null);
+  const [pickedType, setPickedType] = useState<PostKind | null>(null);
   const [selectedClasses, setSelectedClasses] = useState<string[]>(['4a']);
   const [responseType, setResponseType] = useState<ResponseType>('acknowledge');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -161,7 +156,7 @@ const ComponentsView: React.FC = () => {
               <CardDescription>Card with default size and padding.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Typography variant="body-sm">Card content goes here.</Typography>
+              <p className="text-sm">Card content goes here.</p>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline">Cancel</Button>
@@ -175,7 +170,7 @@ const ComponentsView: React.FC = () => {
               <CardDescription>Compact card with size=&quot;sm&quot;.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Typography variant="body-sm">Smaller padding and gaps.</Typography>
+              <p className="text-sm">Smaller padding and gaps.</p>
             </CardContent>
             <CardFooter>
               <Button size="sm">Action</Button>
@@ -264,13 +259,13 @@ const ComponentsView: React.FC = () => {
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
             </TabsList>
             <TabsContent value="account" className="mt-4">
-              <Typography variant="body-sm">Account settings content.</Typography>
+              <p className="text-sm">Account settings content.</p>
             </TabsContent>
             <TabsContent value="security" className="mt-4">
-              <Typography variant="body-sm">Security settings content.</Typography>
+              <p className="text-sm">Security settings content.</p>
             </TabsContent>
             <TabsContent value="notifications" className="mt-4">
-              <Typography variant="body-sm">Notification preferences content.</Typography>
+              <p className="text-sm">Notification preferences content.</p>
             </TabsContent>
           </Tabs>
         </Subsection>
@@ -283,7 +278,7 @@ const ComponentsView: React.FC = () => {
                   key={tab}
                   className={`pb-2 text-sm font-medium transition-colors ${
                     lineTab === tab.toLowerCase()
-                      ? 'border-b-2 border-slate-12 text-foreground'
+                      ? 'border-b-2 border-foreground text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setLineTab(tab.toLowerCase())}
@@ -293,9 +288,9 @@ const ComponentsView: React.FC = () => {
               ))}
             </div>
             <div className="mt-4">
-              <Typography variant="body-sm">
+              <p className="text-sm">
                 {lineTab.charAt(0).toUpperCase() + lineTab.slice(1)} content.
-              </Typography>
+              </p>
             </div>
           </div>
         </Subsection>
@@ -354,9 +349,9 @@ const ComponentsView: React.FC = () => {
             <PostTypePicker onSelect={setPickedType} />
           </div>
           {pickedType && (
-            <Typography variant="body-sm" className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Picked: <code>{pickedType}</code>
-            </Typography>
+            </p>
           )}
         </Subsection>
       </Section>

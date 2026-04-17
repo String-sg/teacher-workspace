@@ -1,5 +1,13 @@
-import { Typography } from '@flow/core';
-import { AlertTriangle, Copy, MoreHorizontal, Plus, Search, Trash2, Users } from '@flow/icons';
+import {
+  AlertTriangle,
+  Copy,
+  MoreHorizontal,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router';
 
@@ -57,22 +65,26 @@ const PostsView: React.FC = () => {
         }
         return true;
       })
-      .map((a) => ({
-        ...a,
-        _date: getRelevantDate(a),
-        _dateTs: new Date(getRelevantDate(a) ?? 0).getTime(),
-      }))
+      .map((a) => {
+        const date = getRelevantDate(a);
+        return { ...a, _date: date, _dateTs: new Date(date ?? 0).getTime() };
+      })
       .sort((a, b) => b._dateTs - a._dateTs);
   }, [announcements, searchQuery, tab]);
+
+  const showResponseColumn = tab === 'with-responses';
 
   return (
     <div className="flex flex-col">
       {/* Page header */}
-      <div className="border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Typography variant="title-lg" asChild>
-            <h1>Posts</h1>
-          </Typography>
+      <div className="border-b px-6 py-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">Posts</h1>
+            <p className="text-sm text-muted-foreground">
+              Send posts to parents via Parents Gateway, send a view-only post or collect responses.
+            </p>
+          </div>
           <Button
             variant="default"
             size="sm"
@@ -83,20 +95,11 @@ const PostsView: React.FC = () => {
             Create
           </Button>
         </div>
-        <Typography
-          variant="body-sm"
-          className="mt-1 hidden text-muted-foreground md:block"
-          asChild
-        >
-          <p>
-            Send posts to parents via Parents Gateway. Send a view-only post or collect responses.
-          </p>
-        </Typography>
       </div>
 
-      {/* Toolbar: tabs + search */}
-      <div className="mt-4 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-6">
+      {/* Toolbar: tabs + search + filter */}
+      <div className="space-y-4 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6">
           <Tabs value={tab} onValueChange={(v) => setTab(v as PostTab)}>
             <TabsList>
               <TabsTrigger value="view-only">Posts</TabsTrigger>
@@ -104,16 +107,22 @@ const PostsView: React.FC = () => {
             </TabsList>
           </Tabs>
 
-          <div className="relative">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search posts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full max-w-[240px] min-w-[180px] pl-9"
-              aria-label="Search posts"
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full min-w-[220px] pl-9 sm:w-[280px]"
+                aria-label="Search posts"
+              />
+            </div>
+            <Button variant="outline" size="sm">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter
+            </Button>
           </div>
         </div>
 
@@ -123,21 +132,17 @@ const PostsView: React.FC = () => {
             <div className="py-16 text-center">
               {searchQuery ? (
                 <>
-                  <Typography variant="body-md" className="text-foreground">
-                    No posts match your search.
-                  </Typography>
-                  <Typography variant="body-sm" className="mt-1 text-muted-foreground">
+                  <p className="text-base text-foreground">No posts match your search.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Try adjusting your search terms.
-                  </Typography>
+                  </p>
                 </>
               ) : (
                 <>
-                  <Typography variant="body-md" className="text-foreground">
-                    No posts yet.
-                  </Typography>
-                  <Typography variant="body-sm" className="mt-1 text-muted-foreground">
+                  <p className="text-base text-foreground">No posts yet.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Create your first post to get started.
-                  </Typography>
+                  </p>
                   <Button
                     variant="default"
                     size="sm"
@@ -155,11 +160,13 @@ const PostsView: React.FC = () => {
             <Table>
               <TableHeader className="border-b bg-white">
                 <TableRow>
-                  <TableHead className="w-[500px] pl-6">Title</TableHead>
-                  <TableHead className="w-[110px]">Date</TableHead>
-                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[360px] pl-6">Title</TableHead>
+                  <TableHead className="w-[120px]">Date</TableHead>
+                  <TableHead className="w-[110px]">Status</TableHead>
                   <TableHead className="w-[90px]">Owner</TableHead>
-                  <TableHead className="w-[150px]">Read</TableHead>
+                  <TableHead className="w-[170px]">
+                    {showResponseColumn ? 'Read / Response' : 'Read'}
+                  </TableHead>
                   <TableHead className="w-[48px] pr-2">
                     <span className="sr-only">Actions</span>
                   </TableHead>
@@ -178,15 +185,20 @@ const PostsView: React.FC = () => {
                       className="cursor-pointer"
                       onClick={() => navigate(`/posts/${announcement.id}`)}
                     >
-                      {/* Title */}
-                      <TableCell className="overflow-hidden pl-6 whitespace-normal">
-                        <div className="min-w-0">
+                      {/* Title + description stacked */}
+                      <TableCell className="overflow-hidden pl-6 align-top whitespace-normal">
+                        <div className="min-w-0 py-1">
                           <div className="flex items-center gap-1.5">
                             <span className="truncate font-medium">{announcement.title}</span>
                             {showLowRead && (
                               <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                             )}
                           </div>
+                          {announcement.description && (
+                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                              {announcement.description}
+                            </p>
+                          )}
                         </div>
                       </TableCell>
 
@@ -220,7 +232,7 @@ const PostsView: React.FC = () => {
                         </div>
                       </TableCell>
 
-                      {/* Read */}
+                      {/* Read / Response */}
                       <TableCell className="pr-6">
                         {announcement.status !== 'posted' ? (
                           <span className="text-sm text-muted-foreground">{'\u2014'}</span>

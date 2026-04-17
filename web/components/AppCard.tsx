@@ -1,13 +1,14 @@
-import { cn, Typography } from '@flow/core';
-import { type Icon as FlowIcon } from '@flow/icons';
+import { type LucideIcon } from 'lucide-react';
 import React from 'react';
 import { Link, type LinkProps } from 'react-router';
+
+import { cn } from '~/lib/utils';
 
 interface AppCardBaseProps {
   /**
    * The icon to display in the card.
    */
-  icon: FlowIcon;
+  icon: LucideIcon;
   /**
    * The title to display in the card.
    */
@@ -59,26 +60,24 @@ const AppCard: React.FC<AppCardProps> = ({
   ...props
 }) => {
   const cardClassName = cn(
-    'flex cursor-pointer rounded-3xl border border-slate-6 p-md focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5',
+    'flex cursor-pointer rounded-3xl border border-border p-4 outline-offset-0 transition-[background-color,outline]',
+    'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-hidden',
+    'hover:bg-accent active:bg-accent/80',
     direction === 'vertical'
-      ? 'flex-col items-start gap-md bg-white-default'
-      : 'flex-row items-center gap-lg bg-slate-2',
+      ? 'flex-col items-start gap-4 bg-card'
+      : 'flex-row items-center gap-6 bg-muted',
     className,
   );
 
   const cardContent = (
     <>
-      <div className="rounded-2xl border border-slate-6 bg-white-default p-lg">
+      <div className="rounded-2xl border border-border bg-card p-6">
         <Icon />
       </div>
 
-      <div className="flex flex-col gap-xs">
-        <Typography variant="label-md-strong" className="text-olive-12">
-          {title}
-        </Typography>
-        <Typography variant="body-sm" className="line-clamp-2 text-olive-11">
-          {description}
-        </Typography>
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-semibold text-foreground">{title}</span>
+        <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
       </div>
     </>
   );

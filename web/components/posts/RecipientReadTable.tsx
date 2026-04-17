@@ -1,5 +1,4 @@
-import { Typography } from '@flow/core';
-import { Check, Columns3, Download, Search, SlidersHorizontal, X } from '@flow/icons';
+import { Check, Clock, Columns3, Download, Search, SlidersHorizontal, X } from 'lucide-react';
 
 import {
   Badge,
@@ -22,11 +21,14 @@ interface RecipientReadTableProps {
 
 export function RecipientReadTable({ recipients, responseType }: RecipientReadTableProps) {
   return (
-    <div className="space-y-3">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-4">
+      <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+        Recipient read status
+      </p>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search student or parent..."
             className="pl-9"
@@ -35,116 +37,106 @@ export function RecipientReadTable({ recipients, responseType }: RecipientReadTa
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled>
-            <SlidersHorizontal className="mr-1.5 h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
             Filter
           </Button>
           <Button variant="outline" size="sm" disabled>
-            <Columns3 className="mr-1.5 h-4 w-4" />
+            <Columns3 className="h-4 w-4" />
             Columns
           </Button>
           <Button variant="outline" size="sm" disabled>
-            <Download className="mr-1.5 h-4 w-4" />
+            <Download className="h-4 w-4" />
             Export
           </Button>
         </div>
       </div>
 
-      {/* Recipient count */}
-      <Typography variant="body-sm" className="text-muted-foreground">
-        {recipients.length} recipients
-      </Typography>
+      <p className="text-sm text-muted-foreground">{recipients.length} recipients</p>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student</TableHead>
-            <TableHead>Class</TableHead>
-            <TableHead>Index No.</TableHead>
-            <TableHead>Read Status</TableHead>
-            <TableHead>Read At</TableHead>
-            <TableHead>Parent</TableHead>
-            {responseType === 'acknowledge' && (
-              <>
-                <TableHead>Acknowledged</TableHead>
-                <TableHead>Acknowledged At</TableHead>
-              </>
-            )}
-            {responseType === 'yes-no' && (
-              <>
-                <TableHead>Response</TableHead>
-                <TableHead>Responded At</TableHead>
-              </>
-            )}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {recipients.map((recipient) => (
-            <TableRow key={recipient.studentId}>
-              <TableCell className="font-medium">
-                {recipient.studentName}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {recipient.classLabel}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {recipient.indexNo}
-              </TableCell>
-              <TableCell>
-                {recipient.readStatus === 'read' ? (
-                  <Check className="h-4 w-4 text-green-600" />
-                ) : (
-                  <X className="h-4 w-4 text-red-500" />
-                )}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {recipient.readStatus === 'read'
-                  ? formatDate(recipient.respondedAt)
-                  : '\u2014'}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {recipient.parentName}
-              </TableCell>
+      <div className="overflow-x-auto rounded-xl border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student</TableHead>
+              <TableHead>Index No.</TableHead>
+              <TableHead>Class</TableHead>
+              <TableHead>Read Status</TableHead>
+              <TableHead>Read At</TableHead>
               {responseType === 'acknowledge' && (
                 <>
-                  <TableCell>
-                    {recipient.acknowledgedAt ? (
-                      <Check className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <X className="h-4 w-4 text-red-500" />
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(recipient.acknowledgedAt)}
-                  </TableCell>
+                  <TableHead>Acknowledged</TableHead>
+                  <TableHead>Acknowledged At</TableHead>
                 </>
               )}
               {responseType === 'yes-no' && (
                 <>
-                  <TableCell>
-                    {recipient.formResponse === 'yes' ? (
-                      <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                        Yes
-                      </Badge>
-                    ) : recipient.formResponse === 'no' ? (
-                      <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
-                        No
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">{'\u2014'}</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(recipient.respondedAt)}
-                  </TableCell>
+                  <TableHead>Response</TableHead>
+                  <TableHead>Responded At</TableHead>
                 </>
               )}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {recipients.map((recipient) => (
+              <TableRow key={recipient.studentId}>
+                <TableCell className="font-medium">{recipient.studentName}</TableCell>
+                <TableCell className="text-muted-foreground tabular-nums">
+                  {recipient.indexNo}
+                </TableCell>
+                <TableCell className="text-muted-foreground">{recipient.classLabel}</TableCell>
+                <TableCell>
+                  {recipient.readStatus === 'read' ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600">
+                      <Check className="h-4 w-4" strokeWidth={2.25} />
+                      Read
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-600">
+                      <Clock className="h-4 w-4" strokeWidth={2.25} />
+                      Unread
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {recipient.readStatus === 'read' ? formatDate(recipient.respondedAt) : '\u2014'}
+                </TableCell>
+                {responseType === 'acknowledge' && (
+                  <>
+                    <TableCell>
+                      {recipient.acknowledgedAt ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-500" />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDate(recipient.acknowledgedAt)}
+                    </TableCell>
+                  </>
+                )}
+                {responseType === 'yes-no' && (
+                  <>
+                    <TableCell>
+                      {recipient.formResponse === 'yes' ? (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                          Yes
+                        </Badge>
+                      ) : recipient.formResponse === 'no' ? (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100">No</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">{'\u2014'}</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDate(recipient.respondedAt)}
+                    </TableCell>
+                  </>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

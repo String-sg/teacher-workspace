@@ -1,4 +1,4 @@
-import { CalendarClock, ChevronDown, Send } from '@flow/icons';
+import { CalendarClock, ChevronDown, Send } from 'lucide-react';
 import { useState } from 'react';
 
 import {

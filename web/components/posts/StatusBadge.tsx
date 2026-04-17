@@ -1,7 +1,6 @@
-import { cn } from '@flow/core';
-
 import { Badge } from '~/components/ui';
 import type { PGStatus } from '~/data/mock-pg-announcements';
+import { cn } from '~/lib/utils';
 
 const STATUS_CONFIG: Record<PGStatus, { label: string; className: string }> = {
   posted: {
@@ -31,7 +30,5 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = STATUS_CONFIG[status] ?? FALLBACK;
-  return (
-    <Badge className={cn(config.className, className)}>{config.label}</Badge>
-  );
+  return <Badge className={cn(config.className, className)}>{config.label}</Badge>;
 }

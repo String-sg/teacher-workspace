@@ -1,5 +1,4 @@
-import { Typography } from '@flow/core';
-import { Heart } from '@flow/icons';
+import { Heart } from 'lucide-react';
 import React from 'react';
 
 import AppCard from '~/components/AppCard';
@@ -9,14 +8,12 @@ const HomeView: React.FC = () => {
   const dayPeriod = getDayPeriod();
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-14 px-md py-3xl sm:pt-20">
-      <Typography variant="title-lg" className="p-sm text-center">
-        Good {dayPeriod}
-      </Typography>
+    <div className="mx-auto flex max-w-3xl flex-col gap-14 px-4 py-12 sm:pt-20">
+      <h1 className="p-2 text-center text-2xl font-semibold tracking-tight">Good {dayPeriod}</h1>
 
-      <div className="flex flex-col gap-3xl">
-        <div className="flex flex-col gap-md">
-          <Typography variant="label-lg-strong">Featured</Typography>
+      <div className="flex flex-col gap-12">
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold tracking-tight">Featured</h2>
 
           <AppCard
             icon={Heart}
@@ -27,10 +24,10 @@ const HomeView: React.FC = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-md">
-          <Typography variant="label-lg-strong">Classroom and Student</Typography>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold tracking-tight">Classroom and Student</h2>
 
-          <div className="grid grid-cols-2 gap-md md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <AppCard
               icon={Heart}
               title="App name"
@@ -58,10 +55,10 @@ const HomeView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-md">
-          <Typography variant="label-lg-strong">Parent and Communication</Typography>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold tracking-tight">Parent and Communication</h2>
 
-          <div className="grid grid-cols-2 gap-md md:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             <AppCard
               icon={Heart}
               title="App name"

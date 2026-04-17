@@ -1,5 +1,4 @@
-import { Typography } from '@flow/core';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from '@flow/icons';
+import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 
 import { Button, Input } from '~/components/ui';
 import type { PostFormAction } from '~/containers/CreatePostView';
@@ -17,15 +16,10 @@ interface QuestionBuilderProps {
 function QuestionBuilder({ questions, dispatch }: QuestionBuilderProps) {
   return (
     <div className="space-y-4">
-      <Typography variant="body-sm" className="font-medium">
-        Additional Questions
-      </Typography>
+      <p className="text-sm font-medium">Additional Questions</p>
 
       {questions.map((question, index) => (
-        <div
-          key={question.id}
-          className="rounded-xl border p-4 space-y-3"
-        >
+        <div key={question.id} className="space-y-3 rounded-xl border p-4">
           <div className="flex items-start gap-2">
             <div className="flex-1 space-y-2">
               <Input
@@ -110,9 +104,7 @@ function QuestionBuilder({ questions, dispatch }: QuestionBuilderProps) {
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-destructive hover:text-destructive"
-                onClick={() =>
-                  dispatch({ type: 'REMOVE_QUESTION', id: question.id })
-                }
+                onClick={() => dispatch({ type: 'REMOVE_QUESTION', id: question.id })}
                 aria-label="Delete question"
               >
                 <Trash2 className="h-4 w-4" />
@@ -122,12 +114,7 @@ function QuestionBuilder({ questions, dispatch }: QuestionBuilderProps) {
 
           {question.type === 'mcq' && (
             <div className="ml-4 space-y-2">
-              <Typography
-                variant="body-sm"
-                className="text-muted-foreground"
-              >
-                Options
-              </Typography>
+              <p className="text-sm text-muted-foreground">Options</p>
               {question.options.map((option, optIndex) => (
                 <div key={optIndex} className="flex items-center gap-2">
                   <Input
@@ -150,9 +137,7 @@ function QuestionBuilder({ questions, dispatch }: QuestionBuilderProps) {
                       size="icon"
                       className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
                       onClick={() => {
-                        const newOptions = question.options.filter(
-                          (_, i) => i !== optIndex,
-                        );
+                        const newOptions = question.options.filter((_, i) => i !== optIndex);
                         dispatch({
                           type: 'UPDATE_QUESTION',
                           id: question.id,
@@ -177,10 +162,7 @@ function QuestionBuilder({ questions, dispatch }: QuestionBuilderProps) {
                       type: 'UPDATE_QUESTION',
                       id: question.id,
                       payload: {
-                        options: [...question.options, ''] as [
-                          string,
-                          ...string[],
-                        ],
+                        options: [...question.options, ''] as [string, ...string[]],
                       },
                     });
                   }}
@@ -203,13 +185,7 @@ function QuestionBuilder({ questions, dispatch }: QuestionBuilderProps) {
         <Plus className="h-4 w-4" />
         Add question
         {questions.length >= MAX_QUESTIONS && (
-          <Typography
-            variant="body-sm"
-            className="ml-1 text-muted-foreground"
-            asChild
-          >
-            <span>(max {MAX_QUESTIONS})</span>
-          </Typography>
+          <span className="ml-1 text-sm text-muted-foreground">(max {MAX_QUESTIONS})</span>
         )}
       </Button>
     </div>

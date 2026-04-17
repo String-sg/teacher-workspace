@@ -1,5 +1,3 @@
-import { Typography } from '@flow/core';
-
 import { Badge, Checkbox } from '~/components/ui';
 
 interface ClassOption {
@@ -14,11 +12,7 @@ interface RecipientSelectorProps {
   onToggleClass: (classId: string) => void;
 }
 
-function RecipientSelector({
-  classes,
-  selectedClasses,
-  onToggleClass,
-}: RecipientSelectorProps) {
+function RecipientSelector({ classes, selectedClasses, onToggleClass }: RecipientSelectorProps) {
   const totalStudents = classes
     .filter((c) => selectedClasses.includes(c.id))
     .reduce((sum, c) => sum + c.students.length, 0);
@@ -26,41 +20,26 @@ function RecipientSelector({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Typography variant="body-sm" className="text-muted-foreground">
-          Selected
-        </Typography>
+        <p className="text-sm text-muted-foreground">Selected</p>
         <Badge variant="secondary">{totalStudents} students</Badge>
       </div>
 
-      <div className="rounded-xl border p-4 space-y-4">
+      <div className="space-y-4 rounded-xl border p-4">
         {classes.map((cls) => {
           const isSelected = selectedClasses.includes(cls.id);
           return (
             <div key={cls.id} className="space-y-2">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <Checkbox
-                  checked={isSelected}
-                  onCheckedChange={() => onToggleClass(cls.id)}
-                />
-                <Typography variant="body-md" className="font-medium">
-                  {cls.label}
-                </Typography>
-                <Typography
-                  variant="body-sm"
-                  className="text-muted-foreground"
-                >
+              <label className="flex cursor-pointer items-center gap-3">
+                <Checkbox checked={isSelected} onCheckedChange={() => onToggleClass(cls.id)} />
+                <span className="font-medium">{cls.label}</span>
+                <span className="text-sm text-muted-foreground">
                   ({cls.students.length} students)
-                </Typography>
+                </span>
               </label>
 
               {isSelected && (
                 <div className="ml-8">
-                  <Typography
-                    variant="body-sm"
-                    className="text-muted-foreground"
-                  >
-                    {cls.students.join(', ')}
-                  </Typography>
+                  <p className="text-sm text-muted-foreground">{cls.students.join(', ')}</p>
                 </div>
               )}
             </div>

@@ -1,6 +1,8 @@
-import { cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/core';
 import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui';
+import { cn } from '~/lib/utils';
 
 import { useSidebarContext } from './context';
 import SidebarTrigger from './SidebarTrigger';
@@ -13,37 +15,28 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
   const isExpanded = isOpen || (isMobile && isMobileOpen);
 
   return (
-    <div className={cn('relative flex items-center justify-end p-sm', className)} {...props}>
+    <div className={cn('relative flex items-center justify-end p-2', className)} {...props}>
       <AnimatePresence initial={false}>
         {isExpanded && (
-          <Typography
-            asChild
-            variant="label-md-strong"
-            className="absolute top-5 left-3 p-2xs whitespace-nowrap"
+          <motion.span
+            className="absolute top-5 left-3 p-1 text-sm font-semibold whitespace-nowrap"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{
+              duration: 0.15,
+              ease: [0.22, 0.61, 0.36, 1],
+            }}
           >
-            <motion.p
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{
-                duration: 0.15,
-                ease: [0.22, 0.61, 0.36, 1],
-              }}
-            >
-              Teacher Workspace
-            </motion.p>
-          </Typography>
+            Teacher Workspace
+          </motion.span>
         )}
       </AnimatePresence>
 
-      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
-        <TooltipTrigger asChild>
-          <SidebarTrigger />
-        </TooltipTrigger>
-        <TooltipContent showArrow={false} side="right" sideOffset={4}>
-          <Typography variant="body-sm">
-            {isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
-          </Typography>
+      <Tooltip>
+        <TooltipTrigger render={<SidebarTrigger />} />
+        <TooltipContent side="right" sideOffset={4} className="z-50">
+          {isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
         </TooltipContent>
       </Tooltip>
     </div>

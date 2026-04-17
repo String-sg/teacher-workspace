@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import '@flow/core/tailwind.no-reset.css';
 @import './shadcn-theme.css';
 @import 'tw-animate-css';
 
@@ -50,23 +49,6 @@
   --color-twblue-a10: var(--twblue-a10);
   --color-twblue-a11: var(--twblue-a11);
   --color-twblue-a12: var(--twblue-a12);
-
-  /* Radix slate exposed for arbitrary-value usage in disabled states */
-  --color-slate-1: var(--slate-1);
-  --color-slate-2: var(--slate-2);
-  --color-slate-3: var(--slate-3);
-  --color-slate-4: var(--slate-4);
-  --color-slate-5: var(--slate-5);
-  --color-slate-6: var(--slate-6);
-  --color-slate-7: var(--slate-7);
-  --color-slate-8: var(--slate-8);
-  --color-slate-9: var(--slate-9);
-  --color-slate-10: var(--slate-10);
-  --color-slate-11: var(--slate-11);
-  --color-slate-12: var(--slate-12);
-
-  /* Crimson — only the destructive shade is exposed */
-  --color-crimson-9: var(--crimson-9);
 }
 
 @layer base {

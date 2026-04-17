@@ -1,4 +1,5 @@
-import { cn } from '@flow/core';
+import { Progress } from '~/components/ui';
+import { cn } from '~/lib/utils';
 
 interface ReadRateProps {
   readCount: number;
@@ -11,9 +12,14 @@ export function ReadRate({ readCount, totalCount, className }: ReadRateProps) {
     return <span className="text-sm text-muted-foreground">{'\u2014'}</span>;
   }
 
+  const percent = (readCount / totalCount) * 100;
+
   return (
-    <span className={cn('text-sm text-muted-foreground', className)}>
-      {readCount} / {totalCount}
-    </span>
+    <div className={cn('flex w-[140px] items-center gap-2', className)}>
+      <Progress value={percent} className="flex-1" aria-label="Read progress" />
+      <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
+        {readCount} / {totalCount}
+      </span>
+    </div>
   );
 }

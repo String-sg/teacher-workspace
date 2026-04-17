@@ -1,6 +1,5 @@
-import { Typography } from '@flow/core';
-import { ArrowLeft, Eye } from '@flow/icons';
-import { useDeferredValue, useReducer, useState } from 'react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useDeferredValue, useMemo, useReducer, useState } from 'react';
 import type { LoaderFunctionArgs } from 'react-router';
 import { Link, Navigate, useLoaderData, useNavigate, useParams } from 'react-router';
 
@@ -25,7 +24,7 @@ import { StaffSelector } from '~/components/comms/staff-selector';
 import { StudentRecipientSelector } from '~/components/comms/student-recipient-selector';
 import { AttachmentSection } from '~/components/posts/AttachmentSection';
 import { PostPreview } from '~/components/posts/PostPreview';
-import { PostTypePicker } from '~/components/posts/PostTypePicker';
+import { PostTypePicker, type PostKind } from '~/components/posts/PostTypePicker';
 import { QuestionBuilder } from '~/components/posts/QuestionBuilder';
 import { ResponseTypeSelector } from '~/components/posts/ResponseTypeSelector';
 import { RichTextToolbar } from '~/components/posts/RichTextToolbar';
@@ -45,6 +44,7 @@ import {
   Textarea,
 } from '~/components/ui';
 import type { FormQuestion, PGAnnouncement, ResponseType } from '~/data/mock-pg-announcements';
+import { cn } from '~/lib/utils';
 
 // ─── Route loader ───────────────────────────────────────────────────────────
 
@@ -268,16 +268,24 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const navigate = useNavigate();
   const { detail, classes, staff, students, session } = useLoaderData<CreatePostLoaderData>();
   const [showSendDialog, setShowSendDialog] = useState(false);
-  const [showMobilePreview, setShowMobilePreview] = useState(false);
+  // Preview defaults to visible on desktop, hidden on mobile. Once the user
+  // toggles it we stop tracking the viewport — the toggle is sticky so
+  // resizing past the breakpoint doesn't clobber their choice.
+  const [showPreview, setShowPreview] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   // Enquiry-email options derived from the logged-in staff profile.
-  const emailOptions = [session.staffEmailAdd, session.schoolEmailAddress].filter(
-    (e): e is string => Boolean(e),
+  const emailOptions = useMemo(
+    () =>
+      [session.staffEmailAdd, session.schoolEmailAddress].filter((e): e is string => Boolean(e)),
+    [session.staffEmailAdd, session.schoolEmailAddress],
   );
 
   // Type picker state — skip in edit mode, infer from loaded data
-  const [selectedType, setSelectedType] = useState<'post' | 'post-with-response' | null>(() => {
+  const [selectedType, setSelectedType] = useState<PostKind | null>(() => {
     if (!editId) return null;
     if (detail && (detail.responseType === 'acknowledge' || detail.responseType === 'yes-no')) {
       return 'post-with-response';
@@ -300,7 +308,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     return <Navigate to="/posts" replace />;
   }
 
-  function handleTypeSelect(type: 'post' | 'post-with-response') {
+  function handleTypeSelect(type: PostKind) {
     setSelectedType(type);
     if (type === 'post-with-response') {
       dispatch({ type: 'SET_RESPONSE_TYPE', payload: 'acknowledge' });
@@ -364,9 +372,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
             <Link to="/posts" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <Typography variant="title-md" asChild>
-              <h1>New Post</h1>
-            </Typography>
+            <h1 className="text-xl font-semibold tracking-tight">New Post</h1>
           </div>
         </div>
 
@@ -380,27 +386,22 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     <div className="flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-10 border-b bg-white/95 px-6 py-3 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           {/* Left: back arrow + title */}
           <div className="flex items-center gap-3">
             <Link to="/posts" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <Typography variant="title-md" asChild>
-              <h1>{isEditing ? 'Edit Post' : 'New Post'}</h1>
-            </Typography>
+            <h1 className="text-xl font-semibold tracking-tight">
+              {isEditing ? 'Edit Post' : 'New Post'}
+            </h1>
           </div>
 
           {/* Right: preview toggle + split button */}
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMobilePreview(!showMobilePreview)}
-              className="hidden max-lg:flex"
-            >
-              <Eye className="mr-1.5 h-4 w-4" />
-              Show Preview
+            <Button variant="ghost" size="sm" onClick={() => setShowPreview((s) => !s)}>
+              {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
             </Button>
 
             <SplitPostButton
@@ -415,25 +416,22 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
       {/* Body */}
       <div className="flex justify-center gap-8 px-6 py-6">
         {/* Form column */}
-        <div className="max-w-2xl flex-1 space-y-6">
+        <div className="w-full max-w-2xl flex-1 space-y-6">
           {/* RECIPIENTS Card */}
           <Card>
             <CardContent className="space-y-5 p-6">
-              <Typography
-                variant="label-sm"
-                className="tracking-widest text-muted-foreground uppercase"
-              >
+              <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 Recipients
-              </Typography>
+              </p>
 
               {/* Students field */}
               <div className="space-y-1.5">
                 <Label>
                   Students <span className="text-red-500">*</span>
                 </Label>
-                <Typography variant="body-sm" className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Parents of the selected students will receive this post via Parents Gateway.
-                </Typography>
+                </p>
                 <StudentRecipientSelector
                   value={state.selectedRecipients}
                   onChange={(recipients) =>
@@ -447,9 +445,9 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
               {/* Staff in charge */}
               <div className="space-y-1.5">
                 <Label>Staff in charge</Label>
-                <Typography variant="body-sm" className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   These staff will be able to view read status, and delete the post.
-                </Typography>
+                </p>
                 <StaffSelector
                   value={state.selectedStaff}
                   onChange={(sel) => dispatch({ type: 'SET_STAFF', payload: sel })}
@@ -460,9 +458,9 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
               {/* Enquiry email */}
               <div className="space-y-1.5">
                 <Label>Enquiry email</Label>
-                <Typography variant="body-sm" className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Select the preferred email address to receive enquiries from parents.
-                </Typography>
+                </p>
                 <Select
                   value={state.enquiryEmail ?? ''}
                   onValueChange={(value) =>
@@ -470,7 +468,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select enquiry email" />
+                    <SelectValue placeholder="Select or add an email..." />
                   </SelectTrigger>
                   <SelectContent>
                     {emailOptions.map((email) => (
@@ -487,12 +485,9 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
           {/* CONTENT Card */}
           <Card>
             <CardContent className="space-y-5 p-6">
-              <Typography
-                variant="label-sm"
-                className="tracking-widest text-muted-foreground uppercase"
-              >
+              <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 Content
-              </Typography>
+              </p>
 
               {/* Title with counter */}
               <div className="space-y-1.5">
@@ -500,9 +495,9 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
                   <Label htmlFor="post-title">
                     Title <span className="text-red-500">*</span>
                   </Label>
-                  <Typography variant="body-sm" className="text-muted-foreground">
+                  <span className="text-xs text-muted-foreground tabular-nums">
                     {state.title.length}/120
-                  </Typography>
+                  </span>
                 </div>
                 <Input
                   id="post-title"
@@ -517,9 +512,9 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="post-description">Description</Label>
-                  <Typography variant="body-sm" className="text-muted-foreground">
+                  <span className="text-xs text-muted-foreground tabular-nums">
                     {state.description.length}/2000
-                  </Typography>
+                  </span>
                 </div>
                 <div>
                   <RichTextToolbar />
@@ -548,80 +543,87 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
           {selectedType === 'post-with-response' && (
             <Card>
               <CardContent className="space-y-5 p-6">
-                <Typography
-                  variant="label-sm"
-                  className="tracking-widest text-muted-foreground uppercase"
-                >
+                <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                   Response
-                </Typography>
+                </p>
 
-                <div className="space-y-4">
-                  <ResponseTypeSelector
-                    value={state.responseType}
-                    onChange={(value) => dispatch({ type: 'SET_RESPONSE_TYPE', payload: value })}
-                  >
-                    {/* Conditional content for acknowledge/yes-no */}
-                    <div className="mt-6 space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="due-date">Due Date</Label>
-                        <Input
-                          id="due-date"
-                          type="date"
-                          value={state.dueDate}
-                          onChange={(e) =>
-                            dispatch({
-                              type: 'SET_DUE_DATE',
-                              payload: e.target.value,
-                            })
-                          }
-                          className="max-w-[240px]"
-                        />
-                      </div>
-
-                      <QuestionBuilder questions={state.questions} dispatch={dispatch} />
+                <ResponseTypeSelector
+                  value={state.responseType}
+                  onChange={(value) => dispatch({ type: 'SET_RESPONSE_TYPE', payload: value })}
+                >
+                  <div className="mt-6 space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="due-date">Due Date</Label>
+                      <Input
+                        id="due-date"
+                        type="date"
+                        value={state.dueDate}
+                        onChange={(e) =>
+                          dispatch({
+                            type: 'SET_DUE_DATE',
+                            payload: e.target.value,
+                          })
+                        }
+                        className="max-w-[240px]"
+                      />
                     </div>
-                  </ResponseTypeSelector>
-                </div>
+
+                    <QuestionBuilder questions={state.questions} dispatch={dispatch} />
+                  </div>
+                </ResponseTypeSelector>
               </CardContent>
             </Card>
           )}
         </div>
 
-        {/* Right column: Preview (desktop) */}
-        <div className="hidden w-[320px] shrink-0 lg:block">
-          <div className="sticky top-[72px]">
-            <Typography variant="body-sm" className="mb-3 font-medium text-muted-foreground">
-              Preview
-            </Typography>
-            <PostPreview formState={deferredState} />
+        {showPreview && (
+          <div className="sticky top-[72px] hidden h-fit w-[360px] shrink-0 lg:block">
+            <Card>
+              <CardContent className="space-y-4 p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-base font-medium">Preview</p>
+                  <p className="text-xs text-muted-foreground">As seen by parents</p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  This is how parents will see your announcement on the Parents Gateway App.
+                </p>
+                <PostPreview
+                  formState={deferredState}
+                  currentUserName={session.staffName ?? 'Daniel Tan'}
+                  defaultEnquiryEmail={session.schoolEmailAddress ?? 'enquiry@school.edu.sg'}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Mobile preview — kept mounted to avoid flicker on toggle */}
       <div
-        className={`fixed inset-0 z-50 transition-opacity duration-150 lg:hidden ${
-          showMobilePreview
-            ? 'pointer-events-auto bg-black/50'
-            : 'pointer-events-none bg-transparent'
-        }`}
-        onClick={() => setShowMobilePreview(false)}
+        className={cn(
+          'fixed inset-0 z-50 transition-opacity duration-150 lg:hidden',
+          showPreview ? 'pointer-events-auto bg-black/50' : 'pointer-events-none bg-transparent',
+        )}
+        onClick={() => setShowPreview(false)}
       >
         <div
-          className={`absolute top-0 right-0 bottom-0 w-[340px] overflow-y-auto bg-white p-4 shadow-xl transition-transform duration-150 ${
-            showMobilePreview ? 'translate-x-0' : 'translate-x-full'
-          }`}
+          className={cn(
+            'absolute top-0 right-0 bottom-0 w-[360px] overflow-y-auto bg-white p-4 shadow-xl transition-transform duration-150',
+            showPreview ? 'translate-x-0' : 'translate-x-full',
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-4 flex items-center justify-between">
-            <Typography variant="body-sm" className="font-medium">
-              Preview
-            </Typography>
-            <Button variant="ghost" size="sm" onClick={() => setShowMobilePreview(false)}>
+            <p className="text-sm font-medium">Preview</p>
+            <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)}>
               Close
             </Button>
           </div>
-          <PostPreview formState={deferredState} />
+          <PostPreview
+            formState={deferredState}
+            currentUserName={session.staffName ?? 'Daniel Tan'}
+            defaultEnquiryEmail={session.schoolEmailAddress ?? 'enquiry@school.edu.sg'}
+          />
         </div>
       </div>
 
