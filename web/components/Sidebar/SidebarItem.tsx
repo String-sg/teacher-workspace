@@ -135,7 +135,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     const { onPointerMove, ...anchorProps } = props;
 
     return (
-      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
+      <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
         <TooltipTrigger asChild>
           <a
             className={itemClassName}
@@ -158,7 +158,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     const { onPointerMove, ...linkProps } = props;
 
     return (
-      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
+      <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
         <TooltipTrigger asChild>
           <Link
             className={itemClassName}
@@ -178,7 +178,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const { onPointerMove, ...buttonProps } = props;
 
   return (
-    <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
+    <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
       <TooltipTrigger asChild>
         <Button
           variant="ghost"

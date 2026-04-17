@@ -42,7 +42,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
         )}
       </AnimatePresence>
 
-      <Tooltip classNames={{ content: 'bg-slate-12 z-10000' }}>
+      <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
         <TooltipTrigger asChild>
           <SidebarTrigger />
         </TooltipTrigger>
