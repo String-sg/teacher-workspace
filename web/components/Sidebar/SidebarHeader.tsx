@@ -13,14 +13,19 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
   const isExpanded = isOpen || (isMobile && isMobileOpen);
 
   return (
-    <div className={cn('relative flex items-center justify-end p-3', className)} {...props}>
+    <div
+      className={cn(
+        'flex items-center p-3',
+        // Keep the toggle pinned to the right whether the workspace label is
+        // rendered or not.
+        isExpanded ? 'justify-between' : 'justify-end',
+        className,
+      )}
+      {...props}
+    >
       <AnimatePresence initial={false}>
         {isExpanded && (
-          <Typography
-            asChild
-            variant="label-md-strong"
-            className="absolute top-5 left-3 p-1 whitespace-nowrap"
-          >
+          <Typography asChild variant="label-md-strong" className="whitespace-nowrap">
             <motion.p
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
