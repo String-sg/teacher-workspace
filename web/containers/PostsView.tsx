@@ -35,6 +35,7 @@ import {
 import type { PGAnnouncement } from '~/data/mock-pg-announcements';
 import { requiresResponse } from '~/data/mock-pg-announcements';
 import { formatDate, getRelevantDate, isLowReadRate } from '~/helpers/dateTime';
+import { notify } from '~/lib/notify';
 
 type PostTab = 'view-only' | 'with-responses';
 
@@ -266,9 +267,10 @@ const PostsView: React.FC = () => {
                                 })
                                   .then(() => {
                                     revalidator.revalidate();
+                                    notify.success('Post duplicated.');
                                   })
                                   .catch(() => {
-                                    alert('Failed to duplicate post.');
+                                    notify.error('Failed to duplicate post.');
                                   });
                               }}
                             >
@@ -286,8 +288,9 @@ const PostsView: React.FC = () => {
                                     try {
                                       await deleteAnnouncement(announcement.id);
                                       revalidator.revalidate();
+                                      notify.success('Post deleted.');
                                     } catch {
-                                      alert('Failed to delete post.');
+                                      notify.error('Failed to delete post.');
                                     }
                                   }}
                                 >

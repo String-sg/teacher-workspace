@@ -44,6 +44,7 @@ import {
   Textarea,
 } from '~/components/ui';
 import type { FormQuestion, PGAnnouncement, ResponseType } from '~/data/mock-pg-announcements';
+import { notify } from '~/lib/notify';
 import { cn } from '~/lib/utils';
 
 // ─── Route loader ───────────────────────────────────────────────────────────
@@ -341,9 +342,10 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
       } else {
         await createDraft(payload);
       }
+      notify.success('Draft saved.');
       navigate('/posts');
     } catch {
-      alert('Failed to save draft. Please try again.');
+      notify.error('Failed to save draft. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -355,10 +357,11 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     const payload = buildPayload();
     try {
       await createAnnouncement(payload);
+      notify.success('Post sent.');
       // Keep isSaving=true until navigation completes to prevent double-submit
       setTimeout(() => navigate('/posts'), 150);
     } catch {
-      alert('Failed to send post. Please try again.');
+      notify.error('Failed to send post. Please try again.');
       setIsSaving(false);
     }
   }
