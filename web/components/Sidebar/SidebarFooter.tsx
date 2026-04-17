@@ -5,7 +5,7 @@ export type SidebarFooterProps = React.ComponentPropsWithoutRef<'div'>;
 
 const SidebarFooter: React.FC<SidebarFooterProps> = ({ children, className, ...props }) => {
   return (
-    <div className={cn('flex flex-col gap-y-sm px-sm pb-sm', className)} {...props}>
+    <div className={cn('flex flex-col gap-y-3 px-3 pb-3', className)} {...props}>
       {children}
     </div>
   );

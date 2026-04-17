@@ -68,13 +68,6 @@
 }
 
 @theme inline {
-  /* Flow-compat spacing scale (for p-xs, p-sm, p-2xs, gap-y-xs, etc.) */
-  --spacing-2xs: 0.25rem;
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 0.75rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-
   /* Flow-compat easing */
   --ease-tw-default: cubic-bezier(0.22, 0.61, 0.36, 1);
 

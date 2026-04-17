@@ -13,13 +13,13 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
   const isExpanded = isOpen || (isMobile && isMobileOpen);
 
   return (
-    <div className={cn('relative flex items-center justify-end p-sm', className)} {...props}>
+    <div className={cn('relative flex items-center justify-end p-3', className)} {...props}>
       <AnimatePresence initial={false}>
         {isExpanded && (
           <Typography
             asChild
             variant="label-md-strong"
-            className="absolute top-5 left-3 p-2xs whitespace-nowrap"
+            className="absolute top-5 left-3 p-1 whitespace-nowrap"
           >
             <motion.p
               initial={{ opacity: 0, x: -16 }}

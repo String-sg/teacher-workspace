@@ -334,7 +334,13 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const initialDescriptionDoc = initialDescriptionDocRef.current;
 
   const deferredState = useDeferredValue(state);
-  const isFormValid = state.title.trim().length > 0;
+  // pgw rejects writes without an enquiry email, and the outbound mapper
+  // throws on the same pre-check — gate the Post button here so the user
+  // sees a disabled action instead of a cryptic failure toast after submit.
+  const isFormValid =
+    state.title.trim().length > 0 &&
+    state.enquiryEmail.trim().length > 0 &&
+    state.selectedRecipients.length > 0;
   const recipientCount = state.selectedRecipients.reduce((sum, r) => sum + (r.count ?? 1), 0);
   const isEditing = Boolean(editId);
 
@@ -402,6 +408,10 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
       setTimeout(() => navigate('/posts'), 150);
     } catch (err) {
       if (err instanceof PGValidationError) {
+        notify.error(err.message);
+      } else if (err instanceof Error && !(err instanceof PGError)) {
+        // Plain `Error`s from the outbound mapper (e.g. missing email) carry
+        // a useful message; surface it verbatim rather than a generic toast.
         notify.error(err.message);
       } else if (!(err instanceof PGError)) {
         notify.error('Failed to send post. Please try again.');
