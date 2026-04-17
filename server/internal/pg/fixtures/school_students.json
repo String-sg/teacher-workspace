@@ -1,10 +1,57 @@
-{
-  "students": [
-    { "studentId": 1, "studentName": "TAN XIAO MING", "className": "4A", "level": "SECONDARY 4", "indexNumber": 15, "ccas": ["BOXING"] },
-    { "studentId": 2, "studentName": "LEE WEI LIANG", "className": "4A", "level": "SECONDARY 4", "indexNumber": 8, "ccas": [] },
-    { "studentId": 3, "studentName": "CAROL CHEN HUI", "className": "4A", "level": "SECONDARY 4", "indexNumber": 3, "ccas": ["CHOIR"] },
-    { "studentId": 4, "studentName": "DAVID NG JUN WEI", "className": "4A", "level": "SECONDARY 4", "indexNumber": 5, "ccas": ["BASKETBALL"] },
-    { "studentId": 5, "studentName": "EMILY WONG SHU HUI", "className": "4A", "level": "SECONDARY 4", "indexNumber": 7, "ccas": ["BOXING"] }
-  ],
-  "total": 5
-}
+[
+  {
+    "studentId": 1,
+    "studentName": "TAN XIAO MING",
+    "uinFinNo": "T0412345A",
+    "classSerialNo": "15",
+    "classCode": "4A",
+    "className": "4A",
+    "levelCode": "SEC4",
+    "levelDescription": "SECONDARY 4",
+    "cca": ["BOXING"]
+  },
+  {
+    "studentId": 2,
+    "studentName": "LEE WEI LIANG",
+    "uinFinNo": "T0412346B",
+    "classSerialNo": "8",
+    "classCode": "4A",
+    "className": "4A",
+    "levelCode": "SEC4",
+    "levelDescription": "SECONDARY 4",
+    "cca": []
+  },
+  {
+    "studentId": 3,
+    "studentName": "CAROL CHEN HUI",
+    "uinFinNo": "T0412347C",
+    "classSerialNo": "3",
+    "classCode": "4A",
+    "className": "4A",
+    "levelCode": "SEC4",
+    "levelDescription": "SECONDARY 4",
+    "cca": ["CHOIR"]
+  },
+  {
+    "studentId": 4,
+    "studentName": "DAVID NG JUN WEI",
+    "uinFinNo": "T0412348D",
+    "classSerialNo": "5",
+    "classCode": "4A",
+    "className": "4A",
+    "levelCode": "SEC4",
+    "levelDescription": "SECONDARY 4",
+    "cca": ["BASKETBALL"]
+  },
+  {
+    "studentId": 5,
+    "studentName": "EMILY WONG SHU HUI",
+    "uinFinNo": "T0412349E",
+    "classSerialNo": "7",
+    "classCode": "4A",
+    "className": "4A",
+    "levelCode": "SEC4",
+    "levelDescription": "SECONDARY 4",
+    "cca": ["BOXING"]
+  }
+]

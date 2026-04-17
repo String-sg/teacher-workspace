@@ -1,15 +1,28 @@
 {
-  "classes": [
-    { "classId": 101, "className": "4A", "level": "SECONDARY 4", "year": 2026 },
-    { "classId": 102, "className": "4B", "level": "SECONDARY 4", "year": 2026 },
-    { "classId": 103, "className": "4C", "level": "SECONDARY 4", "year": 2026 }
-  ],
-  "levels": [
-    { "levelId": 4, "levelName": "SECONDARY 4", "year": 2026 }
-  ],
-  "ccas": [
-    { "ccaId": 10, "ccaName": "BOXING" },
-    { "ccaId": 11, "ccaName": "CHOIR" },
-    { "ccaId": 12, "ccaName": "BASKETBALL" }
+  "class": [
+    {
+      "type": "class",
+      "label": "4A (2026)",
+      "labelDescription": "SECONDARY 4",
+      "value": 101,
+      "acadYear": "2026",
+      "schoolId": 2001
+    },
+    {
+      "type": "class",
+      "label": "4B (2026)",
+      "labelDescription": "SECONDARY 4",
+      "value": 102,
+      "acadYear": "2026",
+      "schoolId": 2001
+    },
+    {
+      "type": "class",
+      "label": "4C (2026)",
+      "labelDescription": "SECONDARY 4",
+      "value": 103,
+      "acadYear": "2026",
+      "schoolId": 2001
+    }
   ]
 }

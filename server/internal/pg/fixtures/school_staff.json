@@ -1,7 +1,20 @@
-{
-  "staff": [
-    { "staffId": 1013, "staffName": "TAN GUANG SHIN", "email": "tangs@schools.gov.sg", "schoolEmail": "greenridge_sec@moe.edu.sg", "assignedClass": "4A" },
-    { "staffId": 1014, "staffName": "LEE KAH SENG", "email": "leeks@schools.gov.sg", "schoolEmail": "greenridge_sec@moe.edu.sg", "assignedClass": "4B" },
-    { "staffId": 1015, "staffName": "AHMAD BIN IBRAHIM", "email": "ahmadi@schools.gov.sg", "schoolEmail": "greenridge_sec@moe.edu.sg", "assignedClass": "4C" }
-  ]
-}
+[
+  {
+    "staffId": 1013,
+    "name": "TAN GUANG SHIN",
+    "email": "tangs@schools.gov.sg",
+    "className": "4A"
+  },
+  {
+    "staffId": 1014,
+    "name": "LEE KAH SENG",
+    "email": "leeks@schools.gov.sg",
+    "className": "4B"
+  },
+  {
+    "staffId": 1015,
+    "name": "AHMAD BIN IBRAHIM",
+    "email": "ahmadi@schools.gov.sg",
+    "className": "4C"
+  }
+]

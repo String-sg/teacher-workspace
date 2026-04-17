@@ -287,87 +287,23 @@ export async function loadConsentFormsList(): Promise<ConsentFormListItem[]> {
 // SCHOOL DATA (for selectors and forms)
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Local mock server and real pgw-web emit divergent shapes for school data
-// (see `docs/pg-audit-findings.md` for the mismatch details). These helpers
-// accept either shape and normalize to what TW's types + selectors expect,
-// so callers and the form UI stay oblivious to the backend source.
-
-interface MockSchoolStaff {
-  staffId: number;
-  staffName: string;
-  email: string;
-  assignedClass?: string | null;
-}
-
-export async function fetchSchoolStaff(): Promise<PGApiSchoolStaffList> {
-  const data = await fetchApi<PGApiSchoolStaffList | { staff?: MockSchoolStaff[] }>(
-    '/school/staff',
-  );
-  if (Array.isArray(data)) return data;
-  return (data.staff ?? []).map((s) => ({
-    staffId: s.staffId,
-    name: s.staffName,
-    email: s.email,
-    className: s.assignedClass ?? null,
-  }));
+export function fetchSchoolStaff() {
+  return fetchApi<PGApiSchoolStaffList>('/school/staff');
 }
 
 export function fetchSchoolGroups() {
   return fetchApi<PGApiSchoolGroups>('/school/groups');
 }
 
-interface MockSchoolClass {
-  classId: number;
-  className: string;
-  level: string;
-  year: number;
+// Real pgw-web returns `body.class` (singular) as an array of PGApiSchoolClass.
+// Use this helper when a UI needs just the classes for a selector.
+export async function fetchSchoolClasses() {
+  const data = await fetchApi<{ class: PGApiSchoolClass[] }>('/school/groups');
+  return data.class ?? [];
 }
 
-// Real pgw-web returns `body.class` (singular) as `PGApiSchoolClass[]`; the
-// local mock returns `body.classes` with a raw DB-ish shape. Map the mock
-// shape into the entity-selector shape so the form renders either way.
-export async function fetchSchoolClasses(): Promise<PGApiSchoolClass[]> {
-  const data = await fetchApi<{ class?: PGApiSchoolClass[]; classes?: MockSchoolClass[] }>(
-    '/school/groups',
-  );
-  if (data.class) return data.class;
-  return (data.classes ?? []).map((c) => ({
-    type: 'class' as const,
-    label: `${c.className} (${c.year})`,
-    labelDescription: c.level,
-    value: c.classId,
-    acadYear: String(c.year),
-    schoolId: 0,
-  }));
-}
-
-interface MockSchoolStudent {
-  studentId: number;
-  studentName: string;
-  className: string;
-  level?: string;
-  indexNumber: number;
-  ccas?: string[];
-}
-
-export async function fetchSchoolStudents(): Promise<PGApiSchoolStudent[]> {
-  const data = await fetchApi<PGApiSchoolStudent[] | { students?: MockSchoolStudent[] }>(
-    '/school/students',
-  );
-  if (Array.isArray(data)) return data;
-  // Mock lacks uinFinNo; surface the index number as a visible sublabel so
-  // the selector still has something meaningful to render per-student.
-  return (data.students ?? []).map((s) => ({
-    studentId: s.studentId,
-    studentName: s.studentName,
-    uinFinNo: `#${s.indexNumber}`,
-    classSerialNo: String(s.indexNumber),
-    classCode: s.className,
-    className: s.className,
-    levelCode: s.level ?? '',
-    levelDescription: s.level ?? '',
-    cca: s.ccas ?? [],
-  }));
+export function fetchSchoolStudents() {
+  return fetchApi<PGApiSchoolStudent[]>('/school/students');
 }
 
 export function fetchGroupsAssigned() {
