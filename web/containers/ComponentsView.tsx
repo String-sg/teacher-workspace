@@ -9,6 +9,7 @@ import { ReadTrackingCards } from '~/components/posts/ReadTrackingCards';
 import { RecipientSelector } from '~/components/posts/RecipientSelector';
 import { ResponseTypeSelector } from '~/components/posts/ResponseTypeSelector';
 import { RichTextEditor } from '~/components/posts/RichTextEditor';
+import { SchedulePickerDialog } from '~/components/posts/SchedulePickerDialog';
 import { SendConfirmationDialog } from '~/components/posts/SendConfirmationDialog';
 import { SplitPostButton } from '~/components/posts/SplitPostButton';
 import { StatusBadge } from '~/components/posts/StatusBadge';
@@ -70,6 +71,8 @@ const ComponentsView: React.FC = () => {
   const [selectedClasses, setSelectedClasses] = useState<string[]>(['4a']);
   const [responseType, setResponseType] = useState<ResponseType>('acknowledge');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [lastScheduledAt, setLastScheduledAt] = useState<string | null>(null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-16 px-6 py-8">
@@ -340,10 +343,31 @@ const ComponentsView: React.FC = () => {
           <div className="flex flex-wrap items-center gap-4">
             <SplitPostButton
               onPost={() => window.alert('Post clicked')}
-              onSchedule={() => window.alert('Schedule clicked')}
+              onSchedule={() => setScheduleOpen(true)}
             />
             <SplitPostButton disabled onPost={() => window.alert('Post clicked')} />
           </div>
+        </Subsection>
+
+        <Subsection label="SchedulePickerDialog">
+          <div className="flex flex-wrap items-center gap-4">
+            <Button variant="outline" onClick={() => setScheduleOpen(true)}>
+              Open schedule picker
+            </Button>
+            {lastScheduledAt && (
+              <p className="text-sm text-muted-foreground" data-testid="schedule-last">
+                Last confirmed: <code>{lastScheduledAt}</code>
+              </p>
+            )}
+          </div>
+          <SchedulePickerDialog
+            open={scheduleOpen}
+            onOpenChange={setScheduleOpen}
+            onConfirm={(iso) => {
+              setLastScheduledAt(iso);
+              setScheduleOpen(false);
+            }}
+          />
         </Subsection>
 
         <Subsection label="PostTypePicker">

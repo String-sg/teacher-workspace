@@ -29,6 +29,7 @@ import { PostTypePicker, type PostKind } from '~/components/posts/PostTypePicker
 import { QuestionBuilder } from '~/components/posts/QuestionBuilder';
 import { ResponseTypeSelector } from '~/components/posts/ResponseTypeSelector';
 import { RichTextEditor } from '~/components/posts/RichTextEditor';
+import { SchedulePickerDialog } from '~/components/posts/SchedulePickerDialog';
 import { SendConfirmationDialog } from '~/components/posts/SendConfirmationDialog';
 import { SplitPostButton } from '~/components/posts/SplitPostButton';
 import {
@@ -295,6 +296,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const navigate = useNavigate();
   const { detail, classes, staff, students, session } = useLoaderData<CreatePostLoaderData>();
   const [showSendDialog, setShowSendDialog] = useState(false);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   // Preview defaults to visible on desktop, hidden on mobile. Once the user
   // toggles it we stop tracking the viewport — the toggle is sticky so
   // resizing past the breakpoint doesn't clobber their choice.
@@ -361,25 +363,28 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     };
   }
 
-  async function handleSaveDraft() {
+  async function handleScheduleConfirm(scheduledSendAt: string) {
+    setShowScheduleDialog(false);
     setIsSaving(true);
-    const payload = buildPayload();
+    const payload = { ...buildPayload(), scheduledSendAt };
     try {
       if (isEditing && editId) {
+        // Editing an existing draft: keep the same draft, just push the new
+        // `scheduledSendAt` with the other field updates.
         await updateDraft(Number(editId), payload);
       } else {
+        // New post → schedule in a single round-trip. `scheduleDraft` (which
+        // targets a pre-saved draft) is deferred; we don't need it for this
+        // flow.
         await createDraft(payload);
       }
-      notify.success('Draft saved.');
+      notify.success('Post scheduled.');
       navigate('/posts');
     } catch (err) {
-      // Validation errors carry pgw's user-facing reason; surface it verbatim.
-      // Other `PGError`s were already toasted by the global handler.
-      // Anything else (network, unknown) needs a generic fallback toast.
       if (err instanceof PGValidationError) {
         notify.error(err.message);
       } else if (!(err instanceof PGError)) {
-        notify.error('Failed to save draft. Please try again.');
+        notify.error('Failed to schedule post. Please try again.');
       }
     } finally {
       setIsSaving(false);
@@ -449,7 +454,7 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
             <SplitPostButton
               disabled={!isFormValid || isSaving}
               onPost={() => setShowSendDialog(true)}
-              onSchedule={handleSaveDraft}
+              onSchedule={() => setShowScheduleDialog(true)}
             />
           </div>
         </div>
@@ -673,6 +678,14 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
         recipientCount={recipientCount}
         responseType={state.responseType}
         onConfirm={handleSendConfirm}
+      />
+
+      {/* Schedule picker dialog */}
+      <SchedulePickerDialog
+        open={showScheduleDialog}
+        onOpenChange={setShowScheduleDialog}
+        onConfirm={handleScheduleConfirm}
+        busy={isSaving}
       />
     </div>
   );
