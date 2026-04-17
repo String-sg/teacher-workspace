@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@source '../node_modules/@flow/core/dist/components';
+@source '../node_modules/@flow/core/dist/unstable';
+
 /* Radix color scales (solid + alpha) */
 @import '@radix-ui/colors/slate.css';
 @import '@radix-ui/colors/slate-alpha.css';
@@ -66,15 +69,82 @@
 
 @theme inline {
   /* Flow-compat spacing scale (for p-xs, p-sm, p-2xs, gap-y-xs, etc.) */
-  --spacing-2xs: 0.125rem;
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
+  --spacing-2xs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
 
   /* Flow-compat easing */
   --ease-tw-default: cubic-bezier(0.22, 0.61, 0.36, 1);
 
+  /* Flow-compat foreground tokens (used by Tooltip, Button, etc.) */
+  --color-foreground-contrast: #ffffff;
+  --color-foreground-default: var(--slate-12);
+
+  /* Flow-compat typography tokens (values match @flow/core) */
+  --font-family-style-body-sm: ui-sans-serif, system-ui, sans-serif;
+  --text-style-body-sm: 0.875rem;
+  --font-weight-style-body-sm: 400;
+  --leading-style-body-sm: 20px;
+  --font-family-style-label-md: ui-sans-serif, system-ui, sans-serif;
+  --text-style-label-md: 1rem;
+  --font-weight-style-label-md: 400;
+  --leading-style-label-md: 16px;
+  --font-family-style-label-md-strong: ui-sans-serif, system-ui, sans-serif;
+  --text-style-label-md-strong: 1rem;
+  --font-weight-style-label-md-strong: 600;
+  --leading-style-label-md-strong: 16px;
+}
+
+/* Flow-compat typography utilities */
+.typography-body-sm {
+  font-family: var(--font-family-style-body-sm);
+  font-size: var(--text-style-body-sm);
+  font-weight: var(--font-weight-style-body-sm);
+  line-height: var(--leading-style-body-sm);
+}
+
+.font-family-style-body-sm {
+  font-family: var(--font-family-style-body-sm);
+}
+.text-style-body-sm {
+  font-size: var(--text-style-body-sm);
+}
+.font-style-body-sm {
+  font-weight: var(--font-weight-style-body-sm);
+}
+.leading-style-body-sm {
+  line-height: var(--leading-style-body-sm);
+}
+
+.font-family-style-label-md {
+  font-family: var(--font-family-style-label-md);
+}
+.text-style-label-md {
+  font-size: var(--text-style-label-md);
+}
+.font-style-label-md {
+  font-weight: var(--font-weight-style-label-md);
+}
+.leading-style-label-md {
+  line-height: var(--leading-style-label-md);
+}
+
+.font-family-style-label-md-strong {
+  font-family: var(--font-family-style-label-md-strong);
+}
+.text-style-label-md-strong {
+  font-size: var(--text-style-label-md-strong);
+}
+.font-style-label-md-strong {
+  font-weight: var(--font-weight-style-label-md-strong);
+}
+.leading-style-label-md-strong {
+  line-height: var(--leading-style-label-md-strong);
+}
+
+@theme inline {
   /* Shadcn semantic tokens — utility class targets */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
