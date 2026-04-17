@@ -1,5 +1,5 @@
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { useDeferredValue, useMemo, useReducer, useState } from 'react';
+import { useDeferredValue, useMemo, useReducer, useRef, useState } from 'react';
 import type { LoaderFunctionArgs } from 'react-router';
 import { Link, Navigate, useLoaderData, useNavigate, useParams } from 'react-router';
 
@@ -28,7 +28,7 @@ import { PostPreview } from '~/components/posts/PostPreview';
 import { PostTypePicker, type PostKind } from '~/components/posts/PostTypePicker';
 import { QuestionBuilder } from '~/components/posts/QuestionBuilder';
 import { ResponseTypeSelector } from '~/components/posts/ResponseTypeSelector';
-import { RichTextToolbar } from '~/components/posts/RichTextToolbar';
+import { RichTextEditor } from '~/components/posts/RichTextEditor';
 import { SendConfirmationDialog } from '~/components/posts/SendConfirmationDialog';
 import { SplitPostButton } from '~/components/posts/SplitPostButton';
 import {
@@ -42,7 +42,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
 } from '~/components/ui';
 import type { FormQuestion, PGAnnouncement, ResponseType } from '~/data/mock-pg-announcements';
 import { notify } from '~/lib/notify';
@@ -73,7 +72,10 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<CreatePost
 
 interface PostFormState {
   title: string;
+  /** Plain-text derivation of `descriptionDoc`, kept for preview + counter. */
   description: string;
+  /** Source-of-truth Tiptap JSON; stringified into the outbound payload. */
+  descriptionDoc: Record<string, unknown> | null;
   selectedRecipients: SelectedEntity[];
   responseType: ResponseType;
   questions: FormQuestion[];
@@ -85,7 +87,7 @@ interface PostFormState {
 
 type PostFormAction =
   | { type: 'SET_TITLE'; payload: string }
-  | { type: 'SET_DESCRIPTION'; payload: string }
+  | { type: 'SET_DESCRIPTION_DOC'; payload: { doc: Record<string, unknown>; text: string } }
   | { type: 'SET_RESPONSE_TYPE'; payload: ResponseType }
   | { type: 'SET_RECIPIENTS'; payload: SelectedEntity[] }
   | { type: 'ADD_QUESTION' }
@@ -99,6 +101,7 @@ type PostFormAction =
 const INITIAL_STATE: PostFormState = {
   title: '',
   description: '',
+  descriptionDoc: null,
   selectedRecipients: [],
   responseType: 'view-only',
   questions: [],
@@ -113,8 +116,12 @@ function formReducer(state: PostFormState, action: PostFormAction): PostFormStat
     case 'SET_TITLE':
       return { ...state, title: action.payload };
 
-    case 'SET_DESCRIPTION':
-      return { ...state, description: action.payload };
+    case 'SET_DESCRIPTION_DOC':
+      return {
+        ...state,
+        descriptionDoc: action.payload.doc,
+        description: action.payload.text,
+      };
 
     case 'SET_RESPONSE_TYPE':
       return { ...state, responseType: action.payload };
@@ -235,6 +242,20 @@ function groupRecipients(recipients: SelectedEntity[]): {
   return out;
 }
 
+// Wraps plain text in the minimal valid Tiptap doc shape so an editor
+// initialized with it renders the text as a single paragraph.
+function textToTiptapDoc(text: string): Record<string, unknown> {
+  return {
+    type: 'doc',
+    content: text
+      ? text.split('\n').map((line) => ({
+          type: 'paragraph',
+          content: line ? [{ type: 'text', text: line }] : [],
+        }))
+      : [{ type: 'paragraph' }],
+  };
+}
+
 function announcementToFormState(
   announcement: PGAnnouncement,
   staff: PGApiSchoolStaff[],
@@ -245,6 +266,10 @@ function announcementToFormState(
   return {
     title: announcement.title,
     description: announcement.description,
+    // Prefer the raw Tiptap JSON when the detail response carried it;
+    // fall back to a minimal doc wrapping the plain-text description so
+    // edit mode always gets a valid initialContent for Tiptap.
+    descriptionDoc: announcement.richTextContent ?? textToTiptapDoc(announcement.description),
     selectedRecipients: [],
     responseType: announcement.responseType,
     questions: announcement.questions ?? [],
@@ -300,6 +325,12 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
 
   const [state, dispatch] = useReducer(formReducer, editData ?? INITIAL_STATE);
 
+  // Captured once from the initial reducer state: `useEditor` only reads
+  // `content` on mount, so later reducer updates to `descriptionDoc` must
+  // come from the editor itself (via onChange), not be pushed back in.
+  const initialDescriptionDocRef = useRef(state.descriptionDoc);
+  const initialDescriptionDoc = initialDescriptionDocRef.current;
+
   const deferredState = useDeferredValue(state);
   const isFormValid = state.title.trim().length > 0;
   const recipientCount = state.selectedRecipients.reduce((sum, r) => sum + (r.count ?? 1), 0);
@@ -318,16 +349,12 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   }
 
   function buildPayload() {
+    // Prefer the live Tiptap JSON; wrap plain-text fallback in a minimal doc
+    // so pgw always receives a valid Tiptap tree rather than a raw string.
+    const doc = state.descriptionDoc ?? textToTiptapDoc(state.description);
     return {
       title: state.title,
-      richTextContent: JSON.stringify({
-        type: 'doc',
-        content: state.description.split('\n').map((line) => ({
-          type: 'paragraph',
-          attrs: { textAlign: 'left' },
-          content: line ? [{ type: 'text', text: line }] : [],
-        })),
-      }),
+      richTextContent: JSON.stringify(doc),
       enquiryEmailAddress: state.enquiryEmail,
       recipients: groupRecipients(state.selectedRecipients),
       staffOwnerIds: state.selectedStaff.map((s) => Number(s.id)),
@@ -526,27 +553,23 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
               {/* Description with counter and toolbar */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="post-description">Description</Label>
+                  <Label id="post-description-label">Description</Label>
                   <span className="text-xs text-muted-foreground tabular-nums">
                     {state.description.length}/2000
                   </span>
                 </div>
-                <div>
-                  <RichTextToolbar />
-                  <Textarea
-                    id="post-description"
-                    className="min-h-[120px] rounded-t-none"
-                    placeholder="Write your announcement here. Use the toolbar to format text and insert inline links."
-                    value={state.description}
-                    maxLength={2000}
-                    onChange={(e) =>
-                      dispatch({
-                        type: 'SET_DESCRIPTION',
-                        payload: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                <RichTextEditor
+                  initialContent={initialDescriptionDoc}
+                  maxLength={2000}
+                  placeholder="Write your announcement here. Use the toolbar to format text and insert inline links."
+                  ariaLabelledBy="post-description-label"
+                  onChange={(doc, text) =>
+                    dispatch({
+                      type: 'SET_DESCRIPTION_DOC',
+                      payload: { doc, text },
+                    })
+                  }
+                />
               </div>
 
               {/* Attachments */}

@@ -74,10 +74,18 @@ export function mapAnnouncementDetail(detail: PGApiAnnouncementDetail): PGAnnoun
     pgStatus: 'onboarded' as const,
   }));
 
+  // Preserve the raw Tiptap JSON so the edit-mode editor can hydrate with full
+  // formatting; `description` stays as the plain-text derivation for previews.
+  const richTextContent =
+    detail.richTextContent && typeof detail.richTextContent === 'object'
+      ? (detail.richTextContent as Record<string, unknown>)
+      : null;
+
   return {
     id: String(detail.announcementId),
     title: detail.title,
     description: extractTextFromTiptap(detail.richTextContent),
+    richTextContent,
     status,
     responseType: mapResponseType(detail.responseType),
     ownership: 'mine',

@@ -8,7 +8,7 @@ import { ReadRate } from '~/components/posts/ReadRate';
 import { ReadTrackingCards } from '~/components/posts/ReadTrackingCards';
 import { RecipientSelector } from '~/components/posts/RecipientSelector';
 import { ResponseTypeSelector } from '~/components/posts/ResponseTypeSelector';
-import { RichTextToolbar } from '~/components/posts/RichTextToolbar';
+import { RichTextEditor } from '~/components/posts/RichTextEditor';
 import { SendConfirmationDialog } from '~/components/posts/SendConfirmationDialog';
 import { SplitPostButton } from '~/components/posts/SplitPostButton';
 import { StatusBadge } from '~/components/posts/StatusBadge';
@@ -330,8 +330,10 @@ const ComponentsView: React.FC = () => {
           </div>
         </Subsection>
 
-        <Subsection label="RichTextToolbar">
-          <RichTextToolbar className="max-w-xl" />
+        <Subsection label="RichTextEditor">
+          <div className="max-w-xl">
+            <RichTextEditor placeholder="Rich text showcase." />
+          </div>
         </Subsection>
 
         <Subsection label="SplitPostButton">
