@@ -1,5 +1,6 @@
 import { Mail, Plus, Upload } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { AnnouncementCard } from '~/components/posts/AnnouncementCard';
 import { AttachmentSection } from '~/components/posts/AttachmentSection';
@@ -25,6 +26,11 @@ import {
   Checkbox,
   Input,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Switch,
   Tabs,
   TabsContent,
@@ -32,6 +38,7 @@ import {
   TabsTrigger,
 } from '~/components/ui';
 import type { ResponseType } from '~/data/mock-pg-announcements';
+import { cn } from '~/lib/utils';
 
 const DEMO_CLASSES = [
   { id: '4a', label: '4A', students: ['Aiden Tan', 'Bella Lim', 'Chen Wei'] },
@@ -58,8 +65,185 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Subsection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <div className="text-sm font-medium text-muted-foreground">{label}</div>
       {children}
+    </div>
+  );
+}
+
+// Every color token declared in `web/App.css`. The default mapping mirrors
+// the `:root` declarations there so the table opens in its shipped state.
+const SHADCN_DEFAULTS: Record<string, string> = {
+  background: '#ffffff',
+  foreground: 'var(--slate-12)',
+  card: '#ffffff',
+  'card-foreground': 'var(--slate-12)',
+  popover: '#ffffff',
+  'popover-foreground': 'var(--slate-12)',
+  primary: 'var(--twblue-9)',
+  'primary-foreground': '#ffffff',
+  secondary: 'var(--slate-3)',
+  'secondary-foreground': 'var(--slate-12)',
+  muted: 'var(--slate-3)',
+  'muted-foreground': 'var(--slate-11)',
+  accent: 'var(--slate-4)',
+  'accent-foreground': 'var(--slate-12)',
+  destructive: 'var(--red-9)',
+  'destructive-foreground': '#ffffff',
+  border: 'var(--slate-6)',
+  input: 'var(--slate-7)',
+  ring: 'var(--twblue-8)',
+};
+const SHADCN_TOKENS = Object.keys(SHADCN_DEFAULTS);
+
+const RADIX_SCALES = ['slate', 'twblue', 'blue', 'green', 'red', 'amber'] as const;
+const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+
+const LITERAL_OPTIONS = [
+  { value: '#ffffff', label: 'white (#ffffff)' },
+  { value: 'transparent', label: 'transparent' },
+];
+const RADIX_OPTIONS = RADIX_SCALES.flatMap((scale) =>
+  STEPS.map((step) => ({
+    value: `var(--${scale}-${step})`,
+    label: `${scale}-${step}`,
+  })),
+);
+const ALL_OPTIONS = [...LITERAL_OPTIONS, ...RADIX_OPTIONS];
+
+// Cell: step number rendered inside the swatch. Title attribute shows the full
+// name on hover so tiny viewports don't lose the mapping.
+function Swatch({
+  label,
+  title,
+  style,
+  darkText,
+}: {
+  label: string | number;
+  title: string;
+  style: React.CSSProperties;
+  darkText: boolean;
+}) {
+  return (
+    <div
+      title={title}
+      className={cn(
+        'flex h-10 items-center justify-center rounded-md font-mono text-[11px] tabular-nums outline outline-offset-[-1px] outline-slate-6',
+        darkText ? 'text-slate-12' : 'text-white',
+      )}
+      style={style}
+    >
+      {label}
+    </div>
+  );
+}
+
+function ScaleRow({ scale }: { scale: string }) {
+  return (
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-12">
+      {STEPS.map((step) => (
+        <Swatch
+          key={step}
+          label={step}
+          title={`${scale}-${step}`}
+          style={{ backgroundColor: `var(--${scale}-${step})` }}
+          darkText={step < 9}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ThemeMappingTable() {
+  const [mappings, setMappings] = useState<Record<string, string>>(SHADCN_DEFAULTS);
+
+  function formatCss() {
+    return SHADCN_TOKENS.map((t) => `  --${t}: ${mappings[t]};`).join('\n');
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(`:root {\n${formatCss()}\n}`);
+      toast.success('Mapping copied to clipboard');
+    } catch {
+      toast.error('Copy failed');
+    }
+  }
+
+  function handleReset() {
+    setMappings(SHADCN_DEFAULTS);
+  }
+
+  const isDirty = SHADCN_TOKENS.some((t) => mappings[t] !== SHADCN_DEFAULTS[t]);
+
+  return (
+    <div className="space-y-4">
+      {/* Column header — only on ≥md where the grid lays out as a table. */}
+      <div className="hidden text-xs font-medium text-muted-foreground md:grid md:grid-cols-[minmax(12rem,14rem)_4rem_1fr] md:gap-4 md:px-1">
+        <div>Token</div>
+        <div>Preview</div>
+        <div>Mapped to</div>
+      </div>
+
+      <ul className="divide-y divide-border border-y border-border md:border-0">
+        {SHADCN_TOKENS.map((token) => (
+          <li
+            key={token}
+            className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2 py-3 md:grid-cols-[minmax(12rem,14rem)_4rem_1fr] md:gap-4 md:px-1"
+          >
+            <code className="text-xs">--{token}</code>
+
+            <div
+              className="h-6 w-12 justify-self-end rounded-md outline outline-offset-[-1px] outline-slate-6 md:justify-self-start"
+              style={{ backgroundColor: mappings[token] }}
+            />
+
+            <div className="col-span-2 md:col-span-1">
+              <Select
+                value={mappings[token]}
+                onValueChange={(v) => setMappings((prev) => ({ ...prev, [token]: v }))}
+              >
+                <SelectTrigger className="w-full md:max-w-[18rem]">
+                  <SelectValue>
+                    {(value) => {
+                      const opt = ALL_OPTIONS.find((o) => o.value === value);
+                      return (
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="inline-block h-3 w-3 rounded-sm outline outline-offset-[-1px] outline-slate-6"
+                            style={{ backgroundColor: value }}
+                          />
+                          <code className="text-xs">{opt?.label ?? value}</code>
+                        </span>
+                      );
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {ALL_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="inline-block h-3 w-3 rounded-sm outline outline-offset-[-1px] outline-slate-6"
+                          style={{ backgroundColor: opt.value }}
+                        />
+                        <code className="text-xs">{opt.label}</code>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" onClick={handleReset} disabled={!isDirty}>
+          Reset
+        </Button>
+        <Button onClick={handleCopy}>Copy mapping</Button>
+      </div>
     </div>
   );
 }
@@ -76,13 +260,43 @@ const ComponentsView: React.FC = () => {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-16 px-6 py-8">
+      {/* ── Theme ───────────────────────────────────────────────── */}
+      <Section title="Theme">
+        <Subsection label="Semantic tokens (shadcn)">
+          <ThemeMappingTable />
+        </Subsection>
+
+        {RADIX_SCALES.map((scale) => (
+          <Subsection key={scale} label={scale}>
+            <ScaleRow scale={scale} />
+          </Subsection>
+        ))}
+
+        <Subsection label="Toast">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={() => toast('Default toast message')}>
+              Default
+            </Button>
+            <Button variant="outline" onClick={() => toast.success('Saved changes')}>
+              Success
+            </Button>
+            <Button variant="outline" onClick={() => toast.error('Something failed')}>
+              Error
+            </Button>
+            <Button variant="outline" onClick={() => toast.info('Heads up')}>
+              Info
+            </Button>
+          </div>
+        </Subsection>
+      </Section>
+
       {/* ── Button ──────────────────────────────────────────────── */}
       <Section title="Button">
         <Subsection label="Variants">
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="default">default</Button>
             <Button variant="outline">outline</Button>
-            <Button variant="outline">secondary</Button>
+            <Button variant="secondary">secondary</Button>
             <Button variant="ghost">ghost</Button>
             <Button variant="destructive">destructive</Button>
             <Button variant="link">link</Button>
@@ -91,7 +305,7 @@ const ComponentsView: React.FC = () => {
 
         <Subsection label="Sizes">
           <div className="flex flex-wrap items-center gap-3">
-            <Button size="sm">xs</Button>
+            <Button size="xs">xs</Button>
             <Button size="sm">sm</Button>
             <Button size="default">default</Button>
             <Button size="lg">lg</Button>
@@ -100,17 +314,17 @@ const ComponentsView: React.FC = () => {
 
         <Subsection label="Icon sizes">
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" size="sm" aria-label="Add">
-              <Plus className="h-3.5 w-3.5" />
+            <Button variant="outline" size="icon-xs" aria-label="Add">
+              <Plus />
             </Button>
-            <Button variant="outline" size="sm" aria-label="Add">
-              <Plus className="h-4 w-4" />
+            <Button variant="outline" size="icon-sm" aria-label="Add">
+              <Plus />
             </Button>
             <Button variant="outline" size="icon" aria-label="Add">
-              <Plus className="h-4 w-4" />
+              <Plus />
             </Button>
-            <Button variant="outline" size="lg" aria-label="Add">
-              <Plus className="h-5 w-5" />
+            <Button variant="outline" size="icon-lg" aria-label="Add">
+              <Plus />
             </Button>
           </div>
         </Subsection>
