@@ -193,7 +193,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           className={itemClassName}
           onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
           data-active={!!selected}
-          aria-current={selected ? 'page' : undefined}
+          aria-current={selected ? 'true' : undefined}
           {...buttonProps}
         >
           {itemContent}

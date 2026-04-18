@@ -73,7 +73,7 @@ function Subsection({ label, children }: { label: string; children: React.ReactN
 
 // Every color token declared in `web/App.css`. The default mapping mirrors
 // the `:root` declarations there so the table opens in its shipped state.
-const SHADCN_DEFAULTS: Record<string, string> = {
+const SHADCN_DEFAULTS = {
   background: '#ffffff',
   foreground: 'var(--slate-12)',
   card: '#ffffff',
@@ -93,8 +93,9 @@ const SHADCN_DEFAULTS: Record<string, string> = {
   border: 'var(--slate-6)',
   input: 'var(--slate-7)',
   ring: 'var(--twblue-8)',
-};
-const SHADCN_TOKENS = Object.keys(SHADCN_DEFAULTS);
+} as const satisfies Record<string, string>;
+type ShadcnToken = keyof typeof SHADCN_DEFAULTS;
+const SHADCN_TOKENS = Object.keys(SHADCN_DEFAULTS) as ShadcnToken[];
 
 const RADIX_SCALES = ['slate', 'twblue', 'blue', 'green', 'red', 'amber'] as const;
 const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
@@ -117,19 +118,19 @@ function Swatch({
   label,
   title,
   style,
-  darkText,
+  tone,
 }: {
   label: string | number;
   title: string;
   style: React.CSSProperties;
-  darkText: boolean;
+  tone: 'light' | 'dark';
 }) {
   return (
     <div
       title={title}
       className={cn(
         'flex h-10 items-center justify-center rounded-md font-mono text-[11px] tabular-nums outline outline-offset-[-1px] outline-slate-6',
-        darkText ? 'text-slate-12' : 'text-white',
+        tone === 'dark' ? 'text-slate-12' : 'text-white',
       )}
       style={style}
     >
@@ -147,7 +148,7 @@ function ScaleRow({ scale }: { scale: string }) {
           label={step}
           title={`${scale}-${step}`}
           style={{ backgroundColor: `var(--${scale}-${step})` }}
-          darkText={step < 9}
+          tone={step < 9 ? 'dark' : 'light'}
         />
       ))}
     </div>
@@ -155,7 +156,7 @@ function ScaleRow({ scale }: { scale: string }) {
 }
 
 function ThemeMappingTable() {
-  const [mappings, setMappings] = useState<Record<string, string>>(SHADCN_DEFAULTS);
+  const [mappings, setMappings] = useState<Record<ShadcnToken, string>>(SHADCN_DEFAULTS);
 
   function formatCss() {
     return SHADCN_TOKENS.map((t) => `  --${t}: ${mappings[t]};`).join('\n');
@@ -201,21 +202,23 @@ function ThemeMappingTable() {
             <div className="col-span-2 md:col-span-1">
               <Select
                 value={mappings[token]}
-                onValueChange={(v) =>
-                  setMappings((prev) => ({ ...prev, [token]: v ?? prev[token] }))
-                }
+                onValueChange={(v: string | null) => {
+                  if (typeof v !== 'string') return;
+                  setMappings((prev) => ({ ...prev, [token]: v }));
+                }}
               >
                 <SelectTrigger className="w-full md:max-w-[18rem]">
                   <SelectValue>
                     {(value) => {
-                      const opt = ALL_OPTIONS.find((o) => o.value === value);
+                      const v = typeof value === 'string' ? value : '';
+                      const opt = ALL_OPTIONS.find((o) => o.value === v);
                       return (
                         <span className="flex items-center gap-2">
                           <span
                             className="inline-block h-3 w-3 rounded-sm outline outline-offset-[-1px] outline-slate-6"
-                            style={{ backgroundColor: value }}
+                            style={{ backgroundColor: v }}
                           />
-                          <code className="text-xs">{opt?.label ?? value}</code>
+                          <code className="text-xs">{opt?.label ?? v}</code>
                         </span>
                       );
                     }}
