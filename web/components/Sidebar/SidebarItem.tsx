@@ -101,18 +101,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     // `overflow-hidden` clips the label's exit slide so it never leaks past
     // the nav's right edge into the main content while the nav width
     // transitions from 240 → 64.
-    'flex h-10 cursor-pointer items-center justify-start gap-x-2 overflow-hidden rounded-lg px-3 focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
-    'data-[selected=true]:bg-slate-5 data-[selected=true]:hover:bg-slate-5',
+    'flex h-10 cursor-pointer items-center justify-start gap-x-2 overflow-hidden rounded-lg px-3 text-sidebar-foreground focus-standard outline-offset-0 transition-[background-color,outline] hover:bg-sidebar-accent/60 active:bg-sidebar-accent active:opacity-100',
+    'data-[active=true]:bg-sidebar-accent data-[active=true]:hover:bg-sidebar-accent',
     props.className,
   );
 
   const itemContent = (
     <>
-      <Icon className="flex h-4 w-4 shrink-0 text-slate-11" />
+      <Icon className="flex h-4 w-4 shrink-0 text-muted-foreground" />
 
       <AnimatePresence initial={false}>
         {isExpanded && (
-          <Typography asChild variant="label-md" className="text-slate-12">
+          <Typography asChild variant="label-md" className="text-sidebar-foreground">
             <motion.p
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -146,7 +146,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             className={itemClassName}
             target="_blank"
             rel="noopener noreferrer"
-            data-selected={!!selected}
+            data-active={!!selected}
+            aria-current={selected ? 'page' : undefined}
             onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
             {...anchorProps}
           >
@@ -167,7 +168,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         <TooltipTrigger asChild>
           <Link
             className={itemClassName}
-            data-selected={!!selected}
+            data-active={!!selected}
+            aria-current={selected ? 'page' : undefined}
             onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
             {...linkProps}
           >
@@ -190,7 +192,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           size="sm"
           className={itemClassName}
           onPointerMove={(event) => handlePointerMove(event, onPointerMove)}
-          data-selected={!!selected}
+          data-active={!!selected}
+          aria-current={selected ? 'page' : undefined}
           {...buttonProps}
         >
           {itemContent}

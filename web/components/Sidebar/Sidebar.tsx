@@ -13,7 +13,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, children, ...props }) => {
       <>
         <nav
           className={cn(
-            'fixed inset-y-0 left-0 z-1001 flex w-60 -translate-x-full flex-col border-r border-slate-5 bg-slate-2 transition-transform sm:hidden',
+            'fixed inset-y-0 left-0 z-1001 flex w-60 -translate-x-full flex-col border-r border-sidebar-border bg-sidebar transition-transform sm:hidden',
             isMobileOpen && 'translate-x-0',
             className,
           )}
@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, children, ...props }) => {
 
         <div
           className={cn(
-            'bg-slate-alpha-11/62 fixed inset-0 z-1000 opacity-0 transition-opacity ease-tw-default sm:hidden',
+            'fixed inset-0 z-1000 bg-foreground/60 opacity-0 transition-opacity ease-tw-default sm:hidden',
             isMobileOpen ? 'opacity-100' : 'pointer-events-none',
           )}
           onClick={toggleSidebar}
@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, children, ...props }) => {
   return (
     <nav
       className={cn(
-        'relative hidden w-16 border-r border-slate-5 bg-slate-2 transition-[width] ease-tw-default sm:flex sm:flex-col',
+        'relative hidden w-16 border-r border-sidebar-border bg-sidebar transition-[width] ease-tw-default sm:flex sm:flex-col',
         isOpen && 'w-60',
         className,
       )}

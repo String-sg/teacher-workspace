@@ -22,13 +22,13 @@ const SidebarTrigger: React.FC<SidebarTriggerProps> = ({ className, onClick, ...
       // enforce a proper hit area so the hover background is visible and the
       // tap target meets the ~40px guideline.
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-lg hover:bg-slate-4 active:bg-slate-5 active:opacity-100',
+        'flex h-8 w-8 items-center justify-center rounded-lg hover:bg-sidebar-accent/60 active:bg-sidebar-accent active:opacity-100',
         className,
       )}
       onClick={handleClick}
       {...props}
     >
-      <PanelLeft className="h-4 w-4 text-slate-11" />
+      <PanelLeft className="h-4 w-4 text-muted-foreground" />
     </Button>
   );
 };
