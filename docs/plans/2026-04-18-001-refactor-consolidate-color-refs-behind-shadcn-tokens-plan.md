@@ -1,7 +1,7 @@
 ---
 title: 'refactor: Consolidate color refs behind shadcn semantic tokens'
 type: refactor
-status: active
+status: completed
 date: 2026-04-18
 deepened: 2026-04-18
 ---
@@ -500,13 +500,25 @@ From the 2026-04-18 re-audit (86 refs across 18 files):
 
 ---
 
-## Post-migration notes (to be filled in on close-out)
+## Post-migration notes
 
-- Raw ref count before: `86` (2026-04-18 re-audit)
-- Raw ref count after: `TBD`
-- Tokens added to shadcn canonical set: `8` (sidebar only, contingent on Option A)
-- Tokens invented: `0`
-- Registered exemptions: `TBD` (target ≤ 30; review policy if > 50)
-- Deviations from plan: `TBD`
-- Screenshot PR link: `TBD`
-- WCAG contrast check result: `TBD`
+- **Shipped Option A** (full plan, all 6 phases) on branch `feat/posts-frontend`.
+- **Raw ref count before:** `86` (2026-04-18 re-audit).
+- **Raw ref count after (outside `App.css` + `ComponentsView.tsx`):** `0` unregistered. Every surviving raw ref is in `scripts/raw-color-exemptions.txt`.
+- **Registered exemptions:** `26` (status badges ×11, PostTypePicker info hovers ×3, entity-selector brand tints + slate-9 gap + sidebar-color bleed ×10, PostPreview high-contrast border, RichTextToolbar surface).
+- **Tokens added to shadcn canonical set:** `8` (sidebar only: `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, `--sidebar-ring`). Both `:root` and `@theme inline` blocks.
+- **Tokens invented:** `0`.
+- **Phase 0 decision:** user accepted the darker `disabled:text-muted-foreground` (slate-11) over previous raw `text-slate-8`; no revert. Documented here.
+- **Deviations from plan:**
+  - Phase 2 `bg-slate-4` → `bg-accent` rule applied to `PostTypePicker` skeleton bars (not `bg-muted` as initially flagged); matches the plan's "non-sidebar call sites only" note and keeps the change pixel-identical.
+  - Phase 4 uncovered an extra raw ref the original regex missed: `bg-slate-alpha-11/62` on `Sidebar.tsx:27` (mobile backdrop overlay). Migrated to `bg-foreground/60` (this utility had been silently broken since the alpha imports were removed).
+  - `entity-selector.tsx:283` left raw: `border-slate-3 bg-slate-2/60` forms a subsurface header with no clean canonical mapping.
+  - `entity-selector.tsx:556` (`Create` link hover) left raw at `hover:bg-slate-2`; `hover:bg-muted` (slate-3) would have been _darker_ on the already-light sidebar-color surface.
+- **CI guard:** `pnpm check:colors` green; `scripts/check-raw-colors.sh` wired into `pnpm lint`. Ripgrep preferred, grep fallback implemented.
+- **Tailwind v4 JIT behavior (confirmed):** the 8 new `--color-sidebar-*` entries ship to `:root` regardless of consumer presence — only utility classes (`bg-sidebar` etc.) get pruned. Phase 1 + Phase 4 shipped together per plan.
+- **Visual regression QA:** `/posts` list, `/posts/:id` read-status table, sidebar expanded (Home/Students/Posts with "Posts" selected) all render correctly. Build: `vite build` succeeds, no console errors.
+- **WCAG contrast:** not explicitly measured this session — follow-up: run axe on `/posts/:id` "No" badge to confirm `bg-destructive/10` + `text-destructive` meets AA. If below AA, escalate to `/15` or `/20`.
+- **Follow-ups deferred:**
+  - Scratch `test-narrowing*.ts` files at repo root trip oxlint (pre-existing; not in scope).
+  - Dead `dark:` classes in `web/components/ui/{tabs,button,badge}.tsx` — separate cleanup (repo is light-only per commit `50a3f12`).
+  - `docs/architecture/color-tokens.md` not written this pass; the plan itself serves as the contract for now.
