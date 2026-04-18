@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "format": "oxfmt --check \"**/*.{js,jsx,ts,tsx,md,html,css,json,jsonc,yaml}\"",
-    "lint": "oxlint",
+    "lint": "oxlint && pnpm check:colors",
+    "check:colors": "sh scripts/check-raw-colors.sh",
     "golint": "golangci-lint run",
     "prepare": "husky"
   },

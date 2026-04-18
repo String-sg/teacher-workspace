@@ -1,0 +1,43 @@
+# Raw Radix color exemptions.
+#
+# Format: <path>:<line>  # <reason>
+#
+# Every line flagged by scripts/check-raw-colors.sh as containing a raw Radix
+# utility (bg|text|border|ring|outline|fill|stroke-{slate|twblue|blue|green|red|amber}-N)
+# outside of web/App.css and web/containers/ComponentsView.tsx must either be
+# migrated to a shadcn canonical token or registered here with a reason.
+#
+# Adding entries requires a PR. If this list grows past ~50 entries, open a
+# follow-up plan to evaluate project-local semantic tokens for the recurring
+# patterns (see docs/plans/ for the canonical theming plan).
+#
+# ─── Status states (shadcn has no --success / --warning / --info) ────────────
+web/containers/PostsView.tsx:196  # warning icon — no shadcn --warning
+web/containers/PostsView.tsx:211  # scheduled-past-due — no shadcn --warning
+web/components/posts/RecipientReadTable.tsx:89  # read-status label — no --success
+web/components/posts/RecipientReadTable.tsx:94  # unread-status label — no --warning
+web/components/posts/RecipientReadTable.tsx:107  # check icon — no --success
+web/components/posts/RecipientReadTable.tsx:121  # Yes badge — no --success
+web/components/posts/ReadTrackingCards.tsx:38  # brand-tinted count bg — bg-twblue-3, no --primary-subtle
+web/components/posts/ReadTrackingCards.tsx:60  # unread-count label — no --warning
+web/components/posts/StatusBadge.tsx:8  # Posted badge — no --success
+web/components/posts/StatusBadge.tsx:12  # Scheduled badge — no --info
+web/components/posts/StatusBadge.tsx:16  # Posting badge — no --info
+# ─── Decorative info hover (PostTypePicker cards) ────────────────────────────
+web/components/posts/PostTypePicker.tsx:16  # post card hover — no --info
+web/components/posts/PostTypePicker.tsx:34  # post-with-response card hover — no --info
+web/components/posts/PostTypePicker.tsx:40  # response-bar accent in mock preview — no --info
+# ─── Brand-tint + sidebar-color bleed in entity-selector ─────────────────────
+web/components/comms/entity-selector.tsx:221  # selected row bg-twblue-1 + hover on sidebar-color surface
+web/components/comms/entity-selector.tsx:268  # expand-toggle hover (selected row) — bg-twblue-3, no --primary-subtle
+web/components/comms/entity-selector.tsx:283  # subsurface header (border-slate-3 bg-slate-2/60) — no canonical match
+web/components/comms/entity-selector.tsx:313  # member-index label text-slate-9 — between --border and --muted-foreground
+web/components/comms/entity-selector.tsx:330  # excluded-member label text-slate-9 — same gap as above
+web/components/comms/entity-selector.tsx:342  # member badge text-slate-9 — same gap as above
+web/components/comms/entity-selector.tsx:383  # chip bg-twblue-2 — no --primary-subtle
+web/components/comms/entity-selector.tsx:397  # chip-remove hover bg-twblue-4 — no --primary-subtle
+web/components/comms/entity-selector.tsx:556  # create-link hover bg-slate-2 — sidebar-color surface
+web/components/comms/entity-selector.tsx:646  # active scope-tab bg-twblue-2 — no --primary-subtle
+# ─── Misc intentional raw refs ───────────────────────────────────────────────
+web/components/posts/PostPreview.tsx:28  # intentional high-contrast border-slate-12 (PG preview card)
+web/components/posts/RichTextToolbar.tsx:135  # toolbar surface bg-slate-2 — sidebar-color bleed outside Sidebar/
