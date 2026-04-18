@@ -6,7 +6,7 @@ function TooltipProvider({
   delay = 600,
   closeDelay = 0,
   ...props
-}: TooltipPrimitive.Provider.Props & { delayDuration?: number }) {
+}: TooltipPrimitive.Provider.Props) {
   return <TooltipPrimitive.Provider delay={delay} closeDelay={closeDelay} {...props} />;
 }
 
