@@ -771,7 +771,6 @@ export function EntitySelector({
           }}
         >
           <SheetContent side="bottom" className="max-h-[85vh] rounded-t-xl px-0 pt-0">
-            {/* Drag handle + title bar */}
             <div className="flex items-center justify-between border-b px-4 py-3">
               <div className="flex flex-col gap-1">
                 <div className="mx-auto h-1 w-12 rounded-full bg-accent" />

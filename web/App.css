@@ -26,15 +26,20 @@
   --twblue-11: #015ceb;
   --twblue-12: #0b2d6b;
 
+  /* `--white` aliases every shipped white surface. When dark mode lands, the
+     six consumers below become the single sweep target — override `--white`
+     or repoint each consumer under a `[data-theme=dark]` selector. */
+  --white: #ffffff;
+
   /* Shadcn semantic tokens — rebased on Radix slate + twblue */
-  --background: #ffffff;
+  --background: var(--white);
   --foreground: var(--slate-12);
-  --card: #ffffff;
+  --card: var(--white);
   --card-foreground: var(--slate-12);
-  --popover: #ffffff;
+  --popover: var(--white);
   --popover-foreground: var(--slate-12);
   --primary: var(--twblue-9);
-  --primary-foreground: #ffffff;
+  --primary-foreground: var(--white);
   --secondary: var(--slate-3);
   --secondary-foreground: var(--slate-12);
   --muted: var(--slate-3);
@@ -42,7 +47,7 @@
   --accent: var(--slate-4);
   --accent-foreground: var(--slate-12);
   --destructive: var(--red-9);
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: var(--white);
   --border: var(--slate-6);
   --input: var(--slate-7);
   --ring: var(--twblue-8);
@@ -50,11 +55,15 @@
   --radius-input: 14px;
 
   /* Sidebar — shadcn v4 canonical token set. No renames, no additions.
+     Consumed by web/components/Sidebar/*. If those files stop referencing
+     the tokens, remove this block too — Tailwind v4 JIT tree-shakes
+     utilities (`bg-sidebar`, `text-sidebar-foreground`, etc.), not these
+     var declarations, so they'd ship forever as dead bytes otherwise.
      NOTE: shadcn renamed `--sidebar-background` → `--sidebar` in 2025. */
   --sidebar: var(--slate-2);
   --sidebar-foreground: var(--slate-12);
   --sidebar-primary: var(--twblue-9);
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: var(--white);
   --sidebar-accent: var(--slate-5);
   --sidebar-accent-foreground: var(--slate-12);
   --sidebar-border: var(--slate-5);
