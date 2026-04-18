@@ -2,6 +2,7 @@ import { cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@flow/c
 import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
 
+import { SIDEBAR_TOOLTIP_CLASSNAMES } from './constants';
 import { useSidebarContext } from './context';
 import SidebarTrigger from './SidebarTrigger';
 
@@ -42,7 +43,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ className, ...props }) =>
         )}
       </AnimatePresence>
 
-      <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
+      <Tooltip classNames={SIDEBAR_TOOLTIP_CLASSNAMES}>
         <TooltipTrigger asChild>
           <SidebarTrigger />
         </TooltipTrigger>

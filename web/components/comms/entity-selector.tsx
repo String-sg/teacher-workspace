@@ -434,14 +434,13 @@ export function EntitySelector({
     [value],
   );
 
-  // Sync activeScope when scopes change
   useEffect(() => {
     if (scopes && scopes.length > 0 && !scopes.find((s) => s.id === activeScope)) {
       setActiveScope(scopes[0].id);
     }
   }, [scopes, activeScope]);
 
-  // Collapse expanded group when query changes (group may disappear from results)
+  // Collapse on query change — the expanded group may disappear from results.
   useEffect(() => {
     setExpandedGroupId(null);
   }, [query]);
@@ -463,7 +462,6 @@ export function EntitySelector({
     const isSelected = value.some((e) => e.id === item.id);
     if (isSelected) {
       onChange(value.filter((e) => e.id !== item.id));
-      // Clear any member exclusions for this group
       if (groupExclusions.has(item.id)) {
         const next = new Map(groupExclusions);
         next.delete(item.id);
@@ -487,7 +485,6 @@ export function EntitySelector({
     if (newExcl.size === 0) next.delete(groupId);
     else next.set(groupId, newExcl);
     setGroupExclusions(next);
-    // Propagate exclusions to parent value
     const updatedValue = value.map((e) =>
       e.id === groupId
         ? {
@@ -501,7 +498,6 @@ export function EntitySelector({
 
   function handleRemove(entity: SelectedEntity) {
     onChange(value.filter((e) => e.id !== entity.id));
-    // Clear exclusions if removed
     if (groupExclusions.has(entity.id)) {
       const next = new Map(groupExclusions);
       next.delete(entity.id);

@@ -75,7 +75,7 @@ const RootLayout: React.FC = () => {
           </Sidebar>
 
           <div className="relative flex-1 overflow-y-auto">
-            <div className="sticky top-0 z-40 bg-background/90 px-4 py-2 backdrop-blur-sm md:px-6">
+            <div className="sticky top-0 z-40 bg-background/90 px-4 py-3 backdrop-blur-sm md:px-6">
               <div
                 className={cn(
                   'absolute inset-x-0 top-full h-px bg-transparent transition-colors duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)]',

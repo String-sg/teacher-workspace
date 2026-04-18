@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import React from 'react';
 import { Link, type LinkProps } from 'react-router';
 
+import { SIDEBAR_TOOLTIP_CLASSNAMES } from './constants';
 import { useSidebarContext } from './context';
 
 interface SidebarItemBaseProps {
@@ -139,7 +140,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     const { onPointerMove, ...anchorProps } = props;
 
     return (
-      <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
+      <Tooltip classNames={SIDEBAR_TOOLTIP_CLASSNAMES}>
         <TooltipTrigger asChild>
           <a
             className={itemClassName}
@@ -162,7 +163,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     const { onPointerMove, ...linkProps } = props;
 
     return (
-      <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
+      <Tooltip classNames={SIDEBAR_TOOLTIP_CLASSNAMES}>
         <TooltipTrigger asChild>
           <Link
             className={itemClassName}
@@ -182,7 +183,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const { onPointerMove, ...buttonProps } = props;
 
   return (
-    <Tooltip classNames={{ content: 'bg-slate-12 px-3 py-1.5 z-10000' }}>
+    <Tooltip classNames={SIDEBAR_TOOLTIP_CLASSNAMES}>
       <TooltipTrigger asChild>
         <Button
           variant="ghost"

@@ -145,7 +145,6 @@ function formReducer(state: PostFormState, action: PostFormAction): PostFormStat
         questions: state.questions.map((q) => {
           if (q.id !== action.id) return q;
           const updated = { ...q, ...action.payload };
-          // Handle type transitions correctly
           if (action.payload.type === 'mcq' && q.type !== 'mcq') {
             return {
               id: q.id,
@@ -161,7 +160,6 @@ function formReducer(state: PostFormState, action: PostFormAction): PostFormStat
               type: 'free-text' as const,
             };
           }
-          // Same type, just update fields
           if (q.type === 'mcq') {
             return {
               ...q,
@@ -322,7 +320,6 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
     return 'post';
   });
 
-  // For edit mode, map loader data to form state
   const editData = detail ? announcementToFormState(detail, staff) : null;
 
   const [state, dispatch] = useReducer(formReducer, editData ?? INITIAL_STATE);
@@ -344,7 +341,6 @@ function CreatePostViewInner({ editId }: { editId?: string }) {
   const recipientCount = state.selectedRecipients.reduce((sum, r) => sum + (r.count ?? 1), 0);
   const isEditing = Boolean(editId);
 
-  // If editing but API returned nothing, redirect (after hooks)
   if (editId && !editData) {
     return <Navigate to="/posts" replace />;
   }
