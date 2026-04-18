@@ -35,7 +35,7 @@ const StatCard = memo(function StatCard({ label, count, total, icon, subline }: 
             {subline}
           </div>
 
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-twblue-3 text-twblue-9">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-twblue-3 text-primary">
             {icon}
           </div>
         </div>

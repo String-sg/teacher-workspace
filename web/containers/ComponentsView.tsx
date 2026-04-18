@@ -201,7 +201,9 @@ function ThemeMappingTable() {
             <div className="col-span-2 md:col-span-1">
               <Select
                 value={mappings[token]}
-                onValueChange={(v) => setMappings((prev) => ({ ...prev, [token]: v }))}
+                onValueChange={(v) =>
+                  setMappings((prev) => ({ ...prev, [token]: v ?? prev[token] }))
+                }
               >
                 <SelectTrigger className="w-full md:max-w-[18rem]">
                   <SelectValue>

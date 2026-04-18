@@ -17,7 +17,7 @@ const STATUS_CONFIG: Record<PGStatus, { label: string; className: string }> = {
   },
   draft: {
     label: 'Draft',
-    className: 'bg-slate-3 text-slate-11 hover:bg-slate-3',
+    className: 'bg-muted text-muted-foreground hover:bg-muted',
   },
 };
 

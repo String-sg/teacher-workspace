@@ -34,8 +34,8 @@ interface ButtonProps {
 }
 
 const btnClass =
-  'h-7 w-7 flex items-center justify-center rounded text-slate-11 hover:bg-slate-3 hover:text-slate-12 transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
-const activeClass = 'bg-slate-4 text-slate-12';
+  'h-7 w-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
+const activeClass = 'bg-accent text-foreground';
 
 function ToolbarButton({ label, icon, active, disabled, onClick }: ButtonProps) {
   return (
@@ -55,7 +55,7 @@ function ToolbarButton({ label, icon, active, disabled, onClick }: ButtonProps) 
 }
 
 function Divider() {
-  return <div className="mx-1 h-4 w-px bg-slate-4" />;
+  return <div className="mx-1 h-4 w-px bg-border" />;
 }
 
 function RichTextToolbar({ editor, className }: RichTextToolbarProps) {

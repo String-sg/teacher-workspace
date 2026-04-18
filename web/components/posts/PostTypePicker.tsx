@@ -17,10 +17,10 @@ function PostTypePicker({ onSelect }: PostTypePickerProps) {
           onClick={() => onSelect('post')}
         >
           <div className="h-[100px] space-y-2.5">
-            <div className="h-2 w-3/4 rounded bg-slate-4" />
-            <div className="h-2 w-full rounded bg-slate-4" />
-            <div className="h-2 w-5/6 rounded bg-slate-4" />
-            <div className="h-2 w-2/3 rounded bg-slate-4" />
+            <div className="h-2 w-3/4 rounded bg-accent" />
+            <div className="h-2 w-full rounded bg-accent" />
+            <div className="h-2 w-5/6 rounded bg-accent" />
+            <div className="h-2 w-2/3 rounded bg-accent" />
           </div>
 
           <p className="mt-4 font-medium">Post</p>
@@ -35,10 +35,10 @@ function PostTypePicker({ onSelect }: PostTypePickerProps) {
           onClick={() => onSelect('post-with-response')}
         >
           <div className="h-[100px] space-y-2.5">
-            <div className="h-2 w-3/4 rounded bg-slate-4" />
-            <div className="h-2 w-full rounded bg-slate-4" />
+            <div className="h-2 w-3/4 rounded bg-accent" />
+            <div className="h-2 w-full rounded bg-accent" />
             <div className="mt-3 h-2.5 w-1/2 rounded bg-blue-6" />
-            <div className="h-2 w-2/3 rounded bg-slate-4" />
+            <div className="h-2 w-2/3 rounded bg-accent" />
           </div>
 
           <p className="mt-4 font-medium">Post with Response</p>

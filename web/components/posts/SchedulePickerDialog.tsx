@@ -169,7 +169,7 @@ export function SchedulePickerDialog({
             </p>
           )}
           {!validation.ok && date && (
-            <p className="text-sm text-red-10" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {validation.reason}
             </p>
           )}

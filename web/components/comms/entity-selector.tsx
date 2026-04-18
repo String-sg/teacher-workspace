@@ -233,7 +233,7 @@ function ResultRow({
           <span
             className={cn(
               'flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-2 transition-colors',
-              isSelected ? 'border-primary bg-primary text-white' : 'border-slate-6 bg-white',
+              isSelected ? 'border-primary bg-primary text-white' : 'border-border bg-background',
             )}
           >
             {isSelected && excludedMemberNames.size === 0 && <Check className="h-3 w-3" />}
@@ -265,7 +265,7 @@ function ResultRow({
             onClick={() => onToggleExpand?.()}
             className={cn(
               'flex shrink-0 items-center px-2 transition-colors',
-              isSelected ? 'hover:bg-twblue-3' : 'hover:bg-slate-3',
+              isSelected ? 'hover:bg-twblue-3' : 'hover:bg-muted',
             )}
           >
             <ChevronDown
@@ -307,7 +307,7 @@ function ResultRow({
                     onClick={() => isSelected && onMemberToggle?.(detail.name)}
                     className={cn(
                       'flex w-full items-center gap-2 rounded px-1.5 py-1 text-xs',
-                      isSelected ? 'cursor-pointer hover:bg-slate-3' : 'cursor-default',
+                      isSelected ? 'cursor-pointer hover:bg-muted' : 'cursor-default',
                     )}
                   >
                     <span className="w-5 shrink-0 text-right text-[10px] text-slate-9 tabular-nums">
@@ -318,7 +318,7 @@ function ResultRow({
                         'flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-2 transition-colors',
                         isMemberIncluded
                           ? 'border-primary bg-primary text-white'
-                          : 'border-slate-6 bg-white',
+                          : 'border-border bg-background',
                       )}
                     >
                       {isMemberIncluded && <Check className="h-3 w-3" />}
@@ -327,7 +327,7 @@ function ResultRow({
                       <span
                         className={cn(
                           'font-medium',
-                          isMemberIncluded ? 'text-slate-12' : 'text-slate-9',
+                          isMemberIncluded ? 'text-foreground' : 'text-slate-9',
                         )}
                       >
                         {detail.name}
@@ -380,7 +380,7 @@ function EntityChip({ entity, onRemove }: { entity: SelectedEntity; onRemove: ()
   return (
     <span
       title={tooltipTitle}
-      className="inline-flex max-w-[180px] shrink-0 items-center gap-1 rounded-md bg-twblue-2 px-2 py-0.5 text-xs font-medium text-twblue-9"
+      className="inline-flex max-w-[180px] shrink-0 items-center gap-1 rounded-md bg-twblue-2 px-2 py-0.5 text-xs font-medium text-primary"
     >
       {entity.type === 'group' ? (
         <Users className="h-3 w-3 shrink-0" />
@@ -394,7 +394,7 @@ function EntityChip({ entity, onRemove }: { entity: SelectedEntity; onRemove: ()
         aria-label={`Remove ${entity.label}`}
         onMouseDown={(e) => e.preventDefault()}
         onClick={onRemove}
-        className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-twblue-4 hover:text-twblue-9"
+        className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-twblue-4 hover:text-primary"
       >
         <X className="h-2.5 w-2.5" />
       </button>
@@ -643,8 +643,8 @@ export function EntitySelector({
           className={cn(
             'rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors',
             activeScope === scope.id
-              ? 'bg-twblue-2 text-twblue-9'
-              : 'text-muted-foreground hover:bg-slate-3 hover:text-foreground',
+              ? 'bg-twblue-2 text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
           )}
         >
           {scope.label}
@@ -727,7 +727,7 @@ export function EntitySelector({
           type="button"
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onChange([])}
-          className="ml-auto shrink-0 text-xs text-muted-foreground transition-colors hover:text-red-9"
+          className="ml-auto shrink-0 text-xs text-muted-foreground transition-colors hover:text-destructive"
         >
           Clear all
         </button>
@@ -774,14 +774,10 @@ export function EntitySelector({
             {/* Drag handle + title bar */}
             <div className="flex items-center justify-between border-b px-4 py-3">
               <div className="flex flex-col gap-1">
-                <div className="mx-auto h-1 w-12 rounded-full bg-slate-4" />
+                <div className="mx-auto h-1 w-12 rounded-full bg-accent" />
               </div>
               <span className="text-sm font-medium text-muted-foreground">{placeholder}</span>
-              <button
-                type="button"
-                onClick={closePanel}
-                className="rounded-md p-1 hover:bg-slate-3"
-              >
+              <button type="button" onClick={closePanel} className="rounded-md p-1 hover:bg-muted">
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
@@ -808,7 +804,7 @@ export function EntitySelector({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setQuery('')}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded p-0.5 hover:bg-slate-3"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded p-0.5 hover:bg-muted"
                 >
                   <X className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
