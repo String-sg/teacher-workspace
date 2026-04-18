@@ -26,31 +26,28 @@
   --twblue-11: #015ceb;
   --twblue-12: #0b2d6b;
 
-  /* `--white` aliases every shipped white surface. When dark mode lands, the
-     six consumers below become the single sweep target — override `--white`
-     or repoint each consumer under a `[data-theme=dark]` selector. */
-  --white: #ffffff;
-
-  /* Shadcn semantic tokens — rebased on Radix slate + twblue */
-  --background: var(--white);
+  /* Shadcn semantic tokens — rebased on Radix slate + twblue.
+     All canonical shadcn v4 names; no project-invented tokens. Mapping
+     rationale documented at docs/architecture/color-tokens.md. */
+  --background: var(--slate-1);
   --foreground: var(--slate-12);
-  --card: var(--white);
+  --card: #ffffff;
   --card-foreground: var(--slate-12);
-  --popover: var(--white);
+  --popover: #ffffff;
   --popover-foreground: var(--slate-12);
   --primary: var(--twblue-9);
-  --primary-foreground: var(--white);
-  --secondary: var(--slate-3);
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;
   --secondary-foreground: var(--slate-12);
   --muted: var(--slate-3);
   --muted-foreground: var(--slate-11);
   --accent: var(--slate-4);
   --accent-foreground: var(--slate-12);
   --destructive: var(--red-9);
-  --destructive-foreground: var(--white);
+  --destructive-foreground: #ffffff;
   --border: var(--slate-6);
   --input: var(--slate-7);
-  --ring: var(--twblue-8);
+  --ring: var(--twblue-7);
   --radius: 0.625rem;
   --radius-input: 14px;
 
@@ -63,11 +60,11 @@
   --sidebar: var(--slate-2);
   --sidebar-foreground: var(--slate-12);
   --sidebar-primary: var(--twblue-9);
-  --sidebar-primary-foreground: var(--white);
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--slate-5);
   --sidebar-accent-foreground: var(--slate-12);
   --sidebar-border: var(--slate-5);
-  --sidebar-ring: var(--twblue-8);
+  --sidebar-ring: var(--twblue-7);
 }
 
 @theme inline {

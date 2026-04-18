@@ -1,10 +1,23 @@
 ---
-status: pending
+status: complete
 priority: p3
 issue_id: 011
 tags: [code-review, architecture, cleanup]
 dependencies: []
 ---
+
+## Resolution (2026-04-18)
+
+**Initial fix** — extracted `--white: #ffffff` alias; 6 consumers migrated to
+`var(--white)`.
+
+**Reverted same session** — the project lead reinforced "no invented tokens,"
+and `--white` is not part of Radix Colors or shadcn v4 canonical sets.
+Reverted to `#ffffff` literals at all 6 consumers.
+
+Future dark-mode handling will use `@media (prefers-color-scheme: dark)` or
+`[data-theme=dark]` with literal overrides at each consumer, not a
+project-local alias.
 
 # Hardcoded `#ffffff` literals in `:root` — prep for future dark-mode sweep
 
