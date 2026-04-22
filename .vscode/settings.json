@@ -1,5 +1,4 @@
 {
-  "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
@@ -29,5 +28,8 @@
   },
   "[yaml]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
   }
 }
