@@ -23,15 +23,22 @@ A unified platform that consolidates teacher-facing applications into day-to-day
 
 ## Build & Run Commands
 
+### Dev
+
+```bash
+pnpm dev:all                        # Run the TW application
+```
+
 ### Go
 
 ```bash
-go build -o build/tw ./cmd/tw       # Build binary
-go run ./cmd/tw                     # Run directly
-go test ./...                       # Run all tests
-go test ./path/to/pkg               # Run single package tests
-go test -run TestName ./path/to/pkg # Run a specific test
-golangci-lint run                   # Static analysis
+go build -o build/tw ./server/cmd/tw  # Build binary
+go run ./server/cmd/tw                # Run directly
+go tool air                           # Run with live-reload
+go test ./...                         # Run all tests
+go test ./path/to/pkg                 # Run single package tests
+go test -run TestName ./path/to/pkg   # Run a specific test
+golangci-lint run                     # Static analysis
 ```
 
 ### Frontend
