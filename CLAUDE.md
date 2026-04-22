@@ -85,3 +85,7 @@ Use `want/got` style:
 - Don't list implementation details (e.g. individual functions, internal mechanisms) - keep it high level
 - Make logical, incremental commits rather than one large commit
 - Always create a feature branch before starting work
+
+## Pull Request Conventions
+
+- Always use the PR template at `.github/PULL_REQUEST_TEMPLATE.md` for the PR description. Fill in every section of the template; do not substitute an ad-hoc structure
