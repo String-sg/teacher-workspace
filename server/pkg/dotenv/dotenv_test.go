@@ -201,9 +201,10 @@ func TestDecode(t *testing.T) {
 		}
 
 		tests := []struct {
-			name  string
-			value string
-			want  string
+			name    string
+			initial *url.URL
+			value   string
+			want    string
 		}{
 			{
 				name:  "http",
@@ -220,6 +221,15 @@ func TestDecode(t *testing.T) {
 				value: "",
 				want:  "",
 			},
+			{
+				name: "overrides prepopulated pointer",
+				initial: func() *url.URL {
+					u, _ := url.Parse("http://default:1234")
+					return u
+				}(),
+				value: "http://override:5678",
+				want:  "http://override:5678",
+			},
 		}
 
 		for _, test := range tests {
@@ -228,7 +238,7 @@ func TestDecode(t *testing.T) {
 					"TEST_BASE_URL=" + test.value,
 				}, "\n")
 
-				var cfg TestConfig
+				cfg := TestConfig{BaseURL: test.initial}
 				err := decode([]byte(content), &cfg)
 
 				t.Cleanup(func() {
