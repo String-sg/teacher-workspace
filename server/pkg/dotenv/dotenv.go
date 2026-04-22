@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -56,7 +57,7 @@ func decode(data []byte, output any) error {
 		WeaklyTypedInput: true,
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(
 			mapstructure.StringToTimeDurationHookFunc(),
-			mapstructure.StringToURLHookFunc(),
+			stringToURLFunc(),
 			stringToLogLevelFunc(),
 		),
 	})
@@ -84,6 +85,30 @@ func environToMap(environ []string) map[string]string {
 	}
 
 	return m
+}
+
+// stringToURLFunc converts a string to a *url.URL or url.URL. The built-in
+// StringToURLHookFunc only targets *url.URL, which fails when the destination
+// pointer is already populated because mapstructure dereferences it and passes
+// url.URL as the target type.
+func stringToURLFunc() mapstructure.DecodeHookFunc {
+	return func(f reflect.Type, t reflect.Type, data any) (any, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		switch t {
+		case reflect.TypeFor[*url.URL]():
+			return url.Parse(data.(string))
+		case reflect.TypeFor[url.URL]():
+			u, err := url.Parse(data.(string))
+			if err != nil {
+				return nil, err
+			}
+			return *u, nil
+		default:
+			return data, nil
+		}
+	}
 }
 
 // stringToLogLevelFunc converts a string to a slog.Level.
