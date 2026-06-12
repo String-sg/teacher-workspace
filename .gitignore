@@ -20,6 +20,7 @@ build
 dist
 out
 tmp
+@mf-types
 
 # Ignore environment variables.
 *.env*

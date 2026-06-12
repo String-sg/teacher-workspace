@@ -6,23 +6,23 @@ export default defineConfig({
   plugins: [
     pluginReact(),
     pluginModuleFederation({
-      name: 'host',
+      name: 'teacher_workspace',
       remotes: {},
       shared: {
         react: {
           singleton: true,
           eager: true,
-          requiredVersion: '^19.0.0',
+          requiredVersion: '^19.2.7',
         },
         'react-dom': {
           singleton: true,
           eager: true,
-          requiredVersion: '^19.0.0',
+          requiredVersion: '^19.2.7',
         },
       },
     }),
   ],
   html: {
-    template: './public/index.html',
+    template: './index.html',
   },
 });
