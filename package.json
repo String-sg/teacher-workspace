@@ -1,0 +1,14 @@
+{
+  "name": "teacher-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": "^24.0.0",
+    "pnpm": "^11.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @teacher-workspace/host dev",
+    "build": "pnpm --filter @teacher-workspace/host build",
+    "preview": "pnpm --filter @teacher-workspace/host preview"
+  }
+}

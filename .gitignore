@@ -1,0 +1,27 @@
+.DS_Store
+
+# Ignore editor directories and files.
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore node modules.
+node_modules
+
+# Ignore cache/output directories.
+bin
+build
+dist
+out
+tmp
+@mf-types
+
+# Ignore environment variables.
+*.env*
+!.env.example

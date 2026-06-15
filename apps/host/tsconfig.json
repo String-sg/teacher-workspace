@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "jsx": "react-jsx",
+    "target": "ES2023",
+    "noEmit": true,
+    "skipLibCheck": true,
+
+    /* modules */
+    "module": "ESNext",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    
+    /* type checking */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "paths": {
+      "*": ["./@mf-types/*"],
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "rsbuild.config.ts"]
+}
