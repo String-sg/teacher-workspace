@@ -7,7 +7,6 @@
     "pnpm": "^11.0.0"
   },
   "scripts": {
-    "preinstall": "node scripts/check-engines.mjs",
     "dev": "pnpm --filter @teacher-workspace/host dev",
     "build": "pnpm --filter @teacher-workspace/host build",
     "preview": "pnpm --filter @teacher-workspace/host preview"
