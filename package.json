@@ -9,6 +9,12 @@
   "scripts": {
     "dev": "pnpm --filter @teacher-workspace/host dev",
     "build": "pnpm --filter @teacher-workspace/host build",
-    "preview": "pnpm --filter @teacher-workspace/host preview"
+    "preview": "pnpm --filter @teacher-workspace/host preview",
+    "lint": "oxlint",
+    "format": "oxfmt --check \"**/*.{js,jsx,ts,tsx,md,html,css,json,jsonc,yaml,toml}\""
+  },
+  "devDependencies": {
+    "oxfmt": "0.54.0",
+    "oxlint": "1.69.0"
   }
 }
