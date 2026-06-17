@@ -5,7 +5,6 @@ engineStrict: true
 
 allowBuilds:
   core-js: true
-  lefthook: false
 
 minimumReleaseAge: 10080
 
