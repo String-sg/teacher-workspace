@@ -1,0 +1,12 @@
+pre-commit:
+  piped: true
+  jobs:
+    - name: format
+      run: pnpm oxfmt --write {staged_files}
+      glob: "*.{js,jsx,ts,tsx,md,html,css,json,jsonc,yaml,toml}"
+      stage_fixed: true
+
+    - name: lint
+      run: pnpm oxlint --fix {staged_files}
+      glob: "*.{js,jsx,ts,tsx}"
+      stage_fixed: true
