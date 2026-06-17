@@ -2,19 +2,20 @@
   "name": "teacher-workspace",
   "version": "0.0.0",
   "private": true,
-  "engines": {
-    "node": "^24.0.0",
-    "pnpm": "^11.0.0"
-  },
   "scripts": {
     "dev": "pnpm --filter @teacher-workspace/host dev",
     "build": "pnpm --filter @teacher-workspace/host build",
     "preview": "pnpm --filter @teacher-workspace/host preview",
     "lint": "oxlint",
-    "format": "oxfmt --check \"**/*.{js,jsx,ts,tsx,md,html,css,json,jsonc,yaml,toml}\""
+    "format": "oxfmt \"**/*.{js,jsx,ts,tsx,md,html,css,json,jsonc,yaml,toml}\"",
+    "format:check": "oxfmt --check \"**/*.{js,jsx,ts,tsx,md,html,css,json,jsonc,yaml,toml}\""
   },
   "devDependencies": {
     "oxfmt": "0.54.0",
     "oxlint": "1.69.0"
+  },
+  "engines": {
+    "node": "^24.0.0",
+    "pnpm": "^11.0.0"
   }
 }
