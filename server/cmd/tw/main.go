@@ -15,7 +15,7 @@ import (
 
 const (
 	addr            = ":3000"
-	shutdownTimeout = 5 * time.Second
+	shutdownTimeout = 30 * time.Second
 )
 
 func main() {
