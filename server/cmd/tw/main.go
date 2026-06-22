@@ -43,13 +43,11 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
-	defer func() {
-		if err := srv.Close(); err != nil {
-			slog.Error("close failed", "err", err)
-		}
-	}()
-
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("shutdown failed", "err", err)
+	}
+
+	if err := srv.Close(); err != nil {
+		slog.Error("close failed", "err", err)
 	}
 }
