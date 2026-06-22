@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '~/components/ui/s
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { HomeView } from '~/containers/HomeView';
 import { NotFoundView } from '~/containers/NotFoundView';
+import { ParentsGatewayView } from '~/containers/ParentsGatewayView';
 import { StudentsView } from '~/containers/StudentsView';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<HomeView />} />
               <Route path="/students/*" element={<StudentsView />} />
+              <Route path="/posts/*" element={<ParentsGatewayView />} />
               <Route path="*" element={<NotFoundView />} />
             </Routes>
           </SidebarInset>
