@@ -5,5 +5,17 @@
   "singleQuote": true,
   "trailingComma": "all",
 
-  "sortImports": true
+  "sortImports": true,
+
+  "overrides": [
+    {
+      "files": ["apps/host/**"],
+      "options": {
+        "sortTailwindcss": {
+          "stylesheet": "apps/host/src/App.css",
+          "functions": ["cn"]
+        }
+      }
+    }
+  ]
 }
