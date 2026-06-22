@@ -1,5 +1,6 @@
 import { CircleHelp, Home, Mail, Settings, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { NavLink } from 'react-router';
 
 import {
   Sidebar as SidebarRoot,
@@ -16,18 +17,44 @@ import {
   SidebarTrigger,
 } from '~/components/ui/sidebar';
 
+interface NavItem {
+  title: string;
+  icon: LucideIcon;
+  href: string;
+}
+
 interface MenuItem {
   title: string;
   icon: LucideIcon;
 }
 
-const mainNavItems: MenuItem[] = [{ title: 'Home', icon: Home }];
-
-const studentInsightItems: MenuItem[] = [{ title: 'Student Insights', icon: Users }];
+const navItems: NavItem[] = [
+  { title: 'Home', icon: Home, href: '/' },
+  { title: 'Student Insights', icon: Users, href: '/students' },
+];
 
 const communicationsItems: MenuItem[] = [{ title: 'Posts', icon: Mail }];
 
-function NavMenuItems({ items }: { items: MenuItem[] }) {
+function NavMenuItems({ items }: { items: NavItem[] }) {
+  return (
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.title}>
+          <NavLink to={item.href} end={item.href === '/'}>
+            {({ isActive }) => (
+              <SidebarMenuButton tooltip={item.title} isActive={isActive}>
+                <item.icon className="tw:size-4" />
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            )}
+          </NavLink>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
+function StaticMenuItems({ items }: { items: MenuItem[] }) {
   return (
     <SidebarMenu>
       {items.map((item) => (
@@ -60,11 +87,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup className="tw:pb-0">
           <SidebarGroupContent>
-            <NavMenuItems items={mainNavItems} />
-          </SidebarGroupContent>
-
-          <SidebarGroupContent>
-            <NavMenuItems items={studentInsightItems} />
+            <NavMenuItems items={navItems} />
           </SidebarGroupContent>
 
           <SidebarSeparator className="tw:mx-0 tw:mt-3 tw:group-data-[collapsible=icon]:mb-3" />
@@ -72,7 +95,7 @@ export function AppSidebar() {
             Communications
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <NavMenuItems items={communicationsItems} />
+            <StaticMenuItems items={communicationsItems} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

@@ -1,23 +1,30 @@
+import { BrowserRouter, Route, Routes } from 'react-router';
+
 import { AppSidebar } from '~/components/Sidebar';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '~/components/ui/sidebar';
 import { TooltipProvider } from '~/components/ui/tooltip';
+import { HomeView } from '~/containers/HomeView';
+import { NotFoundView } from '~/containers/NotFoundView';
+import { StudentsView } from '~/containers/StudentsView';
 
 export default function App() {
   return (
-    <TooltipProvider>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="tw:flex tw:h-14 tw:items-center tw:px-4 tw:md:hidden">
-            <SidebarTrigger />
-          </header>
-        <div className="tw:flex tw:flex-1 tw:items-center tw:justify-center tw:p-8">
-          <h1 className="tw:text-2xl tw:font-semibold tw:text-muted-foreground">
-            Teacher Workspace
-          </h1>
-        </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </TooltipProvider>
+    <BrowserRouter>
+      <TooltipProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="tw:flex tw:h-14 tw:items-center tw:px-4 tw:md:hidden">
+              <SidebarTrigger />
+            </header>
+            <Routes>
+              <Route path="/" element={<HomeView />} />
+              <Route path="/students/*" element={<StudentsView />} />
+              <Route path="*" element={<NotFoundView />} />
+            </Routes>
+          </SidebarInset>
+        </SidebarProvider>
+      </TooltipProvider>
+    </BrowserRouter>
   );
 }
