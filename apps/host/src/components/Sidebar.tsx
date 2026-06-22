@@ -1,5 +1,6 @@
-import { CircleHelp, Home, Mail, Settings, Users } from 'lucide-react';
+import { CircleHelp, Home, Mail, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { NavLink } from 'react-router';
 
 import {
   Sidebar as SidebarRoot,
@@ -16,26 +17,32 @@ import {
   SidebarTrigger,
 } from '~/components/ui/sidebar';
 
-interface MenuItem {
+interface NavItem {
   title: string;
   icon: LucideIcon;
+  to: string;
 }
 
-const mainNavItems: MenuItem[] = [{ title: 'Home', icon: Home }];
+const navItems: NavItem[] = [
+  { title: 'Home', icon: Home, to: '/' },
+  { title: 'Student Insights', icon: Users, to: '/students' },
+];
 
-const studentInsightItems: MenuItem[] = [{ title: 'Student Insights', icon: Users }];
+const communicationsItems: NavItem[] = [{ title: 'Posts', icon: Mail, to: '/posts' }];
 
-const communicationsItems: MenuItem[] = [{ title: 'Posts', icon: Mail }];
-
-function NavMenuItems({ items }: { items: MenuItem[] }) {
+function NavMenuItems({ items }: { items: NavItem[] }) {
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton tooltip={item.title}>
-            <item.icon className="tw:size-4" />
-            <span>{item.title}</span>
-          </SidebarMenuButton>
+          <NavLink to={item.to} end={item.to === '/'}>
+            {({ isActive }) => (
+              <SidebarMenuButton tooltip={item.title} isActive={isActive}>
+                <item.icon className="tw:size-4" />
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            )}
+          </NavLink>
         </SidebarMenuItem>
       ))}
     </SidebarMenu>
@@ -60,11 +67,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup className="tw:pb-0">
           <SidebarGroupContent>
-            <NavMenuItems items={mainNavItems} />
-          </SidebarGroupContent>
-
-          <SidebarGroupContent>
-            <NavMenuItems items={studentInsightItems} />
+            <NavMenuItems items={navItems} />
           </SidebarGroupContent>
 
           <SidebarSeparator className="tw:mx-0 tw:mt-3 tw:group-data-[collapsible=icon]:mb-3" />
@@ -80,16 +83,16 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings">
-              <Settings className="tw:size-4" />
-              <span>Settings</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Help">
-              <CircleHelp className="tw:size-4" />
-              <span>Help</span>
-            </SidebarMenuButton>
+            <a
+              href="https://go.gov.sg/teacherworkspace-feedback"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <SidebarMenuButton tooltip="Help">
+                <CircleHelp className="tw:size-4" />
+                <span>Help</span>
+              </SidebarMenuButton>
+            </a>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
