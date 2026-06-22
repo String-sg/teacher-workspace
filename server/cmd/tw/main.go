@@ -45,9 +45,6 @@ func main() {
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("shutdown failed", "err", err)
-	}
-
-	if err := srv.Close(); err != nil {
-		slog.Error("close failed", "err", err)
+		os.Exit(1)
 	}
 }
