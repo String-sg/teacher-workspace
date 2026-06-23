@@ -1,5 +1,6 @@
 pre-commit:
   piped: true
+  exclude: "pnpm-lock.yaml"
   jobs:
     - name: format
       run: pnpm oxfmt --write {staged_files}
