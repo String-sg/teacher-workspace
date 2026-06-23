@@ -8,7 +8,3 @@ allowBuilds:
   lefthook: false
 
 minimumReleaseAge: 10080
-
-overrides:
-  '@rsbuild/core': '2.0.11'
-  '@rspack/core': '2.0.6'

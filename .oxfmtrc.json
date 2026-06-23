@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["pnpm-lock.yaml"],
   "printWidth": 100,
   "tabWidth": 2,
   "singleQuote": true,
