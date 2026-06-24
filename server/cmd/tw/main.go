@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/String-sg/teacher-workspace/server/internal/handler"
+	"github.com/String-sg/teacher-workspace/server/internal/middleware"
 )
 
 const (
@@ -21,9 +22,10 @@ const (
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 
+	mux := handler.NewMux()
 	srv := &http.Server{
 		Addr:    addr,
-		Handler: handler.NewMux(),
+		Handler: middleware.RequestID(middleware.RequestLog(mux)),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
