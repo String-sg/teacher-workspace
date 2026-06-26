@@ -1,7 +1,17 @@
-import { AppCard } from '~/components/AppCard';
-import type { AppSection } from '~/config/apps';
+import { AppCard, FeaturedAppCard } from '~/components/AppCard';
+import type { AppCard as AppCardType } from '~/components/AppCard';
 
-export function AppSectionView({ title, description, cards }: AppSection) {
+export interface AppSection {
+  id: string;
+  title: string;
+  description?: string;
+  cards: AppCardType[];
+  featured?: boolean;
+}
+
+export function AppSectionView({ title, description, cards, featured }: AppSection) {
+  const Card = featured ? FeaturedAppCard : AppCard;
+
   return (
     <section className="tw:flex tw:flex-col tw:gap-4">
       <div className="tw:flex tw:flex-col tw:gap-1">
@@ -10,7 +20,7 @@ export function AppSectionView({ title, description, cards }: AppSection) {
       </div>
       <div className="tw:grid tw:grid-cols-1 tw:gap-4 tw:sm:grid-cols-3">
         {cards.map((card) => (
-          <AppCard key={card.id} {...card} />
+          <Card key={card.id} {...card} />
         ))}
       </div>
     </section>
