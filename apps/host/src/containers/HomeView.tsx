@@ -1,23 +1,29 @@
-import allEarsLogo from '~/assets/logos/allears-logo.svg';
-import allocateLogo from '~/assets/logos/allocate-logo.svg';
-import appraiserLogo from '~/assets/logos/appraiser-logo.svg';
-import connectogramLogo from '~/assets/logos/connectogram-logo.svg';
-import glowLogo from '~/assets/logos/glow-logo.svg';
-import heytaliaLogo from '~/assets/logos/heytalia-logo.svg';
-import hrpLogo from '~/assets/logos/hrp-logo.svg';
-import langbuddyLogo from '~/assets/logos/langbuddy-logo.svg';
-import myseiLogo from '~/assets/logos/mysei-logo.svg';
-import opalLogo from '~/assets/logos/opal-logo.svg';
-import schoolCockpitLogo from '~/assets/logos/schoolcockpit-logo.svg';
-import scMobileLogo from '~/assets/logos/scmobile-logo.svg';
-import sdisLogo from '~/assets/logos/sdis-logo.svg';
-import slsLogo from '~/assets/logos/sls-logo.svg';
-import studentsLogo from '~/assets/logos/students-logo.svg';
-import workpalLogo from '~/assets/logos/workpal-logo.svg';
-import { AppSectionView } from '~/components/AppSectionView';
-import type { AppSection } from '~/components/AppSectionView';
+import AllEars from '~/assets/logos/allears.svg';
+import Allocate from '~/assets/logos/allocate.svg';
+import Appraiser from '~/assets/logos/appraiser.svg';
+import Connectogram from '~/assets/logos/connectogram.svg';
+import Glow from '~/assets/logos/glow.svg';
+import Heytalia from '~/assets/logos/heytalia.svg';
+import Hrp from '~/assets/logos/hrp.svg';
+import Langbuddy from '~/assets/logos/langbuddy.svg';
+import Mysei from '~/assets/logos/mysei.svg';
+import Opal from '~/assets/logos/opal.svg';
+import SchoolCockpit from '~/assets/logos/schoolcockpit.svg';
+import ScMobile from '~/assets/logos/scmobile.svg';
+import Sdis from '~/assets/logos/sdis.svg';
+import Sls from '~/assets/logos/sls.svg';
+import Students from '~/assets/logos/students.svg';
+import Workpal from '~/assets/logos/workpal.svg';
+import { AppCard, FeaturedAppCard } from '~/components/AppCard';
+import type { AppCard as AppCardData } from '~/components/AppCard';
+import { AppSection } from '~/components/AppSection';
+import type { AppSectionProps } from '~/components/AppSection';
 
-const APP_SECTIONS: AppSection[] = [
+type AppSectionData = Pick<AppSectionProps, 'id' | 'title' | 'description' | 'featured'> & {
+  cards: AppCardData[];
+};
+
+const APP_SECTIONS: AppSectionData[] = [
   {
     id: 'featured',
     title: 'Featured',
@@ -25,9 +31,9 @@ const APP_SECTIONS: AppSection[] = [
     cards: [
       {
         id: 'featured-students',
-        title: 'Students',
+        title: 'Student Insights',
         description: 'Holistic insights that help every student thrive',
-        icon: studentsLogo,
+        icon: Students,
         color: 'purple',
         href: '/students',
         badge: 'Beta',
@@ -43,7 +49,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'school-cockpit',
         title: 'School Cockpit',
         description: 'Your central hub for school management and daily operations',
-        icon: schoolCockpitLogo,
+        icon: SchoolCockpit,
         color: 'blue',
         href: 'https://schoolcockpit.moe.gov.sg',
       },
@@ -51,7 +57,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'sc-mobile',
         title: 'SC Mobile',
         description: 'Streamlined attendance management on the go',
-        icon: scMobileLogo,
+        icon: ScMobile,
         color: 'blue',
         href: 'https://scmobile.moe.edu.sg/login',
       },
@@ -59,7 +65,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'sls',
         title: 'SLS',
         description: 'Teaching and learning platform for curriculum aligned resources',
-        icon: slsLogo,
+        icon: Sls,
         color: 'green',
         href: 'https://vle.learning.moe.edu.sg/login',
       },
@@ -74,15 +80,15 @@ const APP_SECTIONS: AppSection[] = [
         id: 'all-ears',
         title: 'All Ears',
         description: 'Personalised forms for students, staff, and parents',
-        icon: allEarsLogo,
+        icon: AllEars,
         color: 'pink',
         href: 'https://forms.moe.edu.sg',
       },
       {
         id: 'students',
-        title: 'Students',
+        title: 'Student Insights',
         description: 'Holistic insights that help every student thrive',
-        icon: studentsLogo,
+        icon: Students,
         color: 'blue',
         href: '/students',
       },
@@ -90,7 +96,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'allocate',
         title: 'Allocate',
         description: 'Simplify your Full SBB class allocation',
-        icon: allocateLogo,
+        icon: Allocate,
         color: 'blue',
         href: 'https://allocate.digital.moe.gov.sg',
       },
@@ -99,7 +105,7 @@ const APP_SECTIONS: AppSection[] = [
         title: 'SDIS',
         description:
           'One-stop platform for National School Games, Singapore Youth Festival, Outdoor Adventure Learning Centre, and MOE OBS Challenge',
-        icon: sdisLogo,
+        icon: Sdis,
         color: 'blue',
         href: 'https://www.sdis.moe.gov.sg/oalc/s/login',
       },
@@ -114,7 +120,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'mysei',
         title: 'MySEI',
         description: "Holistic insights for students' social-emotional growth & well-being",
-        icon: myseiLogo,
+        icon: Mysei,
         color: 'blue',
         href: 'https://mysei.digital.moe.gov.sg',
       },
@@ -122,7 +128,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'connectogram',
         title: 'Connecto-gram',
         description: 'Social network analysis for student connectedness and peer relationships',
-        icon: connectogramLogo,
+        icon: Connectogram,
         color: 'blue',
         href: 'https://forms.moe.edu.sg/sna/manage/forms',
       },
@@ -130,7 +136,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'termly-checkin',
         title: 'Termly Check-In',
         description: 'Regular well-being check-ins to support student mental health',
-        icon: allEarsLogo,
+        icon: AllEars,
         color: 'blue',
         href: 'https://forms.moe.edu.sg/dashboards',
       },
@@ -145,7 +151,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'heytalia',
         title: 'HeyTalia',
         description: 'AI-assistant for drafting clear, parent-friendly school communications',
-        icon: heytaliaLogo,
+        icon: Heytalia,
         color: 'purple',
         href: 'https://pg.moe.edu.sg',
       },
@@ -153,7 +159,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'appraiser',
         title: 'Appraiser',
         description: 'AI-generated draft student testimonials in seconds',
-        icon: appraiserLogo,
+        icon: Appraiser,
         color: 'blue',
         href: 'https://smartcompose.gov.sg',
       },
@@ -169,7 +175,7 @@ const APP_SECTIONS: AppSection[] = [
         title: 'LangBuddy',
         description:
           'AI conversational chatbot for Mother Tongue Language learning for Secondary Schools',
-        icon: langbuddyLogo,
+        icon: Langbuddy,
         color: 'blue',
         href: 'https://langbuddy.moe.edu.sg',
       },
@@ -184,7 +190,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'workpal',
         title: 'Workpal',
         description: 'Your workplace management companion',
-        icon: workpalLogo,
+        icon: Workpal,
         color: 'blue',
         href: 'https://app.workpal.gov.sg',
       },
@@ -192,7 +198,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'hrp-portal',
         title: 'HR and Payroll portal (HRP)',
         description: 'One-stop platform for staff to manage leave, claims, and HR admin tasks',
-        icon: hrpLogo,
+        icon: Hrp,
         color: 'blue',
         href: 'https://www.hrp.gov.sg',
       },
@@ -207,7 +213,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'opal',
         title: 'OPAL 2.0',
         description: 'One-stop portal for professional learning',
-        icon: opalLogo,
+        icon: Opal,
         color: 'blue',
         href: 'https://idm.opal2.moe.edu.sg',
       },
@@ -215,7 +221,7 @@ const APP_SECTIONS: AppSection[] = [
         id: 'glow',
         title: 'Glow',
         description: 'Bite-sized daily learning in just 5 minutes',
-        icon: glowLogo,
+        icon: Glow,
         color: 'blue',
         href: 'https://glow.digital.moe.gov.sg/home',
       },
@@ -237,9 +243,16 @@ export function HomeView() {
         {getGreeting()}
       </h1>
 
-      {APP_SECTIONS.map((section) => (
-        <AppSectionView key={section.id} {...section} />
-      ))}
+      {APP_SECTIONS.map(({ id, cards, featured, ...rest }) => {
+        const Card = featured ? FeaturedAppCard : AppCard;
+        return (
+          <AppSection key={id} id={id} featured={featured} {...rest}>
+            {cards.map((card) => (
+              <Card key={card.id} {...card} />
+            ))}
+          </AppSection>
+        );
+      })}
     </main>
   );
 }

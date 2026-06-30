@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router';
 
+import { cn } from '~/helpers/cn';
+
 export type AppColor = 'pink' | 'blue' | 'orange' | 'green' | 'purple';
 
 export interface AppCard {
@@ -12,7 +14,6 @@ export interface AppCard {
   href: string;
   badge?: string;
 }
-import { cn } from '~/helpers/cn';
 
 const CARD_BASE =
   'tw:group tw:flex tw:rounded-[14px] tw:border tw:bg-background tw:p-4 tw:transition-colors tw:hover:bg-muted/50';
@@ -60,7 +61,7 @@ function CardContent({ title, description, icon, color, badge }: Omit<AppCardPro
     <>
       <CardIcon icon={icon} color={color} />
       <div className="tw:flex tw:flex-col tw:gap-2">
-        <div className="tw:flex tw:items-center tw:gap-2">
+        <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
           <h3 className="tw:font-semibold tw:text-foreground">{title}</h3>
           {badge && (
             <span className="tw:rounded-full tw:bg-blue-100 tw:px-2 tw:py-0.5 tw:text-xs tw:font-medium tw:text-blue-700">
@@ -107,22 +108,24 @@ export function AppCard({ title, description, icon, color, href, badge }: AppCar
 export function FeaturedAppCard({ title, description, icon, color, href, badge }: AppCardProps) {
   const className = cn(
     CARD_BASE,
-    'tw:h-[132px] tw:flex-row tw:items-center tw:gap-4 tw:border-[#C8C8C8] tw:bg-white',
+    'tw:flex-col tw:gap-4 tw:border-[#C8C8C8] tw:bg-white tw:sm:h-[132px] tw:sm:flex-row tw:sm:items-center',
   );
 
   const content = (
     <>
       <CardIcon icon={icon} color={color} />
-      <div className="tw:flex tw:flex-1 tw:flex-col tw:gap-2">
-        <div className="tw:flex tw:items-center tw:gap-2">
-          <h3 className="tw:font-semibold tw:text-foreground">{title}</h3>
+      <div className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-2">
+        <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+          <h3 className="tw:font-semibold tw:text-foreground tw:sm:truncate">{title}</h3>
           {badge && (
-            <span className="tw:rounded-full tw:bg-blue-100 tw:px-2 tw:py-0.5 tw:text-xs tw:font-medium tw:text-blue-700">
+            <span className="tw:shrink-0 tw:rounded-full tw:bg-blue-100 tw:px-2 tw:py-0.5 tw:text-xs tw:font-medium tw:text-blue-700">
               {badge}
             </span>
           )}
         </div>
-        <p className="tw:text-sm tw:text-muted-foreground">{description}</p>
+        <p className="tw:line-clamp-3 tw:text-sm tw:text-muted-foreground tw:sm:line-clamp-2">
+          {description}
+        </p>
       </div>
     </>
   );
