@@ -47,23 +47,22 @@ func defaults() Config {
 // Load resolves configuration from built-in defaults, an optional .env file,
 // and real process environment variables (highest precedence). Returns an error
 // if any value fails to parse or fails validation.
-func Load() (Config, error) {
+func Load() (*Config, error) {
 	cfg := defaults()
 	if err := dotenv.Load(&cfg); err != nil {
-		return Config{}, err
+		return nil, err
 	}
-	return cfg, cfg.Validate()
-}
-
-func (e Environment) Validate() error {
-	if e != EnvDevelopment && e != EnvProduction {
-		return fmt.Errorf("TW_ENV must be %q or %q; got %q", EnvDevelopment, EnvProduction, e)
-	}
-	return nil
+	return &cfg, cfg.Validate()
 }
 
 func (c Config) Validate() error {
-	return errors.Join(c.Env.Validate(), c.Server.validate())
+	var errs []error
+
+	if c.Env != EnvDevelopment && c.Env != EnvProduction {
+		errs = append(errs, fmt.Errorf("TW_ENV must be %q or %q; got %q", EnvDevelopment, EnvProduction, c.Env))
+	}
+
+	return errors.Join(append(errs, c.Server.validate())...)
 }
 
 func (c ServerConfig) validate() error {

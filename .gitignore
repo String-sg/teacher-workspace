@@ -23,6 +23,5 @@ tmp
 @mf-types
 
 # Ignore environment variables.
-.env
-.env.*
+*.env*
 !.env.example
