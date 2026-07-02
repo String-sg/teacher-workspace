@@ -14,23 +14,24 @@ import Sdis from '~/assets/logos/sdis.svg';
 import Sls from '~/assets/logos/sls.svg';
 import Students from '~/assets/logos/students.svg';
 import Workpal from '~/assets/logos/workpal.svg';
-import { AppCard, FeaturedAppCard } from '~/components/AppCard';
+import { AppCard } from '~/components/AppCard';
 import type { AppCard as AppCardData } from '~/components/AppCard';
 import { AppSection } from '~/components/AppSection';
 import type { AppSectionProps } from '~/components/AppSection';
 
-type AppSectionData = Pick<AppSectionProps, 'id' | 'title' | 'description' | 'featured'> & {
+type AppSectionData = Pick<AppSectionProps, 'title' | 'description' | 'isFeatured'> & {
+  id: string;
   cards: AppCardData[];
 };
 
 const APP_SECTIONS: AppSectionData[] = [
   {
-    id: 'featured',
+    id: 'isFeatured',
     title: 'Featured',
-    featured: true,
+    isFeatured: true,
     cards: [
       {
-        id: 'featured-students',
+        id: 'isFeatured-students',
         title: 'Student Insights',
         description: 'Holistic insights that help every student thrive',
         icon: Students,
@@ -243,12 +244,11 @@ export function HomeView() {
         {getGreeting()}
       </h1>
 
-      {APP_SECTIONS.map(({ id, cards, featured, ...rest }) => {
-        const Card = featured ? FeaturedAppCard : AppCard;
+      {APP_SECTIONS.map(({ id, cards, isFeatured, ...rest }) => {
         return (
-          <AppSection key={id} id={id} featured={featured} {...rest}>
+          <AppSection key={id} isFeatured={isFeatured} {...rest}>
             {cards.map((card) => (
-              <Card key={card.id} {...card} />
+              <AppCard key={card.id} isFeatured={isFeatured} {...card} />
             ))}
           </AppSection>
         );

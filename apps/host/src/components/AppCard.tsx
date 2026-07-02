@@ -3,14 +3,12 @@ import { Link } from 'react-router';
 
 import { cn } from '~/helpers/cn';
 
-export type AppColor = 'pink' | 'blue' | 'orange' | 'green' | 'purple';
-
 export interface AppCard {
   id: string;
   title: string;
   description: string;
   icon: string;
-  color: AppColor;
+  color: 'pink' | 'blue' | 'orange' | 'green' | 'purple';
   href: string;
   badge?: string;
 }
@@ -18,7 +16,7 @@ export interface AppCard {
 const CARD_BASE =
   'tw:group tw:flex tw:rounded-[14px] tw:border tw:bg-background tw:p-4 tw:transition-colors tw:hover:bg-muted/50';
 
-const HOVER_COLOR_MAP: Record<AppColor, string> = {
+const HOVER_COLOR_MAP: Record<AppCard['color'], string> = {
   pink: 'tw:group-hover:text-pink-500',
   blue: 'tw:group-hover:text-blue-600',
   orange: 'tw:group-hover:text-orange-500',
@@ -33,7 +31,7 @@ function CardIcon({
   ...props
 }: React.ComponentPropsWithoutRef<'div'> & {
   icon: string;
-  color: AppColor;
+  color: AppCard['color'];
 }) {
   return (
     <div
@@ -54,13 +52,29 @@ function CardIcon({
   );
 }
 
-type AppCardProps = Pick<AppCard, 'title' | 'description' | 'icon' | 'color' | 'href' | 'badge'>;
+type AppCardProps = Pick<AppCard, 'title' | 'description' | 'icon' | 'color' | 'href' | 'badge'> & {
+  isFeatured?: boolean;
+};
 
-function CardContent({ title, description, icon, color, badge }: Omit<AppCardProps, 'href'>) {
-  return (
+export function AppCard({
+  title,
+  description,
+  icon,
+  color,
+  href,
+  badge,
+  isFeatured,
+}: AppCardProps) {
+  const className = cn(
+    CARD_BASE,
+    'tw:flex-col tw:gap-4',
+    isFeatured && 'tw:border-[#C8C8C8] tw:bg-white tw:sm:flex-row tw:sm:items-center',
+  );
+
+  const content = (
     <>
       <CardIcon icon={icon} color={color} />
-      <div className="tw:flex tw:flex-col tw:gap-2">
+      <div className={cn('tw:flex tw:flex-col tw:gap-2')}>
         <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
           <h3 className="tw:font-semibold tw:text-foreground">{title}</h3>
           {badge && (
@@ -70,62 +84,6 @@ function CardContent({ title, description, icon, color, badge }: Omit<AppCardPro
           )}
         </div>
         <p className="tw:line-clamp-3 tw:text-sm tw:text-muted-foreground">{description}</p>
-      </div>
-    </>
-  );
-}
-
-export function AppCard({ title, description, icon, color, href, badge }: AppCardProps) {
-  const className = cn(CARD_BASE, 'tw:flex-col tw:gap-4');
-
-  if (href.startsWith('http')) {
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-        <CardContent
-          title={title}
-          description={description}
-          icon={icon}
-          color={color}
-          badge={badge}
-        />
-      </a>
-    );
-  }
-
-  return (
-    <Link to={href} className={className}>
-      <CardContent
-        title={title}
-        description={description}
-        icon={icon}
-        color={color}
-        badge={badge}
-      />
-    </Link>
-  );
-}
-
-export function FeaturedAppCard({ title, description, icon, color, href, badge }: AppCardProps) {
-  const className = cn(
-    CARD_BASE,
-    'tw:flex-col tw:gap-4 tw:border-[#C8C8C8] tw:bg-white tw:sm:h-[132px] tw:sm:flex-row tw:sm:items-center',
-  );
-
-  const content = (
-    <>
-      <CardIcon icon={icon} color={color} />
-      <div className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col tw:gap-2">
-        <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
-          <h3 className="tw:font-semibold tw:text-foreground tw:sm:truncate">{title}</h3>
-          {badge && (
-            <span className="tw:shrink-0 tw:rounded-full tw:bg-blue-100 tw:px-2 tw:py-0.5 tw:text-xs tw:font-medium tw:text-blue-700">
-              {badge}
-            </span>
-          )}
-        </div>
-        <p className="tw:line-clamp-3 tw:text-sm tw:text-muted-foreground tw:sm:line-clamp-2">
-          {description}
-        </p>
       </div>
     </>
   );
