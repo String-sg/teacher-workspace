@@ -41,3 +41,23 @@ func False(t *testing.T, got bool) {
 		t.Fatalf("\nwant: false\n got: true")
 	}
 }
+
+// NoError is a helper function to assert the given error is nil.
+// It will fail the test if the error is not nil.
+func NoError(t *testing.T, err error) {
+	t.Helper()
+
+	if err != nil {
+		t.Fatalf("\nwant: no error\n got: %v", err)
+	}
+}
+
+// HasError is a helper function to assert the given error is not nil.
+// It will fail the test if the error is nil.
+func HasError(t *testing.T, err error) {
+	t.Helper()
+
+	if err == nil {
+		t.Fatal("\nwant: error\n got: nil")
+	}
+}
